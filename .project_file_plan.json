@@ -1,0 +1,17 @@
+{
+  "expected_files": [
+    "server/main.py",
+    "server/database.py",
+    "server/models.py",
+    "server/schemas.py",
+    "server/crud.py",
+    "server/routers/auth.py",
+    "server/routers/cars.py",
+    "server/routers/bookings.py",
+    "server/routers/payments.py",
+    "server/routers/chat.py",
+    "server/__init__.py",
+    "server/routers/__init__.py",
+    "server/requirements.txt"
+  ]
+}
