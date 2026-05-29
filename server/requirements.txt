@@ -1,8 +1,10 @@
+
 fastapi
-uvicorn[standard]
-SQLAlchemy
-pydantic[email]
-python-jose[cryptography]
-passlib[bcrypt]
+uvicorn
+sqlalchemy
+pydantic
+psycopg2-binary
+python-jose
+passlib
 python-multipart
 websockets
