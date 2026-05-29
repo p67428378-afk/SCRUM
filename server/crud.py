@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from . import models, schemas
+from server import models, schemas
 from passlib.context import CryptContext
+import uuid
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -9,7 +10,7 @@ def get_user_by_email(db: Session, email: str):
 
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = pwd_context.hash(user.password)
-    db_user = models.Renter(email=user.email, username=user.username, password_hash=hashed_password)
+    db_user = models.Renter(username=user.username, email=user.email, password_hash=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -18,24 +19,27 @@ def create_user(db: Session, user: schemas.UserCreate):
 def get_cars(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Car).offset(skip).limit(limit).all()
 
-def get_car(db: Session, car_id: str):
+def get_car(db: Session, car_id: uuid.UUID):
     return db.query(models.Car).filter(models.Car.car_id == car_id).first()
 
 def create_booking(db: Session, booking: schemas.BookingCreate):
-    db_booking = models.Rental(**booking.dict())
+    # Simplified total_price calculation
+    total_price = 100.0
+    db_booking = models.Rental(**booking.dict(), total_price=total_price, payment_status="pending", rental_status="pending")
     db.add(db_booking)
     db.commit()
     db.refresh(db_booking)
     return db_booking
 
-def get_booking(db: Session, rental_id: str):
+def get_booking(db: Session, rental_id: uuid.UUID):
     return db.query(models.Rental).filter(models.Rental.rental_id == rental_id).first()
 
 def create_payment(db: Session, payment: schemas.PaymentCreate):
-    # In a real application, you would process the payment with a payment gateway
-    # and then update the payment status.
-    db_payment = models.Rental.query.filter(models.Rental.rental_id == payment.rental_id).first()
-    db_payment.payment_status = "paid"
-    db.commit()
-    db.refresh(db_payment)
-    return {"transaction_id": "dummy_transaction_id", "payment_status": "paid"}
+    # Mock payment processing
+    transaction_id = str(uuid.uuid4())
+    booking = get_booking(db, payment.rental_id)
+    if booking:
+        booking.payment_status = "completed"
+        db.commit()
+        db.refresh(booking)
+    return {"transaction_id": transaction_id, "payment_status": "completed"}

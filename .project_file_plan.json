@@ -11,13 +11,6 @@
     "server/routers/payments.py",
     "server/routers/chat.py",
     "server/requirements.txt",
-    "server/tests/test_main.py",
-    "server/__init__.py",
-    "server/api/__init__.py",
-    "server/api/v1/__init__.py",
-    "server/api/v1/endpoints/__init__.py",
-    "server/crud/__init__.py",
-    "server/routers/__init__.py",
-    "server/tests/__init__.py"
+    "server/utils.py"
   ]
 }

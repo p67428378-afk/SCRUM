@@ -1,9 +1,8 @@
 from fastapi import FastAPI
-from .database import engine
-from . import models
-from .routers import auth, cars, bookings, payments, chat
+from server.database import engine, Base
+from server.routers import auth, cars, bookings, payments, chat
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 

@@ -1,97 +1,76 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Optional
-from uuid import UUID
+import uuid
 from datetime import datetime
 
-class Renter(BaseModel):
-    renter_id: UUID
+class UserCreate(BaseModel):
     username: str
-    email: str
+    email: EmailStr
+    password: str
 
-    class Config:
-        orm_mode = True
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
-class CarOwner(BaseModel):
-    owner_id: UUID
-    username: str
-    email: str
-
-    class Config:
-        orm_mode = True
-
-class Car(BaseModel):
-    car_id: UUID
-    owner_id: UUID
+class CarAvailability(BaseModel):
+    car_id: uuid.UUID
     make: str
     model: str
     year: int
     daily_rate: float
     status: str
     image_urls: List[str]
-    description: str
+
+class CarDetails(BaseModel):
+    car_id: uuid.UUID
+    make: str
+    model: str
+    year: int
+    daily_rate: float
+    status: str
     vin: str
     license_plate: str
-    current_location_id: UUID
+    current_location_id: uuid.UUID
+    description: str
+    image_urls: List[str]
 
-    class Config:
-        orm_mode = True
+class BookingCreate(BaseModel):
+    car_id: uuid.UUID
+    renter_id: uuid.UUID
+    pickup_location_id: uuid.UUID
+    start_date: datetime
+    end_date: datetime
 
-class Location(BaseModel):
-    location_id: UUID
-    address: str
+class BookingResponse(BaseModel):
+    rental_id: uuid.UUID
+    payment_status: str
+    rental_status: str
+    total_price: float
 
-    class Config:
-        orm_mode = True
+class PaymentCreate(BaseModel):
+    rental_id: uuid.UUID
+    amount: float
+    payment_token: str
 
-class Rental(BaseModel):
-    rental_id: UUID
-    car_id: UUID
-    renter_id: UUID
-    pickup_location_id: UUID
+class PaymentResponse(BaseModel):
+    transaction_id: str
+    payment_status: str
+
+class BookingConfirmation(BaseModel):
+    rental_id: uuid.UUID
+    car_id: uuid.UUID
+    renter_id: uuid.UUID
+    pickup_location_id: uuid.UUID
     start_date: datetime
     end_date: datetime
     total_price: float
     payment_status: str
     rental_status: str
 
-    class Config:
-        orm_mode = True
-
 class Message(BaseModel):
-    message_id: UUID
-    rental_id: UUID
-    sender_id: UUID
-    recipient_id: UUID
+    message_id: uuid.UUID
+    rental_id: uuid.UUID
+    sender_id: uuid.UUID
+    recipient_id: uuid.UUID
     content: str
     timestamp: datetime
-
-    class Config:
-        orm_mode = True
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    email: Optional[str] = None
-
-class UserCreate(BaseModel):
-    username: str
-    email: str
-    password: str
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-class BookingCreate(BaseModel):
-    car_id: UUID
-    start_date: str
-    end_date: str
-    pickup_location_id: UUID
-    renter_id: UUID
-
-class PaymentCreate(BaseModel):
-    rental_id: UUID
-    amount: float
-    payment_token: str
