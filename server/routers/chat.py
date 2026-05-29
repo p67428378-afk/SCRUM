@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import List
 
@@ -29,7 +30,7 @@ async def websocket_endpoint(websocket: WebSocket, rental_id: str):
     try:
         while True:
             data = await websocket.receive_text()
-            await manager.broadcast(f"Message for rental {rental_id}: {data}")
+            await manager.broadcast(f"Message from {rental_id}: {data}")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        await manager.broadcast(f"Client left chat for rental {rental_id}")
+        await manager.broadcast(f"Client left the chat for rental {rental_id}")

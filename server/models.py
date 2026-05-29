@@ -1,26 +1,30 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text
-from sqlalchemy.orm import relationship
-from server.database import Base
-import uuid
-from sqlalchemy.dialects.postgresql import UUID
 
-class Renter(Base):
+import uuid
+from sqlalchemy import Column, String, Integer, Float, DateTime, Text, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+from server.database import Base
+import datetime
+
+class Renters(Base):
     __tablename__ = "renters"
     renter_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    rentals = relationship("Rental", back_populates="renter")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
-class CarOwner(Base):
+class CarOwners(Base):
     __tablename__ = "car_owners"
     owner_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    cars = relationship("Car", back_populates="owner")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
-class Car(Base):
+class Cars(Base):
     __tablename__ = "cars"
     car_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("car_owners.owner_id"))
@@ -32,16 +36,19 @@ class Car(Base):
     vin = Column(String, unique=True, nullable=False)
     license_plate = Column(String, unique=True, nullable=False)
     current_location_id = Column(UUID(as_uuid=True), ForeignKey("locations.location_id"))
-    owner = relationship("CarOwner", back_populates="cars")
-    location = relationship("Location")
-    rentals = relationship("Rental", back_populates="car")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    owner = relationship("CarOwners")
+    current_location = relationship("Locations")
 
-class Location(Base):
+class Locations(Base):
     __tablename__ = "locations"
     location_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     address = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
-class Rental(Base):
+class Rentals(Base):
     __tablename__ = "rentals"
     rental_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     car_id = Column(UUID(as_uuid=True), ForeignKey("cars.car_id"))
@@ -52,17 +59,20 @@ class Rental(Base):
     total_price = Column(Float, nullable=False)
     payment_status = Column(String, nullable=False)
     rental_status = Column(String, nullable=False)
-    car = relationship("Car", back_populates="rentals")
-    renter = relationship("Renter", back_populates="rentals")
-    pickup_location = relationship("Location")
-    messages = relationship("Message", back_populates="rental")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    car = relationship("Cars")
+    renter = relationship("Renters")
+    pickup_location = relationship("Locations")
 
-class Message(Base):
+class Messages(Base):
     __tablename__ = "messages"
     message_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     rental_id = Column(UUID(as_uuid=True), ForeignKey("rentals.rental_id"))
     sender_id = Column(UUID(as_uuid=True), nullable=False)
     recipient_id = Column(UUID(as_uuid=True), nullable=False)
     content = Column(Text, nullable=False)
-    timestamp = Column(DateTime, nullable=False)
-    rental = relationship("Rental", back_populates="messages")
+    timestamp = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    rental = relationship("Rentals")
