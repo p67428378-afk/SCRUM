@@ -1,0 +1,32 @@
+{
+  "expected_files": [
+    "server/__init__.py",
+    "server/crud.py",
+    "server/database.py",
+    "server/main.py",
+    "server/models.py",
+    "server/requirements.txt",
+    "server/schemas.py",
+    "server/utils.py",
+    "server/api/__init__.py",
+    "server/api/v1/__init__.py",
+    "server/api/v1/endpoints/__init__.py",
+    "server/api/v1/endpoints/auth.py",
+    "server/api/v1/endpoints/bookings.py",
+    "server/api/v1/endpoints/cars.py",
+    "server/api/v1/endpoints/chat.py",
+    "server/api/v1/endpoints/payments.py",
+    "server/crud/__init__.py",
+    "server/crud/car.py",
+    "server/crud/rental.py",
+    "server/crud/user.py",
+    "server/routers/__init__.py",
+    "server/routers/auth.py",
+    "server/routers/bookings.py",
+    "server/routers/cars.py",
+    "server/routers/chat.py",
+    "server/routers/payments.py",
+    "server/tests/__init__.py",
+    "server/tests/test_main.py"
+  ]
+}
