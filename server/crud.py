@@ -1,49 +1,41 @@
-
 from sqlalchemy.orm import Session
 from . import models, schemas
-import uuid
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_user_by_email(db: Session, email: str):
     return db.query(models.Renter).filter(models.Renter.email == email).first()
 
 def create_user(db: Session, user: schemas.UserCreate):
-    # In a real app, you'd hash the password
-    password_hash = user.password + "_hashed"
-    db_user = models.Renter(username=user.username, email=user.email, password_hash=password_hash)
+    hashed_password = pwd_context.hash(user.password)
+    db_user = models.Renter(email=user.email, username=user.username, password_hash=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
-def get_available_cars(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Car).filter(models.Car.status == 'Available').offset(skip).limit(limit).all()
+def get_cars(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Car).offset(skip).limit(limit).all()
 
-def get_car_details(db: Session, car_id: uuid.UUID):
+def get_car(db: Session, car_id: str):
     return db.query(models.Car).filter(models.Car.car_id == car_id).first()
 
 def create_booking(db: Session, booking: schemas.BookingCreate):
-    # Dummy price calculation
-    total_price = 100.0 
-    db_booking = models.Rental(
-        car_id=booking.car_id,
-        renter_id=booking.renter_id,
-        pickup_location_id=booking.pickup_location_id,
-        start_date=booking.start_date,
-        end_date=booking.end_date,
-        total_price=total_price,
-        payment_status="Pending",
-        rental_status="Pending"
-    )
+    db_booking = models.Rental(**booking.dict())
     db.add(db_booking)
     db.commit()
     db.refresh(db_booking)
     return db_booking
 
-def process_payment(db: Session, payment: schemas.Payment):
-    # In a real app, you'd integrate with a payment gateway
-    db.query(models.Rental).filter(models.Rental.rental_id == payment.rental_id).update({"payment_status": "Paid"})
-    db.commit()
-    return {"transaction_id": str(uuid.uuid4()), "payment_status": "Paid"}
-
-def get_booking_details(db: Session, rental_id: uuid.UUID):
+def get_booking(db: Session, rental_id: str):
     return db.query(models.Rental).filter(models.Rental.rental_id == rental_id).first()
+
+def create_payment(db: Session, payment: schemas.PaymentCreate):
+    # In a real application, you would process the payment with a payment gateway
+    # and then update the payment status.
+    db_payment = models.Rental.query.filter(models.Rental.rental_id == payment.rental_id).first()
+    db_payment.payment_status = "paid"
+    db.commit()
+    db.refresh(db_payment)
+    return {"transaction_id": "dummy_transaction_id", "payment_status": "paid"}
