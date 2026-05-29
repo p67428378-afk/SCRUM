@@ -1,14 +1,12 @@
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
-from decimal import Decimal
-from uuid import UUID
 
 router = APIRouter()
 
-class Payment(BaseModel):
-    rental_id: UUID
-    amount: Decimal
+class PaymentRequest(BaseModel):
+    rental_id: str
+    amount: float
     payment_token: str
 
 class PaymentResponse(BaseModel):
@@ -16,6 +14,6 @@ class PaymentResponse(BaseModel):
     payment_status: str
 
 @router.post("/", response_model=PaymentResponse)
-def process_payment(payment: Payment):
+def process_payment(payment: PaymentRequest):
     # Dummy payment processing
-    return {"transaction_id": "dummy_transaction_id", "payment_status": "success"}
+    return {"transaction_id": "dummy_transaction_id", "payment_status": "Success"}

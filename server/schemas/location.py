@@ -1,18 +1,13 @@
 
 from pydantic import BaseModel
-from uuid import UUID
-from decimal import Decimal
+import uuid
 
-class LocationBase(BaseModel):
+class Location(BaseModel):
+    location_id: uuid.UUID
     address: str
-    latitude: Decimal
-    longitude: Decimal
-
-class LocationCreate(LocationBase):
-    pass
-
-class Location(LocationBase):
-    location_id: UUID
+    city: str
+    state: str
+    zip_code: str
 
     class Config:
         orm_mode = True

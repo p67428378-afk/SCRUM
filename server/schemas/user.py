@@ -1,24 +1,28 @@
 
-from pydantic import BaseModel
-from uuid import UUID
+from pydantic import BaseModel, EmailStr
+import uuid
 
-class UserBase(BaseModel):
+class UserCreate(BaseModel):
     username: str
-    email: str
-
-class UserCreate(UserBase):
+    email: EmailStr
     password: str
-
-class User(UserBase):
-    id: UUID
-
-    class Config:
-        orm_mode = True
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-class UserLogin(BaseModel):
-    email: str
-    password: str
+class Renter(BaseModel):
+    renter_id: uuid.UUID
+    username: str
+    email: EmailStr
+
+    class Config:
+        orm_mode = True
+
+class CarOwner(BaseModel):
+    owner_id: uuid.UUID
+    username: str
+    email: EmailStr
+
+    class Config:
+        orm_mode = True

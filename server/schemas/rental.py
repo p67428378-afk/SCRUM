@@ -1,34 +1,34 @@
 
 from pydantic import BaseModel
-from uuid import UUID
 from datetime import datetime
-from decimal import Decimal
+import uuid
 
-class RentalBase(BaseModel):
-    car_id: UUID
-    renter_id: UUID
-    pickup_location_id: UUID
+class BookingCreate(BaseModel):
+    car_id: uuid.UUID
+    renter_id: uuid.UUID
     start_date: datetime
     end_date: datetime
+    pickup_location_id: uuid.UUID
 
-class RentalCreate(RentalBase):
-    pass
-
-class Rental(BaseModel):
-    rental_id: UUID
+class BookingResponse(BaseModel):
+    rental_id: uuid.UUID
+    total_price: float
     rental_status: str
     payment_status: str
-    total_price: Decimal
 
     class Config:
         orm_mode = True
 
-class RentalConfirmation(Rental):
-    car_id: UUID
-    renter_id: UUID
+class BookingDetails(BaseModel):
+    rental_id: uuid.UUID
+    car_id: uuid.UUID
+    renter_id: uuid.UUID
     start_date: datetime
     end_date: datetime
-    pickup_location_id: UUID
+    total_price: float
+    payment_status: str
+    rental_status: str
+    pickup_location_id: uuid.UUID
 
     class Config:
         orm_mode = True

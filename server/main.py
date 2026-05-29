@@ -1,10 +1,14 @@
 
 from fastapi import FastAPI
-from server.api.v1.endpoints import auth, cars, bookings, payments, chat
 from server.database import engine
-from server.models import base, user, location, car, rental, message
+from server.models import user, car, location, rental, message
+from server.api.v1.endpoints import auth, cars, bookings, payments, chat
 
-base.Base.metadata.create_all(bind=engine)
+user.Base.metadata.create_all(bind=engine)
+car.Base.metadata.create_all(bind=engine)
+location.Base.metadata.create_all(bind=engine)
+rental.Base.metadata.create_all(bind=engine)
+message.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -16,4 +20,4 @@ app.include_router(chat.router, prefix="/api/v1/chat", tags=["chat"])
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"message": "Welcome to the Car Rental API"}

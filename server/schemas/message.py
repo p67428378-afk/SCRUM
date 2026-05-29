@@ -1,19 +1,13 @@
 
 from pydantic import BaseModel
-from uuid import UUID
 from datetime import datetime
+import uuid
 
-class MessageBase(BaseModel):
-    rental_id: UUID
-    sender_id: UUID
-    recipient_id: UUID
+class Message(BaseModel):
+    message_id: uuid.UUID
+    rental_id: uuid.UUID
+    sender_id: uuid.UUID
     content: str
-
-class MessageCreate(MessageBase):
-    pass
-
-class Message(MessageBase):
-    message_id: UUID
     timestamp: datetime
 
     class Config:

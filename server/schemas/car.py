@@ -1,38 +1,32 @@
 
-from pydantic import BaseModel, validator
-from uuid import UUID
-from decimal import Decimal
-from typing import List
-import json
+from pydantic import BaseModel
+from typing import List, Optional
+import uuid
 
-class CarBase(BaseModel):
+class CarAvailability(BaseModel):
+    car_id: uuid.UUID
     make: str
     model: str
     year: int
-    daily_rate: Decimal
+    daily_rate: float
     status: str
     image_urls: List[str]
-
-    @validator('image_urls', pre=True, allow_reuse=True)
-    def convert_image_urls(cls, v):
-        if isinstance(v, str):
-            try:
-                return json.loads(v)
-            except json.JSONDecodeError:
-                return []
-        return v
-
-class Car(CarBase):
-    car_id: UUID
 
     class Config:
         orm_mode = True
 
-class CarDetails(Car):
+class CarDetails(BaseModel):
+    car_id: uuid.UUID
+    make: str
+    model: str
+    year: int
+    daily_rate: float
+    status: str
+    image_urls: List[str]
+    description: Optional[str]
     vin: str
     license_plate: str
-    description: str
-    current_location_id: UUID
+    current_location_id: uuid.UUID
 
     class Config:
         orm_mode = True
