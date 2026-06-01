@@ -1,24 +1,25 @@
-
+from __future__ import annotations
+import uuid
+from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import Optional
-from uuid import UUID
-import datetime
 
 class TodoBase(BaseModel):
-    title: str = Field(..., min_length=1, description="Title of the todo item. Cannot be empty.")
+    title: str = Field(..., min_length=1)
     completed: bool = False
 
-class TodoCreate(TodoBase):
-    pass
+class TodoCreate(BaseModel):
+    title: str = Field(..., min_length=1)
 
 class TodoUpdate(BaseModel):
-    title: Optional[str] = Field(None, min_length=1, description="Title of the todo item. Cannot be empty.")
-    completed: Optional[bool] = None
+    title: str | None = Field(None, min_length=1)
+    completed: bool | None = None
 
-class Todo(TodoBase):
-    id: UUID
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+class Todo(BaseModel):
+    id: uuid.UUID
+    title: str
+    completed: bool
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
