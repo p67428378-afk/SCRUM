@@ -1,7 +1,7 @@
 
 from pydantic import BaseModel
-import uuid
 from datetime import datetime
+from uuid import UUID
 
 class TodoBase(BaseModel):
     title: str
@@ -14,7 +14,7 @@ class TodoUpdate(TodoBase):
     pass
 
 class Todo(TodoBase):
-    id: uuid.UUID
+    id: UUID
     created_at: datetime
     updated_at: datetime
 
