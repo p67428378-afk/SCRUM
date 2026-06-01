@@ -1,21 +1,20 @@
 
 from pydantic import BaseModel
-from uuid import UUID
+import uuid
 from datetime import datetime
 
 class TodoBase(BaseModel):
     title: str
     completed: bool = False
 
-class TodoCreate(BaseModel):
-    title: str
+class TodoCreate(TodoBase):
+    pass
 
-class TodoUpdate(BaseModel):
-    title: str | None = None
-    completed: bool | None = None
+class TodoUpdate(TodoBase):
+    pass
 
 class Todo(TodoBase):
-    id: UUID
+    id: uuid.UUID
     created_at: datetime
     updated_at: datetime
 

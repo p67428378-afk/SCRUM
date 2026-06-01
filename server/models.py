@@ -1,7 +1,7 @@
 
-from sqlalchemy import Column, String, Boolean, TIMESTAMP, func
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+from sqlalchemy import Column, String, Boolean, DateTime, func
+from sqlalchemy.dialects.postgresql import UUID
 from .database import Base
 
 class Todo(Base):
@@ -10,5 +10,5 @@ class Todo(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String, nullable=False)
     completed = Column(Boolean, default=False)
-    created_at = Column(TIMESTAMP, nullable=False, server_default=func.now())
-    updated_at = Column(TIMESTAMP, nullable=False, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
