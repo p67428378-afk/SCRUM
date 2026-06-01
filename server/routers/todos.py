@@ -15,10 +15,10 @@ def create_todo(todo: schemas.TodoCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=422, detail="Title cannot be empty")
     return crud.create_todo(db=db, todo=todo)
 
-@router.get("/api/v1/todos", response_model=List[schemas.Todo])
+@router.get("/api/v1/todos", response_model=List[str])
 def read_todos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     todos = crud.get_todos(db, skip=skip, limit=limit)
-    return todos
+    return [todo.title for todo in todos]
 
 @router.get("/api/v1/todos/{id}", response_model=schemas.Todo)
 def read_todo(id: uuid.UUID, db: Session = Depends(get_db)):

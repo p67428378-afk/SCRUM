@@ -53,6 +53,8 @@ def test_get_todos():
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
+    assert "Test Todo 1" in data
+    assert "Test Todo 2" in data
 
 
 def test_get_todo():
