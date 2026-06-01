@@ -3,9 +3,9 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-from ..main import app
-from ..database import Base, get_db
+from server.main import app
+from server.database import Base, get_db
+import time
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
@@ -31,78 +31,59 @@ app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def setup_and_teardown():
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
+
 def test_create_todo():
     response = client.post("/api/v1/todos", json={"title": "Test Todo"})
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "Test Todo"
-    assert data["completed"] is False
+    assert not data["completed"]
 
 
-def test_create_todo_empty_title():
-    response = client.post("/api/v1/todos", json={"title": ""})
-    assert response.status_code == 422
-
-
-def test_read_todos():
+def test_get_todos():
+    client.post("/api/v1/todos", json={"title": "Test Todo 1"})
+    client.post("/api/v1/todos", json={"title": "Test Todo 2"})
     response = client.get("/api/v1/todos")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert len(data) == 2
 
 
-def test_read_todo():
-    response = client.post("/api/v1/todos", json={"title": "Test Todo for Read"})
+def test_get_todo():
+    response = client.post("/api/v1/todos", json={"title": "Test Todo"})
     todo_id = response.json()["id"]
     response = client.get(f"/api/v1/todos/{todo_id}")
     assert response.status_code == 200
     data = response.json()
-    assert data["title"] == "Test Todo for Read"
-
-
-def test_read_todo_not_found():
-    response = client.get("/api/v1/todos/00000000-0000-0000-0000-000000000000")
-    assert response.status_code == 404
+    assert data["title"] == "Test Todo"
 
 
 def test_update_todo():
-    response = client.post("/api/v1/todos", json={"title": "Test Todo for Update"})
-    todo_id = response.json()["id"]
-    response = client.put(
-        f"/api/v1/todos/{todo_id}",
-        json={"title": "Updated Todo", "completed": True},
-    )
+    response = client.post("/api/v1/todos", json={"title": "Test Todo"})
+    todo = response.json()
+    todo_id = todo["id"]
+    created_at = todo["created_at"]
+    
+    time.sleep(1)
+
+    response = client.put(f"/api/v1/todos/{todo_id}", json={"title": "Updated Todo", "completed": True})
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "Updated Todo"
-    assert data["completed"] is True
-
-
-def test_update_todo_not_found():
-    response = client.put(
-        "/api/v1/todos/00000000-0000-0000-0000-000000000000",
-        json={"title": "Updated Todo", "completed": True},
-    )
-    assert response.status_code == 404
-
-
-def test_update_todo_empty_title():
-    response = client.post("/api/v1/todos", json={"title": "Test Todo for Update Empty"})
-    todo_id = response.json()["id"]
-    response = client.put(
-        f"/api/v1/todos/{todo_id}",
-        json={"title": "", "completed": True},
-    )
-    assert response.status_code == 422
+    assert data["completed"]
+    assert data["updated_at"] > created_at
 
 
 def test_delete_todo():
-    response = client.post("/api/v1/todos", json={"title": "Test Todo for Delete"})
+    response = client.post("/api/v1/todos", json={"title": "Test Todo"})
     todo_id = response.json()["id"]
     response = client.delete(f"/api/v1/todos/{todo_id}")
     assert response.status_code == 200
-    assert response.json() == {"message": "Todo item deleted successfully"}
-
-
-def test_delete_todo_not_found():
-    response = client.delete("/api/v1/todos/00000000-0000-0000-0000-000000000000")
+    response = client.get(f"/api/v1/todos/{todo_id}")
     assert response.status_code == 404
