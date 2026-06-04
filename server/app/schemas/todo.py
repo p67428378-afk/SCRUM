@@ -1,31 +1,19 @@
 
-import uuid
 from pydantic import BaseModel
+from typing import Optional
 
-# Shared properties
 class TodoBase(BaseModel):
     description: str
 
-# Properties to receive on item creation
 class TodoCreate(TodoBase):
     pass
 
-# Properties to receive on item update
 class TodoUpdate(BaseModel):
     completed: bool
 
-# Properties shared by models stored in DB
-class TodoInDBBase(TodoBase):
-    id: uuid.UUID
+class Todo(TodoBase):
+    id: int
     completed: bool
 
     class Config:
-        from_attributes = True
-
-# Properties to return to client
-class Todo(TodoInDBBase):
-    pass
-
-# Properties stored in DB
-class TodoInDB(TodoInDBBase):
-    pass
+        orm_mode = True

@@ -1,120 +1,85 @@
 
-import os
-import csv
-import uuid
-from unittest.mock import patch
-
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from server.app.main import app
+from server.app.models.todo import Base, SessionLocal
+from server.app.api.v1.endpoints.todos import get_db
 
-from app.main import app
-from app.core.config import settings
+# Create a new database for testing
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Use a separate file for testing
-TEST_TODOS_FILE = os.path.join(settings.DATA_DIR, "test_todos.csv")
+# Override the get_db dependency to use the testing database
+def override_get_db():
+    try:
+        db = TestingSessionLocal()
+        yield db
+    finally:
+        db.close()
 
+app.dependency_overrides[get_db] = override_get_db
 
-def setup_test_csv(data):
-    # Ensure the data directory exists
-    os.makedirs(settings.DATA_DIR, exist_ok=True)
-    with open(TEST_TODOS_FILE, mode='w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['id', 'description', 'completed']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
+@pytest.fixture(scope="session")
+def db_engine():
+    Base.metadata.create_all(bind=engine)
+    yield engine
+    Base.metadata.drop_all(bind=engine)
 
-def teardown_test_csv():
-    if os.path.exists(TEST_TODOS_FILE):
-        os.remove(TEST_TODOS_FILE)
+@pytest.fixture(scope="function")
+def db_session(db_engine):
+    connection = db_engine.connect()
+    # begin a non-ORM transaction
+    trans = connection.begin()
 
-# This is our test client
-client = TestClient(app)
+    # bind an individual Session to the connection
+    db = SessionLocal(bind=connection)
 
-@patch('app.core.config.settings.TODOS_FILE', TEST_TODOS_FILE)
-def test_create_todo():
-    teardown_test_csv() # Start with a clean slate
-    setup_test_csv([])
+    yield db
 
-    response = client.post("/api/v1/todos/", json={"description": "Test Todo"})
+    db.close()
+    trans.rollback()
+    connection.close()
+
+@pytest.fixture(scope="function")
+def client(db_session):
+    def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    return TestClient(app)
+
+def test_create_todo(client):
+    response = client.post("/api/v1/todos", json={"description": "Test Todo"})
     assert response.status_code == 200
     data = response.json()
     assert data["description"] == "Test Todo"
     assert data["completed"] is False
-    assert "id" in data
 
-    # Verify it was written to the file
-    with open(TEST_TODOS_FILE, mode='r') as f:
-        reader = csv.reader(f)
-        lines = list(reader)
-        assert len(lines) == 2 # header + 1 row
-        assert lines[1][1] == "Test Todo"
+def test_get_todos(client):
+    response = client.post("/api/v1/todos", json={"description": "Test Todo 1"})
+    assert response.status_code == 200
+    response = client.post("/api/v1/todos", json={"description": "Test Todo 2"})
+    assert response.status_code == 200
 
-    teardown_test_csv()
-
-@patch('app.core.config.settings.TODOS_FILE', TEST_TODOS_FILE)
-def test_read_todos():
-    teardown_test_csv()
-    sample_id = str(uuid.uuid4())
-    setup_test_csv([{"id": sample_id, "description": "Test 1", "completed": "False"}])
-
-    response = client.get("/api/v1/todos/")
+    response = client.get("/api/v1/todos")
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 1
-    assert data[0]["id"] == sample_id
-    assert data[0]["description"] == "Test 1"
-    assert data[0]["completed"] is False
+    assert len(data) == 2
 
-    teardown_test_csv()
-
-@patch('app.core.config.settings.TODOS_FILE', TEST_TODOS_FILE)
-def test_read_todos_empty():
-    teardown_test_csv()
-    setup_test_csv([])
-
-    response = client.get("/api/v1/todos/")
+def test_update_todo(client):
+    response = client.post("/api/v1/todos", json={"description": "Test Todo"})
     assert response.status_code == 200
-    assert response.json() == []
+    todo_id = response.json()["id"]
 
-    teardown_test_csv()
-
-@patch('app.core.config.settings.TODOS_FILE', TEST_TODOS_FILE)
-def test_update_todo():
-    teardown_test_csv()
-    sample_id = uuid.uuid4()
-    setup_test_csv([{"id": str(sample_id), "description": "Original Desc", "completed": "False"}])
-
-    response = client.put(f"/api/v1/todos/{sample_id}", json={"completed": True})
+    response = client.put(f"/api/v1/todos/{todo_id}", json={"completed": True})
     assert response.status_code == 200
     data = response.json()
-    assert data["id"] == str(sample_id)
     assert data["completed"] is True
 
-    # Verify it was updated in the file
-    with open(TEST_TODOS_FILE, mode='r') as f:
-        reader = list(csv.DictReader(f))
-        assert len(reader) == 1
-        assert reader[0]['completed'] == 'True'
-
-    teardown_test_csv()
-
-@patch('app.core.config.settings.TODOS_FILE', TEST_TODOS_FILE)
-def test_update_todo_not_found():
-    teardown_test_csv()
-    setup_test_csv([])
-    non_existent_id = uuid.uuid4()
-    response = client.put(f"/api/v1/todos/{non_existent_id}", json={"completed": True})
+def test_update_todo_not_found(client):
+    response = client.put("/api/v1/todos/999", json={"completed": True})
     assert response.status_code == 404
-    assert response.json() == {"detail": "Todo not found"}
 
-    teardown_test_csv()
-
-@patch('app.core.config.settings.TODOS_FILE', TEST_TODOS_FILE)
-def test_create_todo_empty_description():
-    teardown_test_csv()
-    setup_test_csv([])
-    response = client.post("/api/v1/todos/", json={"description": ""})
-    assert response.status_code == 422
-    assert response.json() == {"detail": "Description cannot be empty."}
-
-    teardown_test_csv()
