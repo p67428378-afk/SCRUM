@@ -11,8 +11,11 @@ class TodoCreate(TodoBase):
 class TodoUpdate(BaseModel):
     completed: bool
 
-class Todo(TodoBase):
-    id: str
+class TodoInDB(TodoBase):
+    id: uuid.UUID
 
     class Config:
         orm_mode = True
+
+class Todo(TodoInDB):
+    pass

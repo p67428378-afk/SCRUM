@@ -3,5 +3,4 @@ httpx
 pydantic
 pydantic-settings
 python-multipart
-sqlalchemy
 uvicorn
