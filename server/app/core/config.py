@@ -1,9 +1,6 @@
+from pydantic_settings import BaseSettings
 
-import os
-
-class Settings:
-    PROJECT_NAME: str = "Todo App"
+class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
-    SQLALCHEMY_DATABASE_URI: str = os.getenv("DATABASE_URL", "sqlite:///./test.db")
 
 settings = Settings()

@@ -1,6 +1,5 @@
-
 from fastapi import APIRouter
-from server.app.api.v1.endpoints import todos
+from app.api.v1.endpoints import todos
 
 api_router = APIRouter()
 api_router.include_router(todos.router, prefix="/todos", tags=["todos"])

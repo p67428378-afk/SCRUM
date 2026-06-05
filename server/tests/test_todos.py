@@ -1,85 +1,45 @@
-
-import pytest
+import csv
+import os
+import uuid
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from server.app.main import app
-from server.app.models.todo import Base, SessionLocal
-from server.app.api.v1.endpoints.todos import get_db
+from app.main import app
 
-# Create a new database for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+client = TestClient(app)
 
-# Override the get_db dependency to use the testing database
-def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
+DATA_FILE = "server/app/data/todos.csv"
 
-app.dependency_overrides[get_db] = override_get_db
+TEST_UUID_1 = str(uuid.uuid4())
+TEST_UUID_2 = str(uuid.uuid4())
 
-@pytest.fixture(scope="session")
-def db_engine():
-    Base.metadata.create_all(bind=engine)
-    yield engine
-    Base.metadata.drop_all(bind=engine)
+def setup_module(module):
+    # Create a dummy csv file for testing
+    with open(DATA_FILE, mode='w', newline='') as csvfile:
+        fieldnames = ['id', 'description', 'completed']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow({'id': TEST_UUID_1, 'description': 'Test Todo 1', 'completed': False})
+        writer.writerow({'id': TEST_UUID_2, 'description': 'Test Todo 2', 'completed': True})
 
-@pytest.fixture(scope="function")
-def db_session(db_engine):
-    connection = db_engine.connect()
-    # begin a non-ORM transaction
-    trans = connection.begin()
+def teardown_module(module):
+    # Remove the dummy csv file
+    os.remove(DATA_FILE)
 
-    # bind an individual Session to the connection
-    db = SessionLocal(bind=connection)
-
-    yield db
-
-    db.close()
-    trans.rollback()
-    connection.close()
-
-@pytest.fixture(scope="function")
-def client(db_session):
-    def override_get_db():
-        yield db_session
-
-    app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app)
-
-def test_create_todo(client):
-    response = client.post("/api/v1/todos", json={"description": "Test Todo"})
+def test_read_todos():
+    response = client.get("/api/v1/todos/")
     assert response.status_code == 200
-    data = response.json()
-    assert data["description"] == "Test Todo"
-    assert data["completed"] is False
+    assert len(response.json()) == 2
 
-def test_get_todos(client):
-    response = client.post("/api/v1/todos", json={"description": "Test Todo 1"})
+def test_create_todo():
+    response = client.post("/api/v1/todos/", json={"description": "New Todo"})
     assert response.status_code == 200
-    response = client.post("/api/v1/todos", json={"description": "Test Todo 2"})
-    assert response.status_code == 200
+    assert response.json()["description"] == "New Todo"
+    assert response.json()["completed"] == False
 
-    response = client.get("/api/v1/todos")
+def test_update_todo():
+    response = client.put(f"/api/v1/todos/{TEST_UUID_1}", json={"completed": True})
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 2
+    assert response.json()["completed"] == True
 
-def test_update_todo(client):
-    response = client.post("/api/v1/todos", json={"description": "Test Todo"})
-    assert response.status_code == 200
-    todo_id = response.json()["id"]
-
-    response = client.put(f"/api/v1/todos/{todo_id}", json={"completed": True})
-    assert response.status_code == 200
-    data = response.json()
-    assert data["completed"] is True
-
-def test_update_todo_not_found(client):
-    response = client.put("/api/v1/todos/999", json={"completed": True})
+def test_update_todo_not_found():
+    response = client.put(f"/api/v1/todos/{uuid.uuid4()}", json={"completed": True})
     assert response.status_code == 404
-
