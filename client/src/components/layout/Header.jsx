@@ -5,12 +5,12 @@ export default function Header({ searchQuery, onSearchChange }) {
     <header className="hidden md:flex bg-slate-800 text-slate-200 fixed top-0 right-0 h-[64px] left-[280px] border-b border-slate-700 justify-between items-center px-lg z-20 shadow-none">
       <div className="flex items-center gap-md flex-1">
         <div className="relative w-64">
-          <span className="material-symbols-outlined absolute left-sm top-1/2 transform -translate-y-1/2 text-slate-400">search</span>
+          <span className="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">search</span>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-xl pr-md py-[6px] focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-200 text-sm placeholder-slate-500 transition-colors"
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-[6px] focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-200 text-sm placeholder-slate-500 transition-colors"
             placeholder="Search KYC..."
           />
         </div>
