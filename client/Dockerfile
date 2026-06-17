@@ -8,6 +8,11 @@ RUN npm ci
 
 # Copy source and build
 COPY client/ ./
+
+# Accept backend URL at build time so Vite bakes it into the JS bundle.
+# Passed as --build-arg VITE_API_BASE_URL=<backend-cloud-run-url> by the pipeline.
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
 # ── Production stage ─────────────────────────────────────────────────────────
