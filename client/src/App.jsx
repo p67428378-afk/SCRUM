@@ -31,6 +31,19 @@ function LoginPage() {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      await authService.login("test@example.com", "testpassword");
+      window.location.href = "/";
+    } catch {
+      setError("Demo login failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-surface-container rounded-2xl border border-outline-variant p-8 space-y-6 shadow-xl">
@@ -38,7 +51,7 @@ function LoginPage() {
           <div className="w-12 h-12 bg-primary-container rounded-xl flex items-center justify-center text-on-primary-container mx-auto">
             <span
               className="material-symbols-outlined"
-              style={{ fontVariationSettings: "'FILL' 1" }}
+              style={{ fontVariationSettings: '"FILL" 1' }}
             >
               mountain_flag
             </span>
@@ -90,6 +103,26 @@ function LoginPage() {
             className="w-full py-3 bg-primary text-on-primary hover:brightness-110 font-bold rounded-xl transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
           >
             {loading ? "Signing in..." : "Sign In"}
+          </button>
+
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-outline-variant"></div>
+            <span className="flex-shrink mx-4 text-on-surface-variant text-xs uppercase font-bold tracking-wider">
+              Or
+            </span>
+            <div className="flex-grow border-t border-outline-variant"></div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={loading}
+            className="w-full py-3 bg-secondary-container text-on-secondary-container hover:brightness-110 font-bold rounded-xl transition-all shadow-lg shadow-secondary/20 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              account_circle
+            </span>
+            Demo Login
           </button>
         </form>
       </div>
