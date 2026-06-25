@@ -1,27 +1,14 @@
 import uuid
-from datetime import datetime, timezone
-from sqlalchemy import Column, String, Integer, Numeric, ForeignKey, DateTime, Text
+from datetime import datetime
+from sqlalchemy import Column, String, Integer, Numeric, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import TypeDecorator
-import json
-
 from server.database import Base
 
 
-class JSONEncodedDict(TypeDecorator):
-    """Represents an immutable structure as a json-encoded string."""
-
-    impl = Text
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            return json.dumps(value)
-        return "[]"
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            return json.loads(value)
-        return []
+# Helper to support JSON/JSONB across SQLite and PostgreSQL
+def get_json_type():
+    # We can use JSON which works on both SQLite and PostgreSQL
+    return JSON
 
 
 class SKU(Base):
@@ -38,14 +25,9 @@ class SKU(Base):
     product_name = Column(String(255), nullable=False)
     category = Column(String(100), nullable=False)
     brand_type = Column(String(50), nullable=False)
-    created_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
-    )
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
-        DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-        nullable=False,
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
 
     performance = relationship(
@@ -69,14 +51,9 @@ class SKUPerformance(Base):
     profit_margin = Column(Numeric(5, 2), default=0.00, nullable=False)
     in_stock_rate = Column(Numeric(5, 2), default=0.00, nullable=False)
     status = Column(String(50), nullable=False)
-    created_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
-    )
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
-        DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-        nullable=False,
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
 
     sku = relationship("SKU", back_populates="performance")
@@ -93,12 +70,10 @@ class AssortmentReview(Base):
         nullable=False,
     )
     selected_scenario = Column(String(50), nullable=False)
-    sku_actions = Column(JSONEncodedDict, default=list, nullable=False)
-    guardrails = Column(JSONEncodedDict, default=list, nullable=False)
+    sku_actions = Column(get_json_type(), default=list, nullable=False)
+    guardrails = Column(get_json_type(), default=list, nullable=False)
     submitted_by = Column(String(100), default="system", nullable=False)
-    created_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
-    )
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     audit_logs = relationship(
         "AuditLog", back_populates="review", cascade="all, delete-orphan"
@@ -117,9 +92,7 @@ class AuditLog(Base):
     )
     review_id = Column(String(36), ForeignKey("assortment_review.id"), nullable=False)
     action = Column(String(100), nullable=False)
-    details = Column(JSONEncodedDict, default=dict, nullable=False)
-    created_at = Column(
-        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
-    )
+    details = Column(get_json_type(), default=dict, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     review = relationship("AssortmentReview", back_populates="audit_logs")

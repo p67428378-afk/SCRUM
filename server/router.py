@@ -1,86 +1,26 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
-from datetime import datetime, timezone
+from typing import List, Optional
+from datetime import datetime
 import uuid
 
 from server.database import get_db
 from server.schemas import (
-    KPIResponse,
-    SKUResponse,
-    ScenarioResponse,
-    ReviewRequest,
-    ReviewResponse,
+    KPISchema,
+    SKUSchema,
+    ScenarioSchema,
+    ReviewCreateSchema,
+    ReviewResponseSchema,
 )
-from server import crud
+from server.crud import get_kpis, get_skus, get_scenario, create_review
 
 router = APIRouter(prefix="/api/v1")
 
-SCENARIOS = {
-    "conservative": {
-        "scenario_name": "Conservative",
-        "projected_sales_impact": 1.2,
-        "projected_pb_pct": 22.9,
-        "sku_actions": [
-            {"sku_id": "SKU-1001", "action": "GROW"},
-            {"sku_id": "SKU-1002", "action": "REDUCE"},
-            {"sku_id": "SKU-1045", "action": "GROW"},
-            {"sku_id": "SKU-2099", "action": "MAINTAIN"},
-            {"sku_id": "SKU-1050", "action": "MAINTAIN"},
-            {"sku_id": "SKU-3122", "action": "MAINTAIN"},
-            {"sku_id": "SKU-1088", "action": "REDUCE"},
-        ],
-        "guardrails": [
-            {"name": "Private Brand % goal", "status": "MET"},
-            {"name": "Shelf Capacity limit", "status": "MET"},
-            {"name": "In-Stock Risk", "status": "MET"},
-        ],
-    },
-    "balanced": {
-        "scenario_name": "Balanced",
-        "projected_sales_impact": 3.5,
-        "projected_pb_pct": 24.5,
-        "sku_actions": [
-            {"sku_id": "SKU-1001", "action": "GROW"},
-            {"sku_id": "SKU-1002", "action": "REDUCE"},
-            {"sku_id": "SKU-1045", "action": "GROW"},
-            {"sku_id": "SKU-2099", "action": "MAINTAIN"},
-            {"sku_id": "SKU-1050", "action": "GROW"},
-            {"sku_id": "SKU-3122", "action": "SWAP"},
-            {"sku_id": "SKU-1088", "action": "REDUCE"},
-        ],
-        "guardrails": [
-            {"name": "Private Brand % goal", "status": "MET"},
-            {"name": "Shelf Capacity limit", "status": "MET"},
-            {"name": "In-Stock Risk", "status": "MET"},
-        ],
-    },
-    "aggressive": {
-        "scenario_name": "Aggressive",
-        "projected_sales_impact": 5.8,
-        "projected_pb_pct": 26.4,
-        "sku_actions": [
-            {"sku_id": "SKU-1001", "action": "GROW"},
-            {"sku_id": "SKU-1002", "action": "REDUCE"},
-            {"sku_id": "SKU-1045", "action": "GROW"},
-            {"sku_id": "SKU-2099", "action": "REDUCE"},
-            {"sku_id": "SKU-1050", "action": "GROW"},
-            {"sku_id": "SKU-3122", "action": "SWAP"},
-            {"sku_id": "SKU-1088", "action": "REDUCE"},
-        ],
-        "guardrails": [
-            {"name": "Private Brand % goal", "status": "MET"},
-            {"name": "Shelf Capacity limit", "status": "MET"},
-            {"name": "In-Stock Risk", "status": "MET"},
-        ],
-    },
-}
 
-
-@router.get("/kpis", response_model=KPIResponse)
+@router.get("/kpis", response_model=KPISchema)
 def read_kpis(db: Session = Depends(get_db)):
     try:
-        return crud.get_kpis(db)
+        return get_kpis(db)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -88,10 +28,15 @@ def read_kpis(db: Session = Depends(get_db)):
         )
 
 
-@router.get("/skus", response_model=List[SKUResponse])
-def read_skus(db: Session = Depends(get_db)):
+@router.get("/skus", response_model=List[SKUSchema])
+def read_skus(
+    search: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    sort_order: str = "asc",
+    db: Session = Depends(get_db),
+):
     try:
-        return crud.get_skus(db)
+        return get_skus(db, search=search, sort_by=sort_by, sort_order=sort_order)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -99,39 +44,47 @@ def read_skus(db: Session = Depends(get_db)):
         )
 
 
-@router.get("/scenarios/{scenario_name}", response_model=ScenarioResponse)
+@router.get("/scenarios/{scenario_name}", response_model=ScenarioSchema)
 def read_scenario(scenario_name: str):
-    key = scenario_name.lower()
-    if key not in SCENARIOS:
+    scenario = get_scenario(scenario_name)
+    if not scenario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Scenario name '{scenario_name}' is invalid or not found",
+            detail=f"Scenario '{scenario_name}' is invalid or not found",
         )
-    return SCENARIOS[key]
+    return scenario
 
 
-@router.post("/reviews", response_model=ReviewResponse)
-def submit_review(review_req: ReviewRequest, db: Session = Depends(get_db)):
+@router.post("/reviews", response_model=ReviewResponseSchema)
+def submit_review(review_in: ReviewCreateSchema, db: Session = Depends(get_db)):
     try:
         # Validate scenario name
-        if review_req.selected_scenario.lower() not in SCENARIOS:
+        scenario_data = get_scenario(review_in.selected_scenario)
+        if not scenario_data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid scenario: {review_req.selected_scenario}",
+                detail=f"Invalid scenario name: {review_in.selected_scenario}",
             )
 
+        # Convert Pydantic models to dicts for storage
+        sku_actions_dict = [action.dict() for action in review_in.sku_actions]
+
         # Create review and audit log
-        crud.create_review(db, review_req)
+        review, audit = create_review(
+            db=db,
+            selected_scenario=review_in.selected_scenario,
+            sku_actions=sku_actions_dict,
+        )
 
         # Generate transaction ID
-        txn_id = f"TX-{uuid.uuid4().hex[:9].upper()}"
+        transaction_id = f"TX-{uuid.uuid4().hex[:9].upper()}"
 
-        return ReviewResponse(
-            message=f"Assortment for Small Town Value Cluster submitted based on {review_req.selected_scenario} scenario with {len(review_req.sku_actions)} SKU changes.",
-            status="SUCCESS",
-            submitted_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-            transaction_id=txn_id,
-        )
+        return {
+            "message": f"Assortment for Small Town Value Cluster submitted based on {review_in.selected_scenario} scenario with {len(review_in.sku_actions)} SKU changes.",
+            "status": "SUCCESS",
+            "submitted_at": datetime.utcnow().isoformat() + "Z",
+            "transaction_id": transaction_id,
+        }
     except HTTPException as he:
         raise he
     except Exception as e:
