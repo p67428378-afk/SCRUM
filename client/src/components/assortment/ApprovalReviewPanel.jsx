@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function ApprovalReviewPanel({
   scenario,
@@ -110,3 +111,23 @@ export default function ApprovalReviewPanel({
     </div>
   );
 }
+
+ApprovalReviewPanel.propTypes = {
+  scenario: PropTypes.shape({
+    scenario_name: PropTypes.string,
+    sku_actions: PropTypes.arrayOf(
+      PropTypes.shape({
+        sku_id: PropTypes.string,
+        action: PropTypes.string,
+      }),
+    ),
+    guardrails: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string,
+        status: PropTypes.string,
+      }),
+    ),
+  }),
+  onSubmit: PropTypes.func.isRequired,
+  isSubmitting: PropTypes.bool.isRequired,
+};

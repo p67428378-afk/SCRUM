@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function SuccessBanner({ message, transactionId, onClose }) {
   if (!message) return null;
@@ -34,3 +35,9 @@ export default function SuccessBanner({ message, transactionId, onClose }) {
     </div>
   );
 }
+
+SuccessBanner.propTypes = {
+  message: PropTypes.string,
+  transactionId: PropTypes.string,
+  onClose: PropTypes.func.isRequired,
+};

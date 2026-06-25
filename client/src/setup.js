@@ -6,3 +6,8 @@ global.ResizeObserver = class {
   unobserve() {}
   disconnect() {}
 };
+
+// Mock window.scrollTo which is not implemented in jsdom
+if (typeof window !== "undefined") {
+  window.scrollTo = () => {};
+}

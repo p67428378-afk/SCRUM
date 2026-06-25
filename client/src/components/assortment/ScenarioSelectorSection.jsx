@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function ScenarioSelectorSection({
   selectedScenario,
@@ -33,7 +34,7 @@ export default function ScenarioSelectorSection({
         </span>
         Scenario Selector
       </h3>
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
         {scenarios.map((scenario) => {
           const isActive = selectedScenario?.toLowerCase() === scenario.id;
           return (
@@ -55,13 +56,17 @@ export default function ScenarioSelectorSection({
               ) : (
                 <div className="w-5 h-5 rounded-full border-2 border-surface-variant mt-0.5 flex-shrink-0"></div>
               )}
-              <div className="flex-1 relative z-10">
-                <h4 className="font-semibold text-body-md text-on-surface">
+              <div className="flex-1 relative z-10 min-w-0">
+                <h4 className="font-semibold text-body-md text-on-surface truncate">
                   {scenario.name}
                 </h4>
-                <div className="flex justify-between text-body-sm text-secondary mt-1 gap-1">
-                  <span>Proj Sales: {scenario.salesImpact}</span>
-                  <span>PB Impact: {scenario.pbImpact}</span>
+                <div className="flex flex-col xl:flex-row xl:justify-between text-body-sm text-secondary mt-1 gap-x-2 gap-y-0.5">
+                  <span className="whitespace-nowrap">
+                    Proj Sales: {scenario.salesImpact}
+                  </span>
+                  <span className="whitespace-nowrap">
+                    PB Impact: {scenario.pbImpact}
+                  </span>
                 </div>
               </div>
               {isActive && (
@@ -74,3 +79,8 @@ export default function ScenarioSelectorSection({
     </div>
   );
 }
+
+ScenarioSelectorSection.propTypes = {
+  selectedScenario: PropTypes.string.isRequired,
+  onSelectScenario: PropTypes.func.isRequired,
+};

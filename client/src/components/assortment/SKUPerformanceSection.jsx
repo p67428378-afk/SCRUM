@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import PropTypes from "prop-types";
 
 export default function SKUPerformanceSection({ skus }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -240,3 +241,16 @@ export default function SKUPerformanceSection({ skus }) {
     </div>
   );
 }
+
+SKUPerformanceSection.propTypes = {
+  skus: PropTypes.arrayOf(
+    PropTypes.shape({
+      sku_id: PropTypes.string.isRequired,
+      product_name: PropTypes.string.isRequired,
+      sales_ytd: PropTypes.number,
+      units_sold: PropTypes.number,
+      profit_margin: PropTypes.number,
+      status: PropTypes.string,
+    }),
+  ).isRequired,
+};

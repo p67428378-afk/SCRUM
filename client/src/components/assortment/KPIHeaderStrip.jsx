@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 export default function KPIHeaderStrip({ kpis }) {
   const salesPerLinearFt =
@@ -109,3 +110,12 @@ export default function KPIHeaderStrip({ kpis }) {
     </div>
   );
 }
+
+KPIHeaderStrip.propTypes = {
+  kpis: PropTypes.shape({
+    sales_per_linear_ft: PropTypes.number,
+    private_brand_pct: PropTypes.number,
+    in_stock_rate: PropTypes.number,
+    shelf_capacity: PropTypes.number,
+  }),
+};
