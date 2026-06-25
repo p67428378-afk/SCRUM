@@ -34,17 +34,17 @@ export default function ScenarioSelectorSection({
         </span>
         Scenario Selector
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
+      <div className="flex flex-col gap-3">
         {scenarios.map((scenario) => {
           const isActive = selectedScenario?.toLowerCase() === scenario.id;
           return (
             <div
               key={scenario.id}
               onClick={() => onSelectScenario(scenario.id)}
-              className={`border rounded-lg p-3 cursor-pointer transition-all flex items-start gap-3 relative overflow-hidden ${
+              className={`rounded-lg p-3 cursor-pointer transition-all flex items-start gap-3 relative overflow-hidden ${
                 isActive
                   ? "border-2 border-primary-container bg-primary-container/5 shadow-sm"
-                  : "border-surface-variant hover:bg-surface-bright"
+                  : "border border-surface-variant hover:bg-surface-bright"
               }`}
             >
               {isActive ? (
@@ -57,16 +57,18 @@ export default function ScenarioSelectorSection({
                 <div className="w-5 h-5 rounded-full border-2 border-surface-variant mt-0.5 flex-shrink-0"></div>
               )}
               <div className="flex-1 relative z-10 min-w-0">
-                <h4 className="font-semibold text-body-md text-on-surface truncate">
+                <h4 className="font-semibold text-body-md text-on-surface">
                   {scenario.name}
                 </h4>
-                <div className="flex flex-col xl:flex-row xl:justify-between text-body-sm text-secondary mt-1 gap-x-2 gap-y-0.5">
-                  <span className="whitespace-nowrap">
-                    Proj Sales: {scenario.salesImpact}
-                  </span>
-                  <span className="whitespace-nowrap">
-                    PB Impact: {scenario.pbImpact}
-                  </span>
+                <div
+                  className={`flex justify-between text-body-sm mt-1 gap-2 flex-wrap ${
+                    isActive
+                      ? "text-on-surface-variant font-medium"
+                      : "text-secondary"
+                  }`}
+                >
+                  <span>Proj Sales: {scenario.salesImpact}</span>
+                  <span>PB Impact: {scenario.pbImpact}</span>
                 </div>
               </div>
               {isActive && (
