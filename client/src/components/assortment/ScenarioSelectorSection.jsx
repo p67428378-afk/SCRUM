@@ -33,7 +33,7 @@ export default function ScenarioSelectorSection({
         </span>
         Scenario Selector
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="flex flex-col gap-3">
         {scenarios.map((scenario) => {
           const isActive = selectedScenario?.toLowerCase() === scenario.id;
           return (
@@ -59,7 +59,7 @@ export default function ScenarioSelectorSection({
                 <h4 className="font-semibold text-body-md text-on-surface">
                   {scenario.name}
                 </h4>
-                <div className="flex flex-col sm:flex-row sm:justify-between text-body-sm text-secondary mt-1 gap-1">
+                <div className="flex justify-between text-body-sm text-secondary mt-1 gap-1">
                   <span>Proj Sales: {scenario.salesImpact}</span>
                   <span>PB Impact: {scenario.pbImpact}</span>
                 </div>
