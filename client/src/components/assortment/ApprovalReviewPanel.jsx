@@ -22,7 +22,7 @@ export default function ApprovalReviewPanel({
 
       <div className="mb-md">
         <h3 className="font-label-md text-on-surface-variant mb-2 uppercase tracking-wider text-xs font-semibold">
-          Proposed Actions ({name?.toUpperCase()})
+          Proposed Actions{name ? ` (${name.toUpperCase()})` : ""}
         </h3>
         <ul className="space-y-2">
           <li className="flex items-center justify-between text-body-sm">
