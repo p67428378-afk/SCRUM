@@ -26,14 +26,16 @@ export default function ApprovalReviewPanel({
 
   const { scenario_name, sku_actions, guardrails } = scenarioDetails;
 
-  const hasAdd = sku_actions?.add && sku_actions.add.length > 0;
-  const hasRemove = sku_actions?.remove && sku_actions.remove.length > 0;
-  const hasSwap = sku_actions?.swap && sku_actions.swap.length > 0;
+  const hasAdd = Array.isArray(sku_actions?.add) && sku_actions.add.length > 0;
+  const hasRemove =
+    Array.isArray(sku_actions?.remove) && sku_actions.remove.length > 0;
+  const hasSwap =
+    Array.isArray(sku_actions?.swap) && sku_actions.swap.length > 0;
 
   return (
     <div className="bg-[#1E293B] border border-[#475569] rounded-xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex-1 flex flex-col">
       <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface mb-4 border-b border-[#334155] pb-2">
-        Approval Review — {scenario_name} Scenario
+        Approval Review — {scenario_name || "N/A"} Scenario
       </h3>
       <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2">
         <div>
@@ -49,7 +51,10 @@ export default function ApprovalReviewPanel({
                 <span>
                   <strong>Add:</strong>{" "}
                   {sku_actions.add
-                    .map((item) => `${item.sku} (${item.product_name})`)
+                    .map(
+                      (item) =>
+                        `${item?.sku || "N/A"} (${item?.product_name || "N/A"})`,
+                    )
                     .join(", ")}
                 </span>
               </li>
@@ -70,7 +75,10 @@ export default function ApprovalReviewPanel({
                 <span>
                   <strong>Remove:</strong>{" "}
                   {sku_actions.remove
-                    .map((item) => `${item.sku} (${item.product_name})`)
+                    .map(
+                      (item) =>
+                        `${item?.sku || "N/A"} (${item?.product_name || "N/A"})`,
+                    )
                     .join(", ")}
                 </span>
               </li>
@@ -93,7 +101,7 @@ export default function ApprovalReviewPanel({
                   {sku_actions.swap
                     .map(
                       (item) =>
-                        `${item.remove_sku} (${item.remove_name}) for ${item.add_sku} (${item.add_name})`,
+                        `${item?.remove_sku || "N/A"} (${item?.remove_name || "N/A"}) for ${item?.add_sku || "N/A"} (${item?.add_name || "N/A"})`,
                     )
                     .join(", ")}
                 </span>

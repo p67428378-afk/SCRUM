@@ -81,18 +81,18 @@ export default function DashboardPage() {
       setError(null);
 
       // Map the scenario details to the expected API payload format
-      const addSkus = (scenarioDetails.sku_actions?.add || []).map(
-        (item) => item.sku,
-      );
-      const removeSkus = (scenarioDetails.sku_actions?.remove || []).map(
-        (item) => item.sku,
-      );
-      const swapSkus = (scenarioDetails.sku_actions?.swap || []).map(
-        (item) => ({
+      const addSkus = (scenarioDetails.sku_actions?.add || [])
+        .filter((item) => item && item.sku)
+        .map((item) => item.sku);
+      const removeSkus = (scenarioDetails.sku_actions?.remove || [])
+        .filter((item) => item && item.sku)
+        .map((item) => item.sku);
+      const swapSkus = (scenarioDetails.sku_actions?.swap || [])
+        .filter((item) => item && item.add_sku && item.remove_sku)
+        .map((item) => ({
           add_sku: item.add_sku,
           remove_sku: item.remove_sku,
-        }),
-      );
+        }));
 
       const decisionPayload = {
         projected_sales_impact: scenarioDetails.projected_sales_impact,

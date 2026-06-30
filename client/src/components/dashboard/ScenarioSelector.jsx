@@ -30,6 +30,7 @@ export default function ScenarioSelector({
       <div className="flex flex-col gap-3">
         {scenarios.map((sc) => {
           const isSelected =
+            selectedScenario &&
             selectedScenario.toLowerCase() === sc.id.toLowerCase();
           return (
             <div

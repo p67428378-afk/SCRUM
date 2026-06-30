@@ -1,14 +1,27 @@
 import React from "react";
 
 export default function KpiHeaderStrip({ kpis, loading }) {
-  const sales = kpis ? `$${kpis.sales_per_linear_ft.toFixed(2)}` : "$45.50";
-  const pb = kpis ? `${kpis.private_brand_percentage.toFixed(1)}%` : "22.5%";
-  const inStock = kpis ? `${kpis.in_stock_rate.toFixed(1)}%` : "96.0%";
-  const capacity = kpis ? `${kpis.shelf_capacity_used.toFixed(1)}%` : "88.0%";
+  const sales =
+    kpis && typeof kpis.sales_per_linear_ft === "number"
+      ? `$${kpis.sales_per_linear_ft.toFixed(2)}`
+      : "$45.50";
+  const pb =
+    kpis && typeof kpis.private_brand_percentage === "number"
+      ? `${kpis.private_brand_percentage.toFixed(1)}%`
+      : "22.5%";
+  const inStock =
+    kpis && typeof kpis.in_stock_rate === "number"
+      ? `${kpis.in_stock_rate.toFixed(1)}%`
+      : "96.0%";
+  const capacity =
+    kpis && typeof kpis.shelf_capacity_used === "number"
+      ? `${kpis.shelf_capacity_used.toFixed(1)}%`
+      : "88.0%";
 
-  const totalSkus = kpis
-    ? Math.round((kpis.shelf_capacity_used / 100) * 500)
-    : 440;
+  const totalSkus =
+    kpis && typeof kpis.shelf_capacity_used === "number"
+      ? Math.round((kpis.shelf_capacity_used / 100) * 500)
+      : 440;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter mb-stack-lg">

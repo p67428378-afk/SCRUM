@@ -113,7 +113,7 @@ export default function SkuPerformanceTable({
                   Loading SKU performance data...
                 </td>
               </tr>
-            ) : skus.length === 0 ? (
+            ) : !Array.isArray(skus) || skus.length === 0 ? (
               <tr>
                 <td
                   colSpan="6"
@@ -125,33 +125,40 @@ export default function SkuPerformanceTable({
             ) : (
               skus.map((sku, idx) => (
                 <tr
-                  key={sku.sku}
+                  key={sku?.sku || idx}
                   className={`border-b border-[#334155] hover:bg-[#283044]/50 transition-colors ${
                     idx % 2 === 1 ? "bg-[#162033]" : ""
                   }`}
                 >
                   <td className="p-3 text-on-surface-variant font-data-label">
-                    {sku.sku}
+                    {sku?.sku || "N/A"}
                   </td>
-                  <td className="p-3 text-on-surface">{sku.product_name}</td>
-                  <td className="p-3 text-on-surface font-data-label text-right">
-                    $
-                    {sku.sales_revenue.toLocaleString(undefined, {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}
+                  <td className="p-3 text-on-surface">
+                    {sku?.product_name || "N/A"}
                   </td>
                   <td className="p-3 text-on-surface font-data-label text-right">
-                    {sku.units_sold.toLocaleString()}
+                    {typeof sku?.sales_revenue === "number"
+                      ? `$${sku.sales_revenue.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })}`
+                      : "N/A"}
                   </td>
                   <td className="p-3 text-on-surface font-data-label text-right">
-                    {sku.profit_margin.toFixed(1)}%
+                    {typeof sku?.units_sold === "number"
+                      ? sku.units_sold.toLocaleString()
+                      : "N/A"}
+                  </td>
+                  <td className="p-3 text-on-surface font-data-label text-right">
+                    {typeof sku?.profit_margin === "number"
+                      ? `${sku.profit_margin.toFixed(1)}%`
+                      : "N/A"}
                   </td>
                   <td className="p-3 text-center">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${getRecBadgeClass(sku.recommendation_status)}`}
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${getRecBadgeClass(sku?.recommendation_status)}`}
                     >
-                      {sku.recommendation_status}
+                      {sku?.recommendation_status || "N/A"}
                     </span>
                   </td>
                 </tr>
