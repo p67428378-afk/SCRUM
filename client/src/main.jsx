@@ -1,0 +1,49 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
+import DashboardPage from "./pages/DashboardPage";
+import "./index.css";
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Uncaught error in ErrorBoundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          style={{
+            padding: "2rem",
+            color: "#ffb4ab",
+            backgroundColor: "#0b1326",
+            minHeight: "100vh",
+          }}
+        >
+          <h2>Something went wrong. Check console.</h2>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <DashboardPage />
+      </ErrorBoundary>
+    </React.StrictMode>,
+  );
+}
