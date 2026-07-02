@@ -28,13 +28,11 @@ export default function ApprovalReviewPanel({
 
   if (!scenarioData) return null;
 
-  const {
-    scenario_name,
-    projected_sales_lift = 3.2,
-    projected_private_brand_pct = 28.1,
-    guardrails,
-    sku_actions,
-  } = scenarioData;
+  const { scenario_name, guardrails, sku_actions } = scenarioData;
+
+  const projected_sales_lift = scenarioData.projected_sales_lift ?? 3.2;
+  const projected_private_brand_pct =
+    scenarioData.projected_private_brand_pct ?? 28.1;
 
   const isPbValid = guardrails?.private_brand_valid ?? true;
   const isCapacityValid = guardrails?.shelf_capacity_valid ?? true;
