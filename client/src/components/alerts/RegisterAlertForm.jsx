@@ -33,7 +33,7 @@ export default function RegisterAlertForm({ onSubmit, loading }) {
   };
 
   return (
-    <div className="bg-surface-container rounded-xl border border-outline-variant p-lg shadow-sm glow-hover transition-all duration-300 flex flex-col min-h-0 overflow-y-auto">
+    <div className="bg-surface-container rounded-xl border border-outline-variant p-lg shadow-sm glow-hover transition-all duration-300 flex flex-col">
       <div className="flex items-center justify-between mb-lg border-b border-outline-variant pb-md">
         <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-sm">
           <span className="material-symbols-outlined text-primary">

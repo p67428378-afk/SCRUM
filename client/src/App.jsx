@@ -4,6 +4,7 @@ import Header from "./components/layout/Header";
 import SpendAlertSetupPage from "./pages/SpendAlertSetupPage";
 import OTPVerificationModal from "./components/alerts/OTPVerificationModal";
 import SuccessConfirmationPage from "./pages/SuccessConfirmationPage";
+import ActiveAlertsList from "./components/alerts/ActiveAlertsList";
 import { registerAlert, verifyOtp, getActiveAlerts } from "./services/api";
 
 export default function App() {
@@ -117,7 +118,7 @@ export default function App() {
           )}
 
           {step === "otp" && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg min-h-0 overflow-y-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-lg">
               <div className="lg:col-span-7">
                 <div className="bg-surface-container rounded-xl border border-outline-variant p-lg shadow-sm text-center py-12">
                   <span className="material-symbols-outlined text-primary text-5xl animate-pulse mb-4">
