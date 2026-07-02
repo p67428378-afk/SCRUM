@@ -109,12 +109,12 @@ export default function ScenarioSelector({
                 <div className="flex justify-between text-xs items-center">
                   <span className="text-gray-500 font-medium">Guardrails</span>
                   <span
-                    className={`inline-flex items-center gap-1 font-bold ${scenario.guardrailsValid ? "text-green-600" : "text-amber-600"}`}
+                    className={`inline-flex items-center gap-1.5 font-bold flex-nowrap whitespace-nowrap ${scenario.guardrailsValid ? "text-green-600" : "text-amber-600"}`}
                   >
                     {scenario.guardrailsValid ? (
-                      <CheckCircle2 size={12} />
+                      <CheckCircle2 size={12} className="flex-shrink-0" />
                     ) : (
-                      <AlertTriangle size={12} />
+                      <AlertTriangle size={12} className="flex-shrink-0" />
                     )}
                     <span>{scenario.guardrails}</span>
                   </span>
