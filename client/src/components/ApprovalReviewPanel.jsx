@@ -30,8 +30,8 @@ export default function ApprovalReviewPanel({
 
   const {
     scenario_name,
-    projected_sales_lift,
-    projected_private_brand_pct,
+    projected_sales_lift = 3.2,
+    projected_private_brand_pct = 28.1,
     guardrails,
     sku_actions,
   } = scenarioData;
