@@ -56,7 +56,7 @@ export default function ApprovalReviewPanel({
         {/* Impact Summary */}
         <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1 whitespace-nowrap">
               Projected Sales Lift
             </span>
             <span className="text-xl font-extrabold text-green-600">
@@ -64,7 +64,7 @@ export default function ApprovalReviewPanel({
             </span>
           </div>
           <div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1 whitespace-nowrap">
               Projected Private Brand %
             </span>
             <span className="text-xl font-extrabold text-gray-900">
