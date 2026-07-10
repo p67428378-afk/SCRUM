@@ -25,7 +25,9 @@ class AssortmentSubmission(Base):
     status = Column(String(50), nullable=False)
     summary = Column(Text, nullable=False)
     created_at = Column(
-        DateTime(timezone=True), default=datetime.datetime.utcnow, nullable=False
+        DateTime(timezone=True),
+        default=lambda: datetime.datetime.now(datetime.timezone.utc),
+        nullable=False,
     )
 
     actions = relationship(

@@ -126,10 +126,18 @@ def submit_assortment(payload: schemas.AssortmentCreate, db: Session = Depends(g
             raise HTTPException(
                 status_code=404, detail=f"Scenario '{payload.scenario_name}' not found"
             )
+
+        # Ensure timestamp is formatted cleanly as ISO 8601 UTC without double timezone suffix
+        timestamp_str = submission.created_at.isoformat()
+        if timestamp_str.endswith("+00:00"):
+            timestamp_str = timestamp_str[:-6] + "Z"
+        elif not timestamp_str.endswith("Z"):
+            timestamp_str += "Z"
+
         return {
             "status": submission.status,
             "summary": submission.summary,
-            "timestamp": submission.created_at.isoformat() + "Z",
+            "timestamp": timestamp_str,
             "transaction_id": submission.transaction_id,
         }
     except ValueError as e:
