@@ -197,7 +197,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* TopAppBar */}
-        <header class="bg-surface-container-lowest border-b border-surface-container-highest flex justify-between items-center w-full px-lg py-md h-16 sticky top-0 z-10 transition-all duration-200">
+        <header className="bg-surface-container-lowest border-b border-surface-container-highest flex justify-between items-center w-full px-lg py-md h-16 sticky top-0 z-10 transition-all duration-200">
           <div className="flex items-center gap-md">
             <button className="md:hidden text-on-surface-variant p-sm rounded hover:bg-surface-container-low transition-colors">
               <span className="material-symbols-outlined">menu</span>
