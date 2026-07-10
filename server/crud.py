@@ -169,7 +169,7 @@ def create_assortment_submission(db: Session, scenario_name: str):
         scenario_name=scenario_data["scenario_name"],
         status="APPROVED",
         summary=summary,
-        created_at=datetime.datetime.utcnow(),
+        created_at=datetime.datetime.now(datetime.UTC),
     )
     db.add(submission)
     db.commit()
@@ -201,6 +201,9 @@ def create_assortment_submission(db: Session, scenario_name: str):
         actions.append(action)
 
     db.commit()
+    db.refresh(
+        submission
+    )  # Ensure the actions relationship is fully loaded and synchronized
     return submission
 
 
