@@ -169,7 +169,7 @@ def create_assortment_submission(db: Session, scenario_name: str):
         scenario_name=scenario_data["scenario_name"],
         status="APPROVED",
         summary=summary,
-        created_at=datetime.datetime.now(datetime.UTC),
+        created_at=datetime.datetime.now(datetime.timezone.utc),
     )
     db.add(submission)
     db.commit()
