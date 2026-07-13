@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0b1326;
+  color: #dae2fd;
+}
+
+.card-surface {
+  background-color: #171f33;
+  border: 1px solid #3c4a42;
+}
+
+.btn-primary {
+  background: linear-gradient(to right, #ffb95f, #ee9800);
+  color: #060e20;
+}
+
+.badge-grow {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+.badge-maintain {
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+}
+.badge-swap {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+.badge-reduce {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
