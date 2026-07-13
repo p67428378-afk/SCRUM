@@ -28,15 +28,18 @@ export default function App() {
       try {
         const kpiRes = await getKPIs();
         setKpis(kpiRes);
-
-        const skuRes = await getSKUs(page, 5);
-        setSkus(skuRes.items);
-        setTotalSKUs(skuRes.total);
       } catch (err) {
-        console.error("Error fetching initial data:", err);
-        setError(
-          "Failed to load dashboard data. Please ensure the backend is running.",
-        );
+        console.error("Error fetching KPIs:", err);
+      }
+
+      try {
+        const skuRes = await getSKUs(page, 5);
+        if (skuRes) {
+          setSkus(skuRes.items || []);
+          setTotalSKUs(skuRes.total || 0);
+        }
+      } catch (err) {
+        console.error("Error fetching SKUs:", err);
       }
     };
     fetchInitialData();
@@ -82,7 +85,11 @@ export default function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-md">
           <KPICard
             title="Sales per Linear Ft"
-            value={kpis ? `$${kpis.sales_per_linear_ft.toFixed(2)}` : "$0.00"}
+            value={
+              kpis?.sales_per_linear_ft !== undefined
+                ? `$${kpis.sales_per_linear_ft.toFixed(2)}`
+                : "$0.00"
+            }
             subtext="+12.4% vs Last Year"
             icon="$"
             gradientClass="from-emerald-500/5 to-transparent"
@@ -90,7 +97,11 @@ export default function App() {
           />
           <KPICard
             title="Private Brand Share"
-            value={kpis ? `${kpis.private_brand_share.toFixed(1)}%` : "0.0%"}
+            value={
+              kpis?.private_brand_share !== undefined
+                ? `${kpis.private_brand_share.toFixed(1)}%`
+                : "0.0%"
+            }
             subtext="+3.1% vs Target (Goal: 30.0%)"
             icon="⊞"
             gradientClass="from-amber-500/5 to-transparent"
@@ -98,7 +109,11 @@ export default function App() {
           />
           <KPICard
             title="In-Stock Rate"
-            value={kpis ? `${kpis.in_stock_rate.toFixed(1)}%` : "0.0%"}
+            value={
+              kpis?.in_stock_rate !== undefined
+                ? `${kpis.in_stock_rate.toFixed(1)}%`
+                : "0.0%"
+            }
             subtext="On Target"
             icon="✓"
             gradientClass="from-emerald-500/5 to-transparent"
@@ -107,7 +122,9 @@ export default function App() {
           <KPICard
             title="Shelf Capacity Utilization"
             value={
-              kpis ? `${kpis.shelf_capacity_utilization.toFixed(1)}%` : "0.0%"
+              kpis?.shelf_capacity_utilization !== undefined
+                ? `${kpis.shelf_capacity_utilization.toFixed(1)}%`
+                : "0.0%"
             }
             subtext="Optimal (11.8% Buffer)"
             icon="▤"
