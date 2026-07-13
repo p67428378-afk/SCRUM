@@ -82,6 +82,8 @@ class ApprovalLog(Base):
     )
     transaction_id = Column(String(100), unique=True, nullable=False)
     scenario_name = Column(String(50), nullable=False)
-    submitted_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
+    submitted_at = Column(
+        TIMESTAMP, default=func.now(), server_default=func.now(), nullable=False
+    )
     user_name = Column(String(100), nullable=False)
     sku_action_summary = Column(JSON, nullable=False)
