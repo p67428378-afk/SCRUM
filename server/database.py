@@ -3,6 +3,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
+# Use a persistent SQLite file for local development and testing to avoid in-memory session loss
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
 
 # For SQLite, we need to allow multi-threaded access

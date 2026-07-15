@@ -1,27 +1,26 @@
-# SQLAlchemy Models
 import uuid
-from datetime import datetime
-from sqlalchemy import Column, String, Boolean, Numeric, DateTime, ForeignKey, JSON
+from sqlalchemy import Column, String, Boolean, DateTime, Numeric, ForeignKey, JSON
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from .database import Base
 
 
-# Helper to support UUIDs on both SQLite and PostgreSQL
-class GUID(String):
-    """Simulated UUID type for SQLite/Postgres compatibility."""
-
-    def __init__(self, length=36, *args, **kwargs):
-        super().__init__(length=length, *args, **kwargs)
-
-
+# Helper to generate UUID strings
 def generate_uuid():
     return str(uuid.uuid4())
+
+
+# Use JSON type that falls back to JSON for SQLite and JSONB for PostgreSQL
+JSON_TYPE = JSON().with_variant(JSONB, "postgresql")
 
 
 class Product(Base):
     __tablename__ = "products"
 
-    id = Column(GUID, primary_key=True, default=generate_uuid)
+    id = Column(
+        String(36), primary_key=True, default=generate_uuid, unique=True, nullable=False
+    )
     sku = Column(String(255), unique=True, nullable=False)
     name = Column(String(255), nullable=False)
     brand = Column(String(255), nullable=False)
@@ -32,18 +31,25 @@ class Product(Base):
     )
 
     performance = relationship(
-        "ProductPerformance", back_populates="product", uselist=False
+        "ProductPerformance",
+        back_populates="product",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
 
 class ProductPerformance(Base):
     __tablename__ = "product_performance"
 
-    id = Column(GUID, primary_key=True, default=generate_uuid)
-    product_id = Column(GUID, ForeignKey("products.id"), nullable=False)
+    id = Column(
+        String(36), primary_key=True, default=generate_uuid, unique=True, nullable=False
+    )
+    product_id = Column(
+        String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False
+    )
     sales = Column(Numeric, nullable=False)
     margin_pct = Column(Numeric, nullable=False)
-    status = Column(String(50), nullable=False)
+    status = Column(String(50), nullable=False)  # GROW, MAINTAIN, SWAP, REDUCE
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
@@ -55,19 +61,27 @@ class ProductPerformance(Base):
 class AssortmentScenario(Base):
     __tablename__ = "assortment_scenarios"
 
-    id = Column(GUID, primary_key=True, default=generate_uuid)
-    name = Column(String(255), unique=True, nullable=False)
+    id = Column(
+        String(36), primary_key=True, default=generate_uuid, unique=True, nullable=False
+    )
+    name = Column(
+        String(255), unique=True, nullable=False
+    )  # Conservative, Balanced, Aggressive
     projected_sales_growth = Column(Numeric, nullable=False)
     projected_private_brand_pct = Column(Numeric, nullable=False)
     projected_shelf_capacity_pct = Column(Numeric, nullable=False)
-    sku_actions = Column(JSON, nullable=False)
+    sku_actions = Column(
+        JSON_TYPE, nullable=False
+    )  # List of {sku: string, action: string}
 
 
 class AssortmentPlan(Base):
     __tablename__ = "assortment_plans"
 
-    id = Column(GUID, primary_key=True, default=generate_uuid)
+    id = Column(
+        String(36), primary_key=True, default=generate_uuid, unique=True, nullable=False
+    )
     user_id = Column(String(255), nullable=False)
     scenario_name = Column(String(255), nullable=False)
-    plan_details = Column(JSON, nullable=False)
+    plan_details = Column(JSON_TYPE, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

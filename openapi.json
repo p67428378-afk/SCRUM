@@ -8,15 +8,15 @@
   "paths": {
     "/api/v1/kpis": {
       "get": {
-        "summary": "Get Kpis",
-        "operationId": "get_kpis_api_v1_kpis_get",
+        "summary": "Read Kpis",
+        "operationId": "read_kpis_api_v1_kpis_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/KPIResponse"
+                  "$ref": "#/components/schemas/KPISummary"
                 }
               }
             }
@@ -26,8 +26,8 @@
     },
     "/api/v1/sku-performance": {
       "get": {
-        "summary": "Get Sku Performance",
-        "operationId": "get_sku_performance_api_v1_sku_performance_get",
+        "summary": "Read Sku Performance",
+        "operationId": "read_sku_performance_api_v1_sku_performance_get",
         "parameters": [
           {
             "name": "skip",
@@ -97,7 +97,6 @@
                   "type": "null"
                 }
               ],
-              "default": "asc",
               "title": "Sort Order"
             }
           }
@@ -128,8 +127,8 @@
     },
     "/api/v1/scenarios/{scenario_name}": {
       "get": {
-        "summary": "Get Scenario",
-        "operationId": "get_scenario_api_v1_scenarios__scenario_name__get",
+        "summary": "Read Scenario",
+        "operationId": "read_scenario_api_v1_scenarios__scenario_name__get",
         "parameters": [
           {
             "name": "scenario_name",
@@ -167,8 +166,8 @@
     },
     "/api/v1/assortment-plans": {
       "post": {
-        "summary": "Create Assortment Plan",
-        "operationId": "create_assortment_plan_api_v1_assortment_plans_post",
+        "summary": "Create Plan",
+        "operationId": "create_plan_api_v1_assortment_plans_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -180,7 +179,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -235,9 +234,10 @@
             "type": "string",
             "title": "Scenario Name"
           },
-          "status": {
-            "type": "string",
-            "title": "Status"
+          "plan_details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Plan Details"
           },
           "created_at": {
             "type": "string",
@@ -249,7 +249,7 @@
         "required": [
           "id",
           "scenario_name",
-          "status",
+          "plan_details",
           "created_at"
         ],
         "title": "AssortmentPlanResponse"
@@ -267,7 +267,7 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "KPIResponse": {
+      "KPISummary": {
         "properties": {
           "sales_per_linear_ft": {
             "type": "number",
@@ -293,25 +293,7 @@
           "in_stock_rate",
           "shelf_capacity"
         ],
-        "title": "KPIResponse"
-      },
-      "SKUActionItem": {
-        "properties": {
-          "sku": {
-            "type": "string",
-            "title": "Sku"
-          },
-          "action": {
-            "type": "string",
-            "title": "Action"
-          }
-        },
-        "type": "object",
-        "required": [
-          "sku",
-          "action"
-        ],
-        "title": "SKUActionItem"
+        "title": "KPISummary"
       },
       "SKUPerformanceItem": {
         "properties": {
@@ -412,7 +394,7 @@
           },
           "sku_actions": {
             "items": {
-              "$ref": "#/components/schemas/SKUActionItem"
+              "$ref": "#/components/schemas/ScenarioSKUAction"
             },
             "type": "array",
             "title": "Sku Actions"
@@ -427,6 +409,24 @@
           "sku_actions"
         ],
         "title": "ScenarioResponse"
+      },
+      "ScenarioSKUAction": {
+        "properties": {
+          "sku": {
+            "type": "string",
+            "title": "Sku"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku",
+          "action"
+        ],
+        "title": "ScenarioSKUAction"
       },
       "ValidationError": {
         "properties": {
