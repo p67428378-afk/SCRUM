@@ -94,4 +94,60 @@ export const userService = {
   },
 };
 
+export const restaurantService = {
+  getRestaurants: async (filters = {}) => {
+    const response = await api.get("/api/v1/restaurants", { params: filters });
+    return response.data;
+  },
+
+  getRestaurant: async (restaurantId) => {
+    const response = await api.get(`/api/v1/restaurants/${restaurantId}`);
+    return response.data;
+  },
+
+  createRestaurant: async (restaurantData) => {
+    const response = await api.post("/api/v1/restaurants", restaurantData);
+    return response.data;
+  },
+
+  getMenuItems: async (restaurantId) => {
+    const response = await api.get(
+      `/api/v1/restaurants/${restaurantId}/menu-items`,
+    );
+    return response.data;
+  },
+
+  createMenuItem: async (restaurantId, menuItemData) => {
+    const response = await api.post(
+      `/api/v1/restaurants/${restaurantId}/menu-items`,
+      menuItemData,
+    );
+    return response.data;
+  },
+};
+
+export const orderService = {
+  getOrders: async (filters = {}) => {
+    const response = await api.get("/api/v1/orders", { params: filters });
+    return response.data;
+  },
+
+  getOrder: async (orderId) => {
+    const response = await api.get(`/api/v1/orders/${orderId}`);
+    return response.data;
+  },
+
+  createOrder: async (orderData) => {
+    const response = await api.post("/api/v1/orders", orderData);
+    return response.data;
+  },
+
+  updateOrderStatus: async (orderId, status) => {
+    const response = await api.put(`/api/v1/orders/${orderId}/status`, {
+      status,
+    });
+    return response.data;
+  },
+};
+
 export default api;

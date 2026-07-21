@@ -5,6 +5,8 @@ import {
   BedDouble,
   CalendarDays,
   User,
+  Utensils,
+  Receipt,
 } from "lucide-react";
 
 export default function AppLayout({
@@ -18,6 +20,8 @@ export default function AppLayout({
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "rooms", label: "Rooms", icon: BedDouble },
     { id: "bookings", label: "Bookings", icon: CalendarDays },
+    { id: "restaurants", label: "Restaurants", icon: Utensils },
+    { id: "orders", label: "Orders", icon: Receipt },
   ];
 
   return (
@@ -87,14 +91,14 @@ export default function AppLayout({
         {/* Content Area */}
         <main className="flex-1 p-6 md:p-8 overflow-y-auto">
           {/* Mobile Navigation Bar */}
-          <div className="md:hidden flex space-x-2 mb-6 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+          <div className="md:hidden flex space-x-2 mb-6 bg-white p-2 rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               return (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex-1 py-2 text-center text-xs font-semibold rounded-md transition-colors ${
+                  className={`flex-1 py-2 px-3 text-center text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${
                     isActive
                       ? "bg-indigo-600 text-white"
                       : "text-gray-600 hover:bg-gray-50"

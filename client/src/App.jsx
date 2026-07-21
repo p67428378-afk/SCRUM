@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { authService, roomService, bookingService } from "./services/api.js";
+import {
+  authService,
+  roomService,
+  bookingService,
+  orderService,
+} from "./services/api.js";
 import AppLayout from "./components/layout/AppLayout.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import RoomsPage from "./pages/RoomsPage.jsx";
 import BookingsPage from "./pages/BookingsPage.jsx";
+import RestaurantsPage from "./pages/RestaurantsPage.jsx";
+import MenuPage from "./pages/MenuPage.jsx";
+import OrdersPage from "./pages/OrdersPage.jsx";
 import { KeyRound, AlertCircle, Loader2 } from "lucide-react";
 
 export default function App() {
@@ -16,6 +24,9 @@ export default function App() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Food Delivery State
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
 
   // Login Form State
   const [username, setUsername] = useState("test@example.com");
@@ -79,6 +90,7 @@ export default function App() {
     setUser(null);
     setRooms([]);
     setBookings([]);
+    setSelectedRestaurant(null);
   };
 
   const handleRoomStatusChange = async (roomId, newStatus) => {
@@ -114,6 +126,10 @@ export default function App() {
         alert(err.response?.data?.detail || "Failed to cancel booking.");
       }
     }
+  };
+
+  const handlePlaceOrder = async (orderData) => {
+    return await orderService.createOrder(orderData);
   };
 
   // Render Login Screen if not authenticated
@@ -200,7 +216,12 @@ export default function App() {
   return (
     <AppLayout
       activeTab={activeTab}
-      setActiveTab={setActiveTab}
+      setActiveTab={(tab) => {
+        setActiveTab(tab);
+        if (tab !== "restaurants") {
+          setSelectedRestaurant(null);
+        }
+      }}
       user={user}
       onLogout={handleLogout}
     >
@@ -245,6 +266,22 @@ export default function App() {
               onCancelBooking={handleCancelBooking}
             />
           )}
+          {activeTab === "restaurants" &&
+            (selectedRestaurant ? (
+              <MenuPage
+                restaurant={selectedRestaurant}
+                onBack={() => setSelectedRestaurant(null)}
+                bookings={bookings}
+                onPlaceOrder={handlePlaceOrder}
+                userRole={user?.role}
+              />
+            ) : (
+              <RestaurantsPage
+                onSelectRestaurant={setSelectedRestaurant}
+                userRole={user?.role}
+              />
+            ))}
+          {activeTab === "orders" && <OrdersPage userRole={user?.role} />}
         </>
       )}
     </AppLayout>
