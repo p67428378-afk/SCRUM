@@ -187,6 +187,48 @@
         }
       }
     },
+    "/api/v1/todos/{id}/complete": {
+      "patch": {
+        "tags": [
+          "todos"
+        ],
+        "summary": "Complete Todo",
+        "operationId": "complete_todo_api_v1_todos__id__complete_patch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Read Root",
@@ -302,6 +344,10 @@
             "type": "string",
             "title": "Priority"
           },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -318,6 +364,7 @@
           "id",
           "title",
           "priority",
+          "completed",
           "created_at",
           "updated_at"
         ],
@@ -361,6 +408,17 @@
             "title": "Priority",
             "description": "The priority of the to-do item (e.g., 'High', 'Medium', 'Low').",
             "default": "Medium"
+          },
+          "completed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed"
           }
         },
         "type": "object",

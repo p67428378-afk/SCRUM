@@ -37,7 +37,7 @@ class TodoCreate(TodoBase):
 
 
 class TodoUpdate(TodoBase):
-    pass
+    completed: Optional[bool] = None
 
 
 class TodoResponse(BaseModel):
@@ -46,6 +46,7 @@ class TodoResponse(BaseModel):
     description: Optional[str] = None
     due_date: Optional[datetime] = None
     priority: str
+    completed: bool
     created_at: datetime
     updated_at: datetime
 

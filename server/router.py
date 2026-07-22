@@ -34,6 +34,16 @@ def update_todo(id: str, todo: TodoUpdate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
+@router.patch("/{id}/complete", response_model=TodoResponse)
+def complete_todo(id: str, db: Session = Depends(get_db)):
+    db_todo = crud.complete_todo(db=db, todo_id=id)
+    if db_todo is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="To-do item not found"
+        )
+    return db_todo
+
+
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_todo(id: str, db: Session = Depends(get_db)):
     db_todo = crud.delete_todo(db=db, todo_id=id)

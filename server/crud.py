@@ -17,6 +17,7 @@ def create_todo(db: Session, todo: TodoCreate):
         description=todo.description,
         due_date=todo.due_date,
         priority=todo.priority,
+        completed=False,
     )
     db.add(db_todo)
     db.commit()
@@ -32,6 +33,18 @@ def update_todo(db: Session, todo_id: str, todo: TodoUpdate):
     db_todo.description = todo.description
     db_todo.due_date = todo.due_date
     db_todo.priority = todo.priority
+    if todo.completed is not None:
+        db_todo.completed = todo.completed
+    db.commit()
+    db.refresh(db_todo)
+    return db_todo
+
+
+def complete_todo(db: Session, todo_id: str):
+    db_todo = get_todo_by_id(db, todo_id)
+    if not db_todo:
+        return None
+    db_todo.completed = True
     db.commit()
     db.refresh(db_todo)
     return db_todo
