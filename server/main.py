@@ -11,7 +11,10 @@ from server.config import settings
 from server.database import init_db, seed_data, SessionLocal
 from server.models import ExportJob, get_utc_now
 from server.services.exporter import run_export_job
-from server.routers.exports import router as exports_router
+from server.routers.exports import (
+    router as exports_router,
+    admin_router as admin_exports_router,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -109,6 +112,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(exports_router)
+app.include_router(admin_exports_router)
 
 
 @app.get("/")

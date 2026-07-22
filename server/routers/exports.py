@@ -12,8 +12,9 @@ from server.schemas import (
     HistoryItem,
     ConfigResponse,
     UpdateConfigSchema,
+    DryRunResponse,
 )
-from server.services.exporter import run_export_job
+from server.services.exporter import run_export_job, run_dry_run
 from server.config import settings
 
 router = APIRouter(prefix="/api/v1/exports", tags=["exports"])
@@ -198,3 +199,29 @@ def update_export_config(
         retention_days=dynamic_config["retention_days"],
         schedule_cron=dynamic_config["schedule_cron"],
     )
+
+
+admin_router = APIRouter(prefix="/api/v1/admin/audits/export", tags=["admin-exports"])
+
+
+@admin_router.post(
+    "/dry-run", response_model=DryRunResponse, status_code=status.HTTP_200_OK
+)
+def trigger_dry_run(admin: bool = Depends(verify_admin)):
+    """
+    Triggers a non-persisting dry-run of the audit log export process.
+    This simulates a real export by gathering and encrypting the data,
+    but does not save the output file to GCS or any other storage.
+    """
+    try:
+        entries = run_dry_run()
+        return DryRunResponse(
+            status="success",
+            message="Dry-run successful. No data was exported.",
+            entries_processed=entries,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Dry-run failed: {str(e)}",
+        )

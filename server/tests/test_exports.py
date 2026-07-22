@@ -142,3 +142,39 @@ def test_retention_policy(db_session):
     jobs = db_session.query(ExportJob).all()
     assert len(jobs) == 1
     assert jobs[0].id == "new-job-uuid"
+
+
+def test_dry_run_endpoint(client):
+    """Test that the dry-run endpoint returns 200 and correct response structure."""
+    response = client.post("/api/v1/admin/audits/export/dry-run")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert data["message"] == "Dry-run successful. No data was exported."
+    assert data["entries_processed"] == 3
+
+
+def test_dry_run_unauthorized(client, monkeypatch):
+    """Test that the dry-run endpoint returns 403 when unauthorized and not in testing mode."""
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "TESTING", False)
+
+    # Without header
+    response = client.post("/api/v1/admin/audits/export/dry-run")
+    assert response.status_code == 403
+    assert "Admin access denied" in response.json()["detail"]
+
+    # With invalid header
+    response = client.post(
+        "/api/v1/admin/audits/export/dry-run", headers={"X-Admin-Token": "wrong-token"}
+    )
+    assert response.status_code == 403
+
+    # With valid header
+    response = client.post(
+        "/api/v1/admin/audits/export/dry-run",
+        headers={"X-Admin-Token": "admin-secret-token"},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "success"

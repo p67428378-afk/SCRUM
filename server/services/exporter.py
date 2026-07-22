@@ -97,6 +97,38 @@ def enforce_retention_policy(db: Session) -> int:
         return 0
 
 
+def run_dry_run() -> int:
+    """
+    Executes a non-persisting dry-run of the audit log export process.
+    1. Generates/collects audit logs.
+    2. Encrypts the logs using AES-256.
+    3. Discards the encrypted data in-memory.
+    4. Logs the dry-run event with a [DRY-RUN] prefix.
+    Returns the number of entries processed.
+    """
+    logger.info("Starting dry-run of audit log export...")
+
+    # 1. Collect logs
+    logs_data = generate_mock_audit_logs()
+
+    # Count entries (excluding header)
+    lines = logs_data.decode("utf-8").strip().split("\n")
+    entries_processed = len(lines) - 1 if len(lines) > 0 else 0
+
+    # 2. Encrypt logs
+    encrypted_data = encrypt_data(logs_data)
+
+    # 3. Discard in-memory (no upload to GCS, no DB persistence)
+    del encrypted_data
+
+    # 4. Log dry-run event
+    logger.info(
+        f"[DRY-RUN] Successfully processed {entries_processed} entries. No data exported."
+    )
+
+    return entries_processed
+
+
 def run_export_job(db: Session, job_id: str) -> None:
     """
     Executes the audit log export workflow:

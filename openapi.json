@@ -186,6 +186,56 @@
         }
       }
     },
+    "/api/v1/admin/audits/export/dry-run": {
+      "post": {
+        "tags": [
+          "admin-exports"
+        ],
+        "summary": "Trigger Dry Run",
+        "description": "Triggers a non-persisting dry-run of the audit log export process.\nThis simulates a real export by gathering and encrypting the data,\nbut does not save the output file to GCS or any other storage.",
+        "operationId": "trigger_dry_run_api_v1_admin_audits_export_dry_run_post",
+        "parameters": [
+          {
+            "name": "x-admin-token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DryRunResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Read Root",
@@ -232,6 +282,29 @@
           "schedule_cron"
         ],
         "title": "ConfigResponse"
+      },
+      "DryRunResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "entries_processed": {
+            "type": "integer",
+            "title": "Entries Processed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message",
+          "entries_processed"
+        ],
+        "title": "DryRunResponse"
       },
       "HTTPValidationError": {
         "properties": {

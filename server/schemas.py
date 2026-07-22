@@ -42,3 +42,9 @@ class UpdateConfigSchema(BaseModel):
     encryption_standard: Optional[str] = None
     retention_days: Optional[int] = None
     schedule_cron: Optional[str] = None
+
+
+class DryRunResponse(BaseModel):
+    status: str
+    message: str
+    entries_processed: int
