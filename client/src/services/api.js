@@ -41,4 +41,9 @@ export const updateExportConfig = async (configData) => {
   return response.data;
 };
 
+export const triggerDryRun = async () => {
+  const response = await api.post("/api/v1/admin/audits/export/dry-run");
+  return response.data;
+};
+
 export default api;

@@ -54,6 +54,13 @@ vi.mock("./services/api.js", () => {
         schedule_cron: "0 1 * * *",
       }),
     ),
+    triggerDryRun: vi.fn(() =>
+      Promise.resolve({
+        status: "SUCCESS",
+        message: "Dry-run simulation completed successfully.",
+        entries_processed: 150,
+      }),
+    ),
   };
 });
 
@@ -73,6 +80,9 @@ describe("Audit Log Export Dashboard Smoke Tests", () => {
 
     // Check if the trigger button is rendered
     expect(screen.getByText("Trigger Export Now")).toBeInTheDocument();
+
+    // Check if the dry-run button is rendered
+    expect(screen.getByText("Trigger Dry-Run")).toBeInTheDocument();
   });
 
   it("renders stat cards with correct values", async () => {
@@ -94,5 +104,15 @@ describe("Audit Log Export Dashboard Smoke Tests", () => {
 
     expect(screen.getByText("Trigger Manual Export")).toBeInTheDocument();
     expect(screen.getByText("Trigger Now")).toBeInTheDocument();
+  });
+
+  it("opens the trigger dry-run modal when clicking the dry-run button", async () => {
+    render(<App />);
+
+    const dryRunButton = screen.getByText("Trigger Dry-Run");
+    fireEvent.click(dryRunButton);
+
+    expect(screen.getByText("Trigger Dry-Run Export")).toBeInTheDocument();
+    expect(screen.getByText("Run Simulation")).toBeInTheDocument();
   });
 });

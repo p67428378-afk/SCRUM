@@ -4,11 +4,14 @@ import Header from "../components/layout/Header.jsx";
 import StatCard from "../components/audit-exports/StatCard.jsx";
 import ExportHistoryTable from "../components/audit-exports/ExportHistoryTable.jsx";
 import TriggerExportModal from "../components/audit-exports/TriggerExportModal.jsx";
+import TriggerDryRunModal from "../components/audit-exports/TriggerDryRunModal.jsx";
+import DryRunSuccessBanner from "../components/audit-exports/DryRunSuccessBanner.jsx";
 import {
   getExportStatus,
   triggerExport,
   getExportConfig,
   updateExportConfig,
+  triggerDryRun,
 } from "../services/api.js";
 
 export default function AuditLogExportDashboard() {
@@ -22,6 +25,14 @@ export default function AuditLogExportDashboard() {
   const [isTriggering, setIsTriggering] = useState(false);
   const [triggerError, setTriggerError] = useState(null);
   const [triggerSuccess, setTriggerSuccess] = useState(null);
+
+  // Dry-run state
+  const [isDryRunModalOpen, setIsDryRunModalOpen] = useState(false);
+  const [isDryRunning, setIsDryRunning] = useState(false);
+  const [dryRunError, setDryRunError] = useState(null);
+  const [dryRunSuccess, setDryRunSuccess] = useState(null);
+  const [dryRunEntriesProcessed, setDryRunEntriesProcessed] = useState(null);
+  const [showDryRunBanner, setShowDryRunBanner] = useState(false);
 
   // Config form state
   const [bucketName, setBucketName] = useState("");
@@ -85,6 +96,31 @@ export default function AuditLogExportDashboard() {
     }
   };
 
+  const handleTriggerDryRun = async () => {
+    try {
+      setIsDryRunning(true);
+      setDryRunError(null);
+      setDryRunSuccess(null);
+      setDryRunEntriesProcessed(null);
+      const result = await triggerDryRun();
+      setDryRunSuccess(
+        result.message || "Dry-run simulation completed successfully.",
+      );
+      setDryRunEntriesProcessed(result.entries_processed);
+      setShowDryRunBanner(true);
+      // Refresh status after a short delay
+      setTimeout(fetchStatus, 2000);
+    } catch (err) {
+      const errMsg =
+        err.response?.data?.detail ||
+        err.message ||
+        "Failed to trigger dry-run.";
+      setDryRunError(errMsg);
+    } finally {
+      setIsDryRunning(false);
+    }
+  };
+
   const handleSaveConfig = async (e) => {
     e.preventDefault();
     try {
@@ -144,6 +180,14 @@ export default function AuditLogExportDashboard() {
       <main className="ml-[260px] mt-[64px] p-6 min-h-[calc(100vh-64px)]">
         {activeTab === "dashboard" && (
           <>
+            {showDryRunBanner && (
+              <DryRunSuccessBanner
+                message={dryRunSuccess}
+                entriesProcessed={dryRunEntriesProcessed}
+                onClose={() => setShowDryRunBanner(false)}
+              />
+            )}
+
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
               <div>
@@ -155,22 +199,36 @@ export default function AuditLogExportDashboard() {
                   audit logs to external GCS bucket.
                 </p>
               </div>
-              <button
-                onClick={() => {
-                  setTriggerError(null);
-                  setTriggerSuccess(null);
-                  setIsTriggerModalOpen(true);
-                }}
-                className="bg-[#10B981] hover:bg-[#059669] text-white px-6 py-2.5 rounded-lg font-body-md text-sm font-medium flex items-center gap-2 transition-colors shrink-0"
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  onClick={() => {
+                    setDryRunError(null);
+                    setDryRunSuccess(null);
+                    setDryRunEntriesProcessed(null);
+                    setIsDryRunModalOpen(true);
+                  }}
+                  className="border border-secondary text-secondary hover:bg-secondary/10 px-6 py-2.5 rounded-lg font-body-md text-sm font-medium flex items-center gap-2 transition-colors"
                 >
-                  play_circle
-                </span>
-                Trigger Export Now
-              </button>
+                  <span className="material-symbols-outlined">science</span>
+                  Trigger Dry-Run
+                </button>
+                <button
+                  onClick={() => {
+                    setTriggerError(null);
+                    setTriggerSuccess(null);
+                    setIsTriggerModalOpen(true);
+                  }}
+                  className="bg-[#10B981] hover:bg-[#059669] text-white px-6 py-2.5 rounded-lg font-body-md text-sm font-medium flex items-center gap-2 transition-colors"
+                >
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    play_circle
+                  </span>
+                  Trigger Export Now
+                </button>
+              </div>
             </div>
 
             {/* Stat Cards Grid */}
@@ -393,6 +451,16 @@ export default function AuditLogExportDashboard() {
         isLoading={isTriggering}
         error={triggerError}
         successMessage={triggerSuccess}
+      />
+
+      <TriggerDryRunModal
+        isOpen={isDryRunModalOpen}
+        onClose={() => setIsDryRunModalOpen(false)}
+        onConfirm={handleTriggerDryRun}
+        isLoading={isDryRunning}
+        error={dryRunError}
+        successMessage={dryRunSuccess}
+        entriesProcessed={dryRunEntriesProcessed}
       />
     </div>
   );
