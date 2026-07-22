@@ -49,3 +49,44 @@ def upload_to_gcs(bucket_name: str, file_name: str, data: bytes) -> bool:
     except Exception as e:
         logger.error(f"Failed to upload to GCS: {str(e)}")
         raise e
+
+
+def delete_from_gcs(bucket_name: str, file_name: str) -> bool:
+    """
+    Deletes a file from a GCS bucket.
+    Falls back to local file storage if in testing mode or if credentials are missing.
+    """
+    is_testing = settings.TESTING or os.getenv("TESTING") == "true"
+
+    if is_testing:
+        logger.info(f"[MOCK GCS] Deleting {file_name} from bucket {bucket_name}")
+        mock_file_path = os.path.join("/tmp/mock_gcs", file_name)
+        if os.path.exists(mock_file_path):
+            os.remove(mock_file_path)
+        return True
+
+    try:
+        from google.cloud import storage
+        from google.auth.exceptions import DefaultCredentialsError
+
+        try:
+            client = storage.Client()
+            bucket = client.bucket(bucket_name)
+            blob = bucket.blob(file_name)
+            if blob.exists():
+                blob.delete()
+                logger.info(
+                    f"Successfully deleted {file_name} from GCS bucket {bucket_name}"
+                )
+            return True
+        except DefaultCredentialsError:
+            logger.warning(
+                "GCP credentials not found. Falling back to local mock storage deletion."
+            )
+            mock_file_path = os.path.join("/tmp/mock_gcs", file_name)
+            if os.path.exists(mock_file_path):
+                os.remove(mock_file_path)
+            return True
+    except Exception as e:
+        logger.error(f"Failed to delete from GCS: {str(e)}")
+        return False

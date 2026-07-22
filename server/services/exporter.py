@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from server.models import ExportJob, get_utc_now
 from server.config import settings
 from server.services.encryption import encrypt_data
-from server.services.storage import upload_to_gcs
+from server.services.storage import upload_to_gcs, delete_from_gcs
 
 logger = logging.getLogger("securelog.exporter")
 
@@ -60,22 +60,35 @@ def generate_mock_audit_logs() -> bytes:
 
 def enforce_retention_policy(db: Session) -> int:
     """
-    Enforces the 7-year data retention policy on the database.
-    Deletes export job records older than 2555 days (7 years).
+    Enforces the 7-year data retention policy on the database and GCS.
+    Deletes export job records and their corresponding GCS files older than 2555 days (7 years).
     Returns the number of deleted records.
     """
     retention_limit = get_utc_now() - timedelta(days=2555)
     logger.info(
-        f"Enforcing retention policy: deleting database records older than {retention_limit.isoformat()}"
+        f"Enforcing retention policy: deleting database records and GCS files older than {retention_limit.isoformat()}"
     )
 
-    deleted_count = (
-        db.query(ExportJob).filter(ExportJob.started_at < retention_limit).delete()
-    )
+    # Find jobs to delete
+    old_jobs = db.query(ExportJob).filter(ExportJob.started_at < retention_limit).all()
+    deleted_count = 0
+
+    for job in old_jobs:
+        if job.exported_file_name:
+            try:
+                delete_from_gcs(settings.GCS_BUCKET_NAME, job.exported_file_name)
+            except Exception as e:
+                logger.error(
+                    f"Failed to delete GCS file {job.exported_file_name} for job {job.id}: {str(e)}"
+                )
+
+        db.delete(job)
+        deleted_count += 1
+
     try:
         db.commit()
         logger.info(
-            f"Retention policy enforced: deleted {deleted_count} old export job records."
+            f"Retention policy enforced: deleted {deleted_count} old export job records and files."
         )
         return deleted_count
     except Exception as e:
@@ -90,7 +103,7 @@ def run_export_job(db: Session, job_id: str) -> None:
     1. Generates/collects audit logs.
     2. Encrypts the logs using AES-256.
     3. Uploads the encrypted file to GCS.
-    4. Enforces the 7-year retention policy on the database.
+    4. Enforces the 7-year retention policy on the database and GCS.
     5. Updates the job status in the database.
     """
     job = db.query(ExportJob).filter(ExportJob.id == job_id).first()
