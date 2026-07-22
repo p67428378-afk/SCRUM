@@ -3,11 +3,13 @@ import StatGrid from "../components/todo/StatGrid.jsx";
 import FilterBar from "../components/todo/FilterBar.jsx";
 import TaskGrid from "../components/todo/TaskGrid.jsx";
 import TaskModal from "../components/todo/TaskModal.jsx";
+import CompleteConfirmationModal from "../components/todo/CompleteConfirmationModal.jsx";
 import {
   getTodos,
   createTodo,
   updateTodo,
   deleteTodo,
+  completeTodo,
 } from "../services/api.js";
 
 export default function DashboardPage({ searchQuery, onSearchChange }) {
@@ -18,6 +20,10 @@ export default function DashboardPage({ searchQuery, onSearchChange }) {
   const [sortBy, setSortBy] = useState("due_date");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState(null);
+
+  // Complete confirmation modal state
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [todoToComplete, setTodoToComplete] = useState(null);
 
   const fetchTodos = async () => {
     setLoading(true);
@@ -81,7 +87,22 @@ export default function DashboardPage({ searchQuery, onSearchChange }) {
     }
   };
 
-  // Filter and sort todos
+  const handleCompleteClick = (todo) => {
+    setTodoToComplete(todo);
+    setIsCompleteModalOpen(true);
+  };
+
+  const handleConfirmComplete = async (id) => {
+    setError("");
+    try {
+      const updated = await completeTodo(id);
+      setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    } catch (err) {
+      console.error("Failed to complete todo:", err);
+      setError("Failed to mark task as complete. Please try again.");
+    }
+  };
+
   const filteredTodos = todos
     .filter((todo) => {
       const matchesSearch =
@@ -141,6 +162,7 @@ export default function DashboardPage({ searchQuery, onSearchChange }) {
           todos={filteredTodos}
           onEdit={handleEditTaskClick}
           onDelete={handleDeleteTask}
+          onComplete={handleCompleteClick}
         />
       )}
 
@@ -149,6 +171,13 @@ export default function DashboardPage({ searchQuery, onSearchChange }) {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveTask}
         todo={editingTodo}
+      />
+
+      <CompleteConfirmationModal
+        isOpen={isCompleteModalOpen}
+        onClose={() => setIsCompleteModalOpen(false)}
+        onConfirm={handleConfirmComplete}
+        todo={todoToComplete}
       />
     </main>
   );

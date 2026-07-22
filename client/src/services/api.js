@@ -31,4 +31,9 @@ export const deleteTodo = async (id) => {
   return response.data;
 };
 
+export const completeTodo = async (id) => {
+  const response = await api.patch(`/api/v1/todos/${id}/complete`);
+  return response.data;
+};
+
 export default api;

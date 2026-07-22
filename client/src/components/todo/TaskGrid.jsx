@@ -1,7 +1,7 @@
 import React from "react";
 import TaskCard from "./TaskCard.jsx";
 
-export default function TaskGrid({ todos = [], onEdit, onDelete }) {
+export default function TaskGrid({ todos = [], onEdit, onDelete, onComplete }) {
   if (todos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-2xl bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-sm text-center p-lg">
@@ -19,13 +19,14 @@ export default function TaskGrid({ todos = [], onEdit, onDelete }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
       {todos.map((todo) => (
         <TaskCard
           key={todo.id}
           todo={todo}
           onEdit={onEdit}
           onDelete={onDelete}
+          onComplete={onComplete}
         />
       ))}
     </div>
