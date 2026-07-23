@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from server.database import Base, get_db
+import server.models  # noqa: F401
 from server.main import app
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -39,7 +40,10 @@ def _override_get_db():
         db.close()
 
 
-app.dependency_overrides[get_db] = _override_get_db
+@pytest.fixture(autouse=True)
+def _setup_dependency_overrides():
+    app.dependency_overrides[get_db] = _override_get_db
+    yield
 
 
 @pytest.fixture
