@@ -40,7 +40,7 @@ export default function KPIHeaderStrip({ kpis, loading, error }) {
           </span>
           Sales per Linear Ft
         </h3>
-        <div className="flex items-end gap-3">
+        <div className="flex flex-wrap items-end gap-2">
           <span className="font-display-lg text-display-lg text-on-surface">
             ${data.sales_per_linear_ft?.toFixed(2)}
           </span>
@@ -62,7 +62,7 @@ export default function KPIHeaderStrip({ kpis, loading, error }) {
           </span>
           Private Brand %
         </h3>
-        <div className="flex items-end gap-3">
+        <div className="flex flex-wrap items-end gap-2">
           <span className="font-display-lg text-display-lg text-on-surface">
             {data.private_brand_percentage?.toFixed(1)}%
           </span>
@@ -89,7 +89,7 @@ export default function KPIHeaderStrip({ kpis, loading, error }) {
           </span>
           In-Stock Rate
         </h3>
-        <div className="flex items-end gap-3">
+        <div className="flex flex-wrap items-end gap-2">
           <span className="font-display-lg text-display-lg text-on-surface">
             {data.in_stock_rate?.toFixed(1)}%
           </span>
@@ -107,7 +107,7 @@ export default function KPIHeaderStrip({ kpis, loading, error }) {
           <span className="material-symbols-outlined text-[16px]">shelves</span>
           Shelf Capacity
         </h3>
-        <div className="flex items-end gap-3">
+        <div className="flex flex-wrap items-end gap-2">
           <span className="font-display-lg text-display-lg text-on-surface">
             {data.shelf_capacity?.toFixed(1)}%
           </span>
