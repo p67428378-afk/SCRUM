@@ -6,8 +6,8 @@ import BotDefense from "../components/security/BotDefense";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("test@example.com");
+  const [password, setPassword] = useState("testpassword");
   const [showPassword, setShowPassword] = useState(false);
   const [isBotVerified, setIsBotVerified] = useState(false);
   const [error, setError] = useState("");
@@ -60,6 +60,13 @@ export const LoginPage = () => {
             <p className="text-sm text-on-surface-variant text-center">
               Secure Retail Banking Portal
             </p>
+          </div>
+
+          {/* Test Credentials Note */}
+          <div className="mb-6 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-xs text-indigo-300 text-center">
+            Test account:{" "}
+            <strong className="text-white">test@example.com</strong> /{" "}
+            <strong className="text-white">testpassword</strong>
           </div>
 
           {/* Error Alert */}

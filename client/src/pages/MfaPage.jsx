@@ -128,6 +128,12 @@ export const MfaPage = () => {
             </p>
           </div>
 
+          {/* Bypass Code Note */}
+          <div className="mb-6 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-xs text-indigo-300 text-center">
+            For testing, use bypass code:{" "}
+            <strong className="text-white">000000</strong>
+          </div>
+
           {/* Method Selection */}
           {mfaMethods && mfaMethods.length > 1 && (
             <div className="mb-6">
