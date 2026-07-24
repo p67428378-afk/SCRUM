@@ -1,42 +1,43 @@
 import datetime
 import random
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy.orm import Session
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.orm import Session
+
+from server.config import settings
 from server.database import get_db
-from server.models.user import User
 from server.models.lockout import LockoutState
 from server.models.session import UserSession
+from server.models.user import User
 from server.schemas.auth import (
     LoginRequest,
     LoginResponse,
-    MfaVerifyRequest,
-    TokenResponse,
-    MfaResendRequest,
-    MfaResendResponse,
-    RefreshRequest,
     LogoutRequest,
     LogoutResponse,
+    MfaResendRequest,
+    MfaResendResponse,
+    MfaVerifyRequest,
+    RefreshRequest,
     StepUpRequest,
     StepUpResponse,
+    TokenResponse,
     UserResponse,
 )
-from server.utils.security import (
-    verify_password,
-    create_access_token,
-    decode_token,
-    verify_totp,
-)
+from server.utils.audit import log_event
 from server.utils.notifications import (
     notify_lockout,
     notify_new_session,
-    send_sms,
     send_email,
+    send_sms,
 )
-from server.utils.audit import log_event
-from server.config import settings
+from server.utils.security import (
+    create_access_token,
+    decode_token,
+    verify_password,
+    verify_totp,
+)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 

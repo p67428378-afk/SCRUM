@@ -20,8 +20,6 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
-    # Import models to register them on Base.metadata
-
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
@@ -43,6 +41,46 @@ def db_session():
     session.close()
     transaction.rollback()
     connection.close()
+
+
+@pytest.fixture(autouse=True)
+def reset_states(db_session):
+    from server.models.user import User
+    from server.models.lockout import LockoutState
+    from server.models.session import UserSession
+    from server.routers.auth import ip_attempts, global_failed_attempts
+    from server.utils.notifications import clear_notifications
+    from server.utils.audit import clear_audit_logs
+
+    # Clear in-memory states
+    ip_attempts.clear()
+    global_failed_attempts.clear()
+    clear_notifications()
+    clear_audit_logs()
+
+    # Delete all sessions
+    db_session.query(UserSession).delete()
+
+    # Reset lockout states
+    lockouts = db_session.query(LockoutState).all()
+    for l in lockouts:
+        l.failed_attempts = 0
+        l.login_flow_restarts = 0
+        l.otp_resends = 0
+        l.otp_failures = 0
+        l.otp_code = None
+        l.otp_expires_at = None
+        l.last_failed_at = None
+        l.last_restart_at = None
+        l.last_otp_resend_at = None
+
+    # Unlock all users
+    users = db_session.query(User).all()
+    for u in users:
+        u.is_locked = False
+        u.locked_until = None
+
+    db_session.commit()
 
 
 @pytest.fixture
