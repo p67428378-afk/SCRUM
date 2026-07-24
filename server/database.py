@@ -95,6 +95,7 @@ def seed_data(db: Session):
             phone_number="+15557654321",
             totp_secret="MZXW6YTBOI======",  # Example base32 secret
             is_locked=False,
+            role="admin",
             created_at=datetime.datetime.now(datetime.timezone.utc),
             updated_at=datetime.datetime.now(datetime.timezone.utc),
         )

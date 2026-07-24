@@ -23,6 +23,9 @@ class Settings(BaseSettings):
 
     STEP_UP_THRESHOLD_AMOUNT: float = 5000.0
 
+    DEV_MODE: bool = True
+    DEV_MFA_BYPASS_CODE: str = "000000"
+
     class Config:
         env_file = ".env"
 

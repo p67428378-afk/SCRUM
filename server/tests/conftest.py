@@ -36,8 +36,13 @@ def db_session():
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
 
+    import server.utils.audit
+
+    server.utils.audit._test_db_session = session
+
     yield session
 
+    server.utils.audit._test_db_session = None
     session.close()
     transaction.rollback()
     connection.close()
@@ -45,12 +50,12 @@ def db_session():
 
 @pytest.fixture(autouse=True)
 def reset_states(db_session):
-    from server.models.user import User
     from server.models.lockout import LockoutState
     from server.models.session import UserSession
-    from server.routers.auth import ip_attempts, global_failed_attempts
-    from server.utils.notifications import clear_notifications
+    from server.models.user import User
+    from server.routers.auth import global_failed_attempts, ip_attempts
     from server.utils.audit import clear_audit_logs
+    from server.utils.notifications import clear_notifications
 
     # Clear in-memory states
     ip_attempts.clear()

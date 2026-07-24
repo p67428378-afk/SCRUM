@@ -25,6 +25,7 @@ class User(Base):
     totp_secret = Column(String(255), nullable=True)
     is_locked = Column(Boolean, nullable=False, default=False)
     locked_until = Column(DateTime(timezone=True), nullable=True)
+    role = Column(String(50), nullable=False, default="customer")
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,

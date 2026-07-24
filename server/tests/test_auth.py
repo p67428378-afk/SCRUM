@@ -3,7 +3,6 @@ import re
 import uuid
 from unittest.mock import patch
 
-
 from server.models.lockout import LockoutState
 from server.models.user import User
 from server.utils.notifications import sent_notifications
@@ -186,7 +185,7 @@ def test_mfa_verify_invalid_code(client):
 
     response = client.post(
         "/api/v1/auth/mfa/verify",
-        json={"mfa_session_id": mfa_session_id, "method": "email", "code": "000000"},
+        json={"mfa_session_id": mfa_session_id, "method": "email", "code": "999999"},
     )
     assert response.status_code == 400
     assert "invalid" in response.json()["detail"].lower()

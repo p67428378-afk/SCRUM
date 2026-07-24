@@ -66,6 +66,7 @@ class StepUpRequest(BaseModel):
     action_type: str  # add_payee, edit_payee, change_contact, large_transfer
     amount: float | None = None
     code: str | None = None
+    step_up_session_id: UUID | None = None
 
 
 class StepUpResponse(BaseModel):

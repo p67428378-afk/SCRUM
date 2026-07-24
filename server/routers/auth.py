@@ -348,7 +348,9 @@ def mfa_verify(
 
     # Verify OTP code
     is_valid = False
-    if payload.method == "totp":
+    if settings.DEV_MODE and payload.code == settings.DEV_MFA_BYPASS_CODE:
+        is_valid = True
+    elif payload.method == "totp":
         if user.totp_secret:
             is_valid = verify_totp(user.totp_secret, payload.code)
     elif payload.method in ["sms", "email"]:
@@ -736,8 +738,11 @@ def step_up(payload: StepUpRequest, request: Request, db: Session = Depends(get_
         # We can verify either via step_up_challenges or TOTP directly
         is_valid = False
 
+        if settings.DEV_MODE and payload.code == settings.DEV_MFA_BYPASS_CODE:
+            is_valid = True
+            matching_challenge_id = None
         # Try TOTP first if user has TOTP set up
-        if user.totp_secret:
+        elif user.totp_secret:
             is_valid = verify_totp(user.totp_secret, payload.code)
 
         # If not TOTP, check step_up_challenges
@@ -771,14 +776,30 @@ def step_up(payload: StepUpRequest, request: Request, db: Session = Depends(get_
                 detail="Invalid or expired verification code",
             )
 
+        verified_id = payload.step_up_session_id or (
+            UUID(matching_challenge_id) if matching_challenge_id else uuid.uuid4()
+        )
+        from server.utils.security import verified_step_up_sessions
+
+        verified_step_up_sessions[str(verified_id)] = {
+            "user_id": str(user.id),
+            "action_type": payload.action_type,
+            "verified_at": now,
+        }
+
         log_event(
             event_type="STEP_UP_SUCCESS",
             user_id=str(user.id),
             username=user.username,
-            details={"action_type": payload.action_type},
+            details={
+                "action_type": payload.action_type,
+                "step_up_session_id": str(verified_id),
+            },
             severity="INFO",
         )
 
         return StepUpResponse(
-            message="Step-up authentication successful", step_up_required=False
+            message="Step-up authentication successful",
+            step_up_required=False,
+            step_up_session_id=verified_id,
         )

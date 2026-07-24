@@ -10,6 +10,11 @@ from server.config import settings
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
+# Global store for verified step-up sessions
+# Key: step_up_session_id (str), Value: dict with user_id, action_type, verified_at
+verified_step_up_sessions = {}
+
+
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
