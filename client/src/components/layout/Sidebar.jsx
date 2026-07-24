@@ -1,5 +1,14 @@
 import React from "react";
-import { Shield, LogOut, LayoutDashboard, KeyRound } from "lucide-react";
+import {
+  Shield,
+  LogOut,
+  LayoutDashboard,
+  KeyRound,
+  History,
+  Send,
+  LifeBuoy,
+  AlertTriangle,
+} from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authService } from "../../services/api";
 
@@ -11,7 +20,7 @@ export const Sidebar = () => {
     try {
       await authService.logout();
     } catch (e) {
-      console.error("Logout failed", e);
+      // Ignore logout error
     } finally {
       navigate("/login");
     }
@@ -19,9 +28,34 @@ export const Sidebar = () => {
 
   const menuItems = [
     {
-      name: "Sessions Dashboard",
+      name: "Dashboard",
       path: "/dashboard",
       icon: <LayoutDashboard className="w-5 h-5" />,
+    },
+    {
+      name: "Security & Sessions",
+      path: "/security",
+      icon: <KeyRound className="w-5 h-5" />,
+    },
+    {
+      name: "Transactions",
+      path: "/transactions",
+      icon: <History className="w-5 h-5" />,
+    },
+    {
+      name: "Transfers & Payments",
+      path: "/transfers",
+      icon: <Send className="w-5 h-5" />,
+    },
+    {
+      name: "Support Console",
+      path: "/support",
+      icon: <LifeBuoy className="w-5 h-5" />,
+    },
+    {
+      name: "Compliance & Risk",
+      path: "/compliance",
+      icon: <AlertTriangle className="w-5 h-5" />,
     },
   ];
 
@@ -33,17 +67,13 @@ export const Sidebar = () => {
           <Shield className="w-6 h-6 text-indigo-400" />
         </div>
         <div>
-          <h1 className="font-bold text-on-surface tracking-tight">
-            ApexSecure
-          </h1>
-          <span className="text-xs text-on-surface-variant">
-            Retail Banking
-          </span>
+          <h1 className="font-bold text-white tracking-tight">ApexSecure</h1>
+          <span className="text-xs text-slate-400">Retail Banking</span>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -53,7 +83,7 @@ export const Sidebar = () => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-indigo-500 text-white"
-                  : "text-on-surface-variant hover:bg-slate-700/50 hover:text-on-surface"
+                  : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
               }`}
             >
               {item.icon}

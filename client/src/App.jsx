@@ -1,4 +1,3 @@
-// Harmless comment to trigger a new commit and push for SCRUM-581
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -9,6 +8,11 @@ import {
 import LoginPage from "./pages/LoginPage";
 import MfaPage from "./pages/MfaPage";
 import SessionDashboard from "./pages/SessionDashboard";
+import DashboardPage from "./pages/DashboardPage";
+import TransactionHistoryPage from "./pages/TransactionHistoryPage";
+import TransfersPage from "./pages/TransfersPage";
+import SupportConsolePage from "./pages/SupportConsolePage";
+import CompliancePage from "./pages/CompliancePage";
 import AppLayout from "./components/layout/AppLayout";
 import { authService } from "./services/api";
 
@@ -50,7 +54,47 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/security"
+          element={
+            <ProtectedRoute>
               <SessionDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute>
+              <TransactionHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transfers"
+          element={
+            <ProtectedRoute>
+              <TransfersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/support"
+          element={
+            <ProtectedRoute>
+              <SupportConsolePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/compliance"
+          element={
+            <ProtectedRoute>
+              <CompliancePage />
             </ProtectedRoute>
           }
         />
