@@ -8,7 +8,14 @@ from sqlalchemy.orm import Session
 
 from server.config import settings
 from server.database import get_db
-from server.models.banking import Account, AlertPreference, Payee, Transaction
+from server.models.banking import (
+    Account,
+    AlertPreference,
+    Payee,
+    Transaction,
+    Message,
+    Alert,
+)
 from server.models.user import User
 from server.routers.sessions import get_current_user_and_session
 from server.schemas.banking import (
@@ -25,6 +32,12 @@ from server.schemas.banking import (
     PayeeVerifyRequest,
     TransactionListResponse,
     TransactionResponse,
+    MessageResponse,
+    MessageCreateRequest,
+    AlertResponse,
+    ProfileResponse,
+    ContactChangeRequest,
+    ContactVerifyRequest,
 )
 from server.utils.audit import log_event
 from server.utils.idempotency import check_idempotency, save_idempotency_response
@@ -234,6 +247,66 @@ def check_limits_and_update(db: Session, user_id: UUID, amount: float):
         )
 
 
+def check_and_trigger_alerts(
+    db: Session, user: User, account: Account, amount: float, txn_type: str
+):
+    from server.models.banking import Alert, AlertPreference
+    from server.utils.notifications import send_email, send_sms
+
+    prefs = db.query(AlertPreference).filter(AlertPreference.user_id == user.id).first()
+    if not prefs:
+        prefs = AlertPreference(
+            id=uuid.uuid4(),
+            user_id=user.id,
+            push_enabled=True,
+            sms_enabled=True,
+            email_enabled=True,
+            low_balance_threshold=100.00,
+            large_transaction_threshold=1000.00,
+        )
+        db.add(prefs)
+        db.commit()
+        db.refresh(prefs)
+
+    # 1. Large transaction alert
+    if amount >= float(prefs.large_transaction_threshold):
+        msg_text = f"Large transaction alert: A {txn_type} of ${amount:,.2f} was processed on your account {account.account_number}."
+        alert = Alert(
+            id=uuid.uuid4(),
+            user_id=user.id,
+            type="large_transaction",
+            message=msg_text,
+            channel="all",
+            is_delivered=True,
+        )
+        db.add(alert)
+        db.commit()
+
+        if prefs.email_enabled:
+            send_email(user.email, "Security Alert: Large Transaction", msg_text)
+        if prefs.sms_enabled and user.phone_number:
+            send_sms(user.phone_number, msg_text)
+
+    # 2. Low balance alert
+    if float(account.available_balance) < float(prefs.low_balance_threshold):
+        msg_text = f"Low balance alert: Your account {account.account_number} balance has fallen to ${float(account.available_balance):,.2f}, which is below your threshold of ${float(prefs.low_balance_threshold):,.2f}."
+        alert = Alert(
+            id=uuid.uuid4(),
+            user_id=user.id,
+            type="low_balance",
+            message=msg_text,
+            channel="all",
+            is_delivered=True,
+        )
+        db.add(alert)
+        db.commit()
+
+        if prefs.email_enabled:
+            send_email(user.email, "Alert: Low Account Balance", msg_text)
+        if prefs.sms_enabled and user.phone_number:
+            send_sms(user.phone_number, msg_text)
+
+
 @router.post("/api/v1/transfers/internal", response_model=InternalTransferResponse)
 def internal_transfer(
     payload: InternalTransferRequest,
@@ -316,6 +389,12 @@ def internal_transfer(
     )
     db.add_all([txn_out, txn_in])
     db.commit()
+
+    # Trigger alerts
+    check_and_trigger_alerts(
+        db, current_user, source_acc, payload.amount, "transfer_out"
+    )
+    check_and_trigger_alerts(db, current_user, dest_acc, payload.amount, "transfer_in")
 
     log_event(
         event_type="INTERNAL_TRANSFER",
@@ -437,6 +516,27 @@ def external_transfer(
     db.add(txn)
     db.commit()
 
+    # Trigger alerts
+    check_and_trigger_alerts(
+        db, current_user, source_acc, payload.amount, "transfer_out"
+    )
+
+    # Dispatch webhook if high-risk transfer
+    if payload.amount >= settings.STEP_UP_THRESHOLD_AMOUNT:
+        from server.routers.webhooks import dispatch_webhook
+
+        dispatch_webhook(
+            user_id=current_user.id,
+            event_type="high_risk_transfer",
+            payload={
+                "transaction_id": str(txn.id),
+                "amount": payload.amount,
+                "source_account": source_acc.account_number,
+                "payee_name": payee.name,
+            },
+            db=db,
+        )
+
     log_event(
         event_type="EXTERNAL_TRANSFER",
         user_id=str(current_user.id),
@@ -508,6 +608,20 @@ def add_payee(
     )
     db.add(payee)
     db.commit()
+
+    # Dispatch webhook
+    from server.routers.webhooks import dispatch_webhook
+
+    dispatch_webhook(
+        user_id=current_user.id,
+        event_type="payee_added",
+        payload={
+            "payee_id": str(payee.id),
+            "name": payee.name,
+            "status": payee.status,
+        },
+        db=db,
+    )
 
     log_event(
         event_type="ADD_PAYEE",
@@ -660,3 +774,193 @@ def update_alert_preferences(
     )
 
     return {"message": "Alert preferences updated successfully"}
+
+
+# Secure Messaging Endpoints
+@router.get("/api/v1/messages", response_model=list[MessageResponse])
+def list_messages(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    messages = (
+        db.query(Message)
+        .filter(Message.user_id == current_user.id)
+        .order_by(Message.created_at.desc())
+        .all()
+    )
+    return messages
+
+
+@router.get("/api/v1/messages/{id}", response_model=MessageResponse)
+def get_message(
+    id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    msg = (
+        db.query(Message)
+        .filter(Message.id == id, Message.user_id == current_user.id)
+        .first()
+    )
+    if not msg:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Message not found",
+        )
+    return msg
+
+
+@router.post("/api/v1/messages", response_model=MessageResponse)
+def send_message(
+    payload: MessageCreateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    target_user_id = current_user.id
+    sender_name = "User"
+
+    if payload.recipient_username:
+        recipient = (
+            db.query(User).filter(User.username == payload.recipient_username).first()
+        )
+        if not recipient:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Recipient user not found",
+            )
+        target_user_id = recipient.id
+        sender_name = current_user.username
+
+    msg = Message(
+        id=uuid.uuid4(),
+        user_id=target_user_id,
+        sender=sender_name,
+        subject=payload.subject,
+        body=payload.body,
+        is_read=False,
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    return msg
+
+
+@router.put("/api/v1/messages/{id}", response_model=MessageResponse)
+def mark_message_as_read(
+    id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    msg = (
+        db.query(Message)
+        .filter(Message.id == id, Message.user_id == current_user.id)
+        .first()
+    )
+    if not msg:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Message not found",
+        )
+    msg.is_read = True
+    db.commit()
+    db.refresh(msg)
+    return msg
+
+
+# Alert History Endpoint
+@router.get("/api/v1/alerts", response_model=list[AlertResponse])
+def list_alerts(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    alerts = (
+        db.query(Alert)
+        .filter(Alert.user_id == current_user.id)
+        .order_by(Alert.created_at.desc())
+        .all()
+    )
+    return alerts
+
+
+# Profile Endpoints
+pending_contact_changes = {}
+
+
+@router.get("/api/v1/profile", response_model=ProfileResponse)
+def get_profile(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+
+
+@router.post("/api/v1/profile/contact/change-request")
+def contact_change_request(
+    payload: ContactChangeRequest,
+    current_user: User = Depends(get_current_user),
+):
+    code = f"{random.randint(100000, 999999)}"
+    pending_contact_changes[str(current_user.id)] = {
+        "email": payload.email,
+        "phone_number": payload.phone_number,
+        "code": code,
+    }
+
+    from server.utils.notifications import send_email, send_sms
+
+    send_email(
+        payload.email,
+        "ApexSecure Bank: Contact Information Change Request",
+        f"Your verification code to update contact information is {code}.",
+    )
+    if payload.phone_number:
+        send_sms(
+            payload.phone_number,
+            f"Your ApexSecure Bank contact change verification code is {code}.",
+        )
+
+    return {"message": "Verification code sent to your new contact methods"}
+
+
+@router.post("/api/v1/profile/contact/verify")
+def contact_change_verify(
+    payload: ContactVerifyRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    change = pending_contact_changes.get(str(current_user.id))
+    if not change:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No pending contact change request found",
+        )
+
+    is_valid = change["code"] == payload.code
+    if settings.DEV_MODE and payload.code == settings.DEV_MFA_BYPASS_CODE:
+        is_valid = True
+
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification code",
+        )
+
+    user = db.query(User).filter(User.id == current_user.id).first()
+    user.email = change["email"]
+    user.phone_number = change["phone_number"]
+    db.commit()
+
+    from server.routers.webhooks import dispatch_webhook
+
+    dispatch_webhook(
+        user_id=current_user.id,
+        event_type="contact_info_updated",
+        payload={
+            "email": user.email,
+            "phone_number": user.phone_number,
+        },
+        db=db,
+    )
+
+    pending_contact_changes.pop(str(current_user.id), None)
+
+    return {"message": "Contact information updated successfully"}

@@ -148,3 +148,85 @@ class RiskSignalResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class MessageResponse(BaseModel):
+    id: UUID
+    sender: str
+    subject: str
+    body: str
+    is_read: bool
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class MessageCreateRequest(BaseModel):
+    subject: str
+    body: str
+    recipient_username: str | None = None
+
+
+class AlertResponse(BaseModel):
+    id: UUID
+    type: str
+    message: str
+    channel: str
+    is_delivered: bool
+    created_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class WebhookSubscriptionResponse(BaseModel):
+    id: UUID
+    url: str
+    event_type: str
+    is_active: bool
+    created_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class WebhookSubscriptionCreateRequest(BaseModel):
+    url: str
+    event_type: str
+    secret: str | None = None
+
+
+class ConfigItemResponse(BaseModel):
+    key: str
+    value: str
+    description: str | None = None
+    updated_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ConfigItemCreateRequest(BaseModel):
+    key: str
+    value: str
+    description: str | None = None
+
+
+class ProfileResponse(BaseModel):
+    username: str
+    email: str
+    phone_number: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class ContactChangeRequest(BaseModel):
+    email: str
+    phone_number: str
+
+
+class ContactVerifyRequest(BaseModel):
+    code: str

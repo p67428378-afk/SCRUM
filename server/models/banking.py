@@ -1,7 +1,16 @@
 import datetime
 import uuid
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Numeric, String
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import backref, relationship
 
@@ -175,3 +184,100 @@ class AlertPreference(Base):
             "alert_preference", uselist=False, cascade="all, delete-orphan"
         ),
     )
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    sender = Column(String(255), nullable=False, default="Bank Support")
+    subject = Column(String(255), nullable=False)
+    body = Column(Text, nullable=False)
+    is_read = Column(Boolean, nullable=False, default=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc),
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc),
+        onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
+    )
+
+    # Relationships
+    user = relationship("User", backref="messages")
+
+
+class Alert(Base):
+    __tablename__ = "alerts"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    type = Column(
+        String(100), nullable=False
+    )  # low_balance, large_transaction, login_new_device, payment_sent, payment_due, security
+    message = Column(Text, nullable=False)
+    channel = Column(String(50), nullable=False)  # email, sms, push, all
+    is_delivered = Column(Boolean, nullable=False, default=True)
+    created_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc),
+    )
+
+    # Relationships
+    user = relationship("User", backref="alerts")
+
+
+class WebhookSubscription(Base):
+    __tablename__ = "webhook_subscriptions"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    url = Column(String(512), nullable=False)
+    event_type = Column(
+        String(100), nullable=False
+    )  # high_risk_transfer, payee_added, contact_info_updated, all
+    secret = Column(String(255), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.datetime.now(datetime.timezone.utc),
+    )
+
+    # Relationships
+    user = relationship("User", backref="webhook_subscriptions")

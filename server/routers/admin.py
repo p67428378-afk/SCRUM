@@ -6,12 +6,15 @@ from sqlalchemy.orm import Session
 
 from server.database import get_db
 from server.models.banking import AuditLog
+from server.models.config import ConfigItem
 from server.models.user import User
 from server.routers.banking import get_current_user
 from server.schemas.banking import (
     AuditLogListResponse,
     AuditLogResponse,
     RiskSignalResponse,
+    ConfigItemResponse,
+    ConfigItemCreateRequest,
 )
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
@@ -120,3 +123,49 @@ def list_risk_signals(
         ),
     ]
     return signals
+
+
+# Admin Config Endpoints
+@router.get("/config", response_model=list[ConfigItemResponse])
+def list_config_items(
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    items = db.query(ConfigItem).all()
+    return items
+
+
+@router.post("/config", response_model=ConfigItemResponse)
+def create_or_update_config_item(
+    payload: ConfigItemCreateRequest,
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    item = db.query(ConfigItem).filter(ConfigItem.key == payload.key).first()
+    if not item:
+        item = ConfigItem(key=payload.key)
+        db.add(item)
+
+    item.value = payload.value
+    if payload.description is not None:
+        item.description = payload.description
+    item.updated_at = datetime.datetime.now(datetime.timezone.utc)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@router.delete("/config/{key}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_config_item(
+    key: str,
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    item = db.query(ConfigItem).filter(ConfigItem.key == key).first()
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Config item not found",
+        )
+    db.delete(item)
+    db.commit()
