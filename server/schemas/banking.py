@@ -102,22 +102,25 @@ class LimitsResponse(BaseModel):
 
 
 class AlertPreferencesResponse(BaseModel):
+    id: UUID
     push_enabled: bool
     sms_enabled: bool
     email_enabled: bool
     low_balance_threshold: float
     large_transaction_threshold: float
+    channels: dict
 
     class Config:
         from_attributes = True
 
 
 class AlertPreferencesUpdateRequest(BaseModel):
-    push_enabled: bool
-    sms_enabled: bool
-    email_enabled: bool
+    push_enabled: bool | None = None
+    sms_enabled: bool | None = None
+    email_enabled: bool | None = None
     low_balance_threshold: float
     large_transaction_threshold: float
+    channels: dict | None = None
 
 
 class AuditLogResponse(BaseModel):
@@ -169,6 +172,10 @@ class MessageCreateRequest(BaseModel):
     recipient_username: str | None = None
 
 
+class MessageUpdateRequest(BaseModel):
+    is_read: bool
+
+
 class AlertResponse(BaseModel):
     id: UUID
     type: str
@@ -185,6 +192,7 @@ class WebhookSubscriptionResponse(BaseModel):
     id: UUID
     url: str
     event_type: str
+    events: list[str]
     is_active: bool
     created_at: datetime.datetime
 
@@ -194,11 +202,13 @@ class WebhookSubscriptionResponse(BaseModel):
 
 class WebhookSubscriptionCreateRequest(BaseModel):
     url: str
-    event_type: str
+    event_type: str | None = None
+    events: list[str] | None = None
     secret: str | None = None
 
 
 class ConfigItemResponse(BaseModel):
+    id: UUID
     key: str
     value: str
     description: str | None = None

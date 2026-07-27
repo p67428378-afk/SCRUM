@@ -12,9 +12,9 @@ from server.routers.banking import get_current_user
 from server.schemas.banking import (
     AuditLogListResponse,
     AuditLogResponse,
-    RiskSignalResponse,
-    ConfigItemResponse,
     ConfigItemCreateRequest,
+    ConfigItemResponse,
+    RiskSignalResponse,
 )
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])

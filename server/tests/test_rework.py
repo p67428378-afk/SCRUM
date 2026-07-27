@@ -1,10 +1,11 @@
 import uuid
-from server.tests.test_banking import get_auth_headers
+
+from server.routers.webhooks import clear_dispatched_webhooks, dispatched_webhooks
 from server.services.core_banking import (
     simulate_underwriting_kyc,
     sync_account_with_core,
 )
-from server.routers.webhooks import dispatched_webhooks, clear_dispatched_webhooks
+from server.tests.test_banking import get_auth_headers
 
 
 def test_secure_messaging(client):

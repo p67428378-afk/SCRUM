@@ -938,340 +938,6 @@
         }
       }
     },
-    "/api/v1/alerts/preferences": {
-      "get": {
-        "tags": [
-          "banking"
-        ],
-        "summary": "Get Alert Preferences",
-        "operationId": "get_alert_preferences_api_v1_alerts_preferences_get",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Authorization"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlertPreferencesResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "banking"
-        ],
-        "summary": "Update Alert Preferences",
-        "operationId": "update_alert_preferences_api_v1_alerts_preferences_put",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Authorization"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AlertPreferencesUpdateRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/messages": {
-      "get": {
-        "tags": [
-          "banking"
-        ],
-        "summary": "List Messages",
-        "operationId": "list_messages_api_v1_messages_get",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Authorization"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MessageResponse"
-                  },
-                  "title": "Response List Messages Api V1 Messages Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "banking"
-        ],
-        "summary": "Send Message",
-        "operationId": "send_message_api_v1_messages_post",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Authorization"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MessageCreateRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/messages/{id}": {
-      "get": {
-        "tags": [
-          "banking"
-        ],
-        "summary": "Get Message",
-        "operationId": "get_message_api_v1_messages__id__get",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Authorization"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "banking"
-        ],
-        "summary": "Mark Message As Read",
-        "operationId": "mark_message_as_read_api_v1_messages__id__put",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Authorization"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessageResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/alerts": {
-      "get": {
-        "tags": [
-          "banking"
-        ],
-        "summary": "List Alerts",
-        "operationId": "list_alerts_api_v1_alerts_get",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Authorization"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AlertResponse"
-                  },
-                  "title": "Response List Alerts Api V1 Alerts Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/profile": {
       "get": {
         "tags": [
@@ -1867,6 +1533,409 @@
         }
       }
     },
+    "/api/v1/messages": {
+      "get": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "List Messages",
+        "operationId": "list_messages_api_v1_messages_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageResponse"
+                  },
+                  "title": "Response List Messages Api V1 Messages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Send Message",
+        "operationId": "send_message_api_v1_messages_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/messages/{id}": {
+      "get": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Get Message",
+        "operationId": "get_message_api_v1_messages__id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Mark Message As Read",
+        "operationId": "mark_message_as_read_api_v1_messages__id__put",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MessageUpdateRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alerts": {
+      "get": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "List Alerts",
+        "operationId": "list_alerts_api_v1_alerts_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AlertResponse"
+                  },
+                  "title": "Response List Alerts Api V1 Alerts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alerts/preferences": {
+      "get": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Get Alert Preferences",
+        "operationId": "get_alert_preferences_api_v1_alerts_preferences_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertPreferencesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Update Alert Preferences Post",
+        "operationId": "update_alert_preferences_post_api_v1_alerts_preferences_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertPreferencesUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertPreferencesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "Update Alert Preferences Put",
+        "operationId": "update_alert_preferences_put_api_v1_alerts_preferences_put",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertPreferencesUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertPreferencesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health Check",
@@ -1944,6 +2013,11 @@
       },
       "AlertPreferencesResponse": {
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
           "push_enabled": {
             "type": "boolean",
             "title": "Push Enabled"
@@ -1963,30 +2037,58 @@
           "large_transaction_threshold": {
             "type": "number",
             "title": "Large Transaction Threshold"
+          },
+          "channels": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Channels"
           }
         },
         "type": "object",
         "required": [
+          "id",
           "push_enabled",
           "sms_enabled",
           "email_enabled",
           "low_balance_threshold",
-          "large_transaction_threshold"
+          "large_transaction_threshold",
+          "channels"
         ],
         "title": "AlertPreferencesResponse"
       },
       "AlertPreferencesUpdateRequest": {
         "properties": {
           "push_enabled": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Push Enabled"
           },
           "sms_enabled": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Sms Enabled"
           },
           "email_enabled": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email Enabled"
           },
           "low_balance_threshold": {
@@ -1996,13 +2098,22 @@
           "large_transaction_threshold": {
             "type": "number",
             "title": "Large Transaction Threshold"
+          },
+          "channels": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channels"
           }
         },
         "type": "object",
         "required": [
-          "push_enabled",
-          "sms_enabled",
-          "email_enabled",
           "low_balance_threshold",
           "large_transaction_threshold"
         ],
@@ -2151,6 +2262,11 @@
       },
       "ConfigItemResponse": {
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
           "key": {
             "type": "string",
             "title": "Key"
@@ -2178,6 +2294,7 @@
         },
         "type": "object",
         "required": [
+          "id",
           "key",
           "value",
           "updated_at"
@@ -2550,6 +2667,19 @@
           "updated_at"
         ],
         "title": "MessageResponse"
+      },
+      "MessageUpdateRequest": {
+        "properties": {
+          "is_read": {
+            "type": "boolean",
+            "title": "Is Read"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_read"
+        ],
+        "title": "MessageUpdateRequest"
       },
       "MfaResendRequest": {
         "properties": {
@@ -3109,8 +3239,29 @@
             "title": "Url"
           },
           "event_type": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Event Type"
+          },
+          "events": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Events"
           },
           "secret": {
             "anyOf": [
@@ -3126,8 +3277,7 @@
         },
         "type": "object",
         "required": [
-          "url",
-          "event_type"
+          "url"
         ],
         "title": "WebhookSubscriptionCreateRequest"
       },
@@ -3146,6 +3296,13 @@
             "type": "string",
             "title": "Event Type"
           },
+          "events": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Events"
+          },
           "is_active": {
             "type": "boolean",
             "title": "Is Active"
@@ -3161,6 +3318,7 @@
           "id",
           "url",
           "event_type",
+          "events",
           "is_active",
           "created_at"
         ],

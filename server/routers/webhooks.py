@@ -1,6 +1,7 @@
 import logging
 import uuid
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -9,8 +10,8 @@ from server.models.banking import WebhookSubscription
 from server.models.user import User
 from server.routers.banking import get_current_user
 from server.schemas.banking import (
-    WebhookSubscriptionResponse,
     WebhookSubscriptionCreateRequest,
+    WebhookSubscriptionResponse,
 )
 
 router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"])
@@ -58,11 +59,17 @@ def subscribe_webhook(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    event_type = payload.event_type
+    if not event_type and payload.events:
+        event_type = payload.events[0]
+    if not event_type:
+        event_type = "all"
+
     sub = WebhookSubscription(
         id=uuid.uuid4(),
         user_id=current_user.id,
         url=payload.url,
-        event_type=payload.event_type,
+        event_type=event_type,
         secret=payload.secret,
         is_active=True,
     )

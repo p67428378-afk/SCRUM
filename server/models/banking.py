@@ -177,6 +177,14 @@ class AlertPreference(Base):
         Numeric(15, 2), nullable=False, default=1000.00
     )
 
+    @property
+    def channels(self) -> dict:
+        return {
+            "push": self.push_enabled,
+            "sms": self.sms_enabled,
+            "email": self.email_enabled,
+        }
+
     # Relationships
     user = relationship(
         "User",
@@ -278,6 +286,10 @@ class WebhookSubscription(Base):
         nullable=False,
         default=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
+
+    @property
+    def events(self) -> list[str]:
+        return [self.event_type]
 
     # Relationships
     user = relationship("User", backref="webhook_subscriptions")

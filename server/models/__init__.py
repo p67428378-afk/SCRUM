@@ -1,11 +1,11 @@
 from server.models.banking import (
     Account,
+    Alert,
     AlertPreference,
     AuditLog,
+    Message,
     Payee,
     Transaction,
-    Message,
-    Alert,
     WebhookSubscription,
 )
 from server.models.config import ConfigItem

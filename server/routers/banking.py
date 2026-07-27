@@ -10,18 +10,17 @@ from server.config import settings
 from server.database import get_db
 from server.models.banking import (
     Account,
+    Alert,
     AlertPreference,
     Payee,
     Transaction,
-    Message,
-    Alert,
 )
 from server.models.user import User
 from server.routers.sessions import get_current_user_and_session
 from server.schemas.banking import (
     AccountResponse,
-    AlertPreferencesResponse,
-    AlertPreferencesUpdateRequest,
+    ContactChangeRequest,
+    ContactVerifyRequest,
     ExternalTransferRequest,
     ExternalTransferResponse,
     InternalTransferRequest,
@@ -30,14 +29,9 @@ from server.schemas.banking import (
     PayeeCreateRequest,
     PayeeResponse,
     PayeeVerifyRequest,
+    ProfileResponse,
     TransactionListResponse,
     TransactionResponse,
-    MessageResponse,
-    MessageCreateRequest,
-    AlertResponse,
-    ProfileResponse,
-    ContactChangeRequest,
-    ContactVerifyRequest,
 )
 from server.utils.audit import log_event
 from server.utils.idempotency import check_idempotency, save_idempotency_response
@@ -250,7 +244,6 @@ def check_limits_and_update(db: Session, user_id: UUID, amount: float):
 def check_and_trigger_alerts(
     db: Session, user: User, account: Account, amount: float, txn_type: str
 ):
-    from server.models.banking import Alert, AlertPreference
     from server.utils.notifications import send_email, send_sms
 
     prefs = db.query(AlertPreference).filter(AlertPreference.user_id == user.id).first()
@@ -713,173 +706,6 @@ def get_limits(
         daily_remaining=daily_remaining,
         per_transaction_limit=per_txn_limit,
     )
-
-
-@router.get("/api/v1/alerts/preferences", response_model=AlertPreferencesResponse)
-def get_alert_preferences(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
-):
-    prefs = (
-        db.query(AlertPreference)
-        .filter(AlertPreference.user_id == current_user.id)
-        .first()
-    )
-    if not prefs:
-        prefs = AlertPreference(
-            id=uuid.uuid4(),
-            user_id=current_user.id,
-            push_enabled=True,
-            sms_enabled=True,
-            email_enabled=True,
-            low_balance_threshold=100.00,
-            large_transaction_threshold=1000.00,
-        )
-        db.add(prefs)
-        db.commit()
-        db.refresh(prefs)
-
-    return prefs
-
-
-@router.put("/api/v1/alerts/preferences")
-def update_alert_preferences(
-    payload: AlertPreferencesUpdateRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    prefs = (
-        db.query(AlertPreference)
-        .filter(AlertPreference.user_id == current_user.id)
-        .first()
-    )
-    if not prefs:
-        prefs = AlertPreference(
-            id=uuid.uuid4(),
-            user_id=current_user.id,
-        )
-        db.add(prefs)
-
-    prefs.push_enabled = payload.push_enabled
-    prefs.sms_enabled = payload.sms_enabled
-    prefs.email_enabled = payload.email_enabled
-    prefs.low_balance_threshold = payload.low_balance_threshold
-    prefs.large_transaction_threshold = payload.large_transaction_threshold
-    db.commit()
-
-    log_event(
-        event_type="UPDATE_ALERT_PREFERENCES",
-        user_id=str(current_user.id),
-        username=current_user.username,
-        severity="INFO",
-    )
-
-    return {"message": "Alert preferences updated successfully"}
-
-
-# Secure Messaging Endpoints
-@router.get("/api/v1/messages", response_model=list[MessageResponse])
-def list_messages(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    messages = (
-        db.query(Message)
-        .filter(Message.user_id == current_user.id)
-        .order_by(Message.created_at.desc())
-        .all()
-    )
-    return messages
-
-
-@router.get("/api/v1/messages/{id}", response_model=MessageResponse)
-def get_message(
-    id: UUID,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    msg = (
-        db.query(Message)
-        .filter(Message.id == id, Message.user_id == current_user.id)
-        .first()
-    )
-    if not msg:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Message not found",
-        )
-    return msg
-
-
-@router.post("/api/v1/messages", response_model=MessageResponse)
-def send_message(
-    payload: MessageCreateRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    target_user_id = current_user.id
-    sender_name = "User"
-
-    if payload.recipient_username:
-        recipient = (
-            db.query(User).filter(User.username == payload.recipient_username).first()
-        )
-        if not recipient:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Recipient user not found",
-            )
-        target_user_id = recipient.id
-        sender_name = current_user.username
-
-    msg = Message(
-        id=uuid.uuid4(),
-        user_id=target_user_id,
-        sender=sender_name,
-        subject=payload.subject,
-        body=payload.body,
-        is_read=False,
-    )
-    db.add(msg)
-    db.commit()
-    db.refresh(msg)
-    return msg
-
-
-@router.put("/api/v1/messages/{id}", response_model=MessageResponse)
-def mark_message_as_read(
-    id: UUID,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    msg = (
-        db.query(Message)
-        .filter(Message.id == id, Message.user_id == current_user.id)
-        .first()
-    )
-    if not msg:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Message not found",
-        )
-    msg.is_read = True
-    db.commit()
-    db.refresh(msg)
-    return msg
-
-
-# Alert History Endpoint
-@router.get("/api/v1/alerts", response_model=list[AlertResponse])
-def list_alerts(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    alerts = (
-        db.query(Alert)
-        .filter(Alert.user_id == current_user.id)
-        .order_by(Alert.created_at.desc())
-        .all()
-    )
-    return alerts
 
 
 # Profile Endpoints

@@ -38,11 +38,13 @@ def startup_event():
 # Include routers
 app.include_router(auth.router)
 app.include_router(sessions.router)
-from server.routers import admin, banking, webhooks
+from server.routers import admin, banking, webhooks, messages, alerts
 
 app.include_router(banking.router)
 app.include_router(admin.router)
 app.include_router(webhooks.router)
+app.include_router(messages.router)
+app.include_router(alerts.router)
 
 
 @app.get("/health")
