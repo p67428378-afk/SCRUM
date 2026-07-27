@@ -201,3 +201,51 @@ class AuditLogResponse(BaseModel):
 class AuditLogListResponse(BaseModel):
     total: int
     logs: List[AuditLogResponse]
+
+
+class StatementResponse(BaseModel):
+    id: str
+    account_id: str
+    statement_period: str
+    created_at: datetime
+    download_url: str
+
+
+class StatementDetailResponse(BaseModel):
+    id: str
+    account_id: str
+    statement_period: str
+    created_at: datetime
+    starting_balance: Decimal
+    ending_balance: Decimal
+    transactions: List[TransactionResponse]
+
+
+class AccountCreateRequest(BaseModel):
+    user_id: Optional[str] = None
+    account_type: str = Field(..., description="Checking or Savings")
+    initial_deposit: Decimal = Field(Decimal("0.00"), ge=0)
+
+
+class AccountUpdateRequest(BaseModel):
+    account_type: Optional[str] = None
+    status: Optional[str] = None
+
+
+class UserLockRequest(BaseModel):
+    is_active: bool
+
+
+class ForcePasswordResetRequest(BaseModel):
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if not PASSWORD_REGEX.match(v):
+            raise ValueError(
+                "Password must be at least 12 characters long and include "
+                "at least one uppercase letter, one lowercase letter, "
+                "one number, and one special character."
+            )
+        return v

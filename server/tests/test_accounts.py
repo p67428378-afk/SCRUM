@@ -82,3 +82,91 @@ def test_get_transactions_filtered(client):
     data = tx_resp.json()
     assert data["total"] == 1
     assert data["transactions"][0]["description"] == "Whole Foods"
+
+
+def test_open_account_success(client):
+    token = get_auth_token(client)
+    response = client.post(
+        "/api/v1/accounts",
+        json={"account_type": "Savings", "initial_deposit": 1000.00},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    data = response.json()
+    assert data["account_type"] == "Savings"
+    assert float(data["balance"]) == 1000.00
+    assert data["status"] == "active"
+
+
+def test_get_statements_success(client):
+    token = get_auth_token(client)
+    acc_resp = client.get(
+        "/api/v1/accounts", headers={"Authorization": f"Bearer {token}"}
+    )
+    checking_id = [
+        acc["id"]
+        for acc in acc_resp.json()
+        if acc["account_number_masked"] == "...4321"
+    ][0]
+
+    response = client.get(
+        f"/api/v1/accounts/{checking_id}/statements",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    statements = response.json()
+    assert len(statements) == 3
+    assert "id" in statements[0]
+    assert "statement_period" in statements[0]
+
+
+def test_get_statement_detail_success(client):
+    token = get_auth_token(client)
+    acc_resp = client.get(
+        "/api/v1/accounts", headers={"Authorization": f"Bearer {token}"}
+    )
+    checking_id = [
+        acc["id"]
+        for acc in acc_resp.json()
+        if acc["account_number_masked"] == "...4321"
+    ][0]
+
+    # Get statements list first
+    stmt_resp = client.get(
+        f"/api/v1/accounts/{checking_id}/statements",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    stmt_id = stmt_resp.json()[0]["id"]
+
+    response = client.get(
+        f"/api/v1/accounts/{checking_id}/statements/{stmt_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["id"] == stmt_id
+    assert "starting_balance" in data
+    assert "ending_balance" in data
+
+
+def test_export_transactions_success(client):
+    token = get_auth_token(client)
+    acc_resp = client.get(
+        "/api/v1/accounts", headers={"Authorization": f"Bearer {token}"}
+    )
+    checking_id = [
+        acc["id"]
+        for acc in acc_resp.json()
+        if acc["account_number_masked"] == "...4321"
+    ][0]
+
+    response = client.get(
+        f"/api/v1/accounts/{checking_id}/transactions/export",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.headers["content-type"] == "text/csv; charset=utf-8"
+    assert (
+        "Transaction ID,Date,Description,Category,Amount,Status,Reference ID"
+        in response.text
+    )
