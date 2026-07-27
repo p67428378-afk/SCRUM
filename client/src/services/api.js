@@ -63,6 +63,27 @@ export const accountService = {
     );
     return response.data;
   },
+  openAccount: async (data) => {
+    const response = await api.post("/api/v1/accounts", data);
+    return response.data;
+  },
+  getStatements: async (accountId) => {
+    const response = await api.get(`/api/v1/accounts/${accountId}/statements`);
+    return response.data;
+  },
+  getStatementDetail: async (accountId, statementId) => {
+    const response = await api.get(
+      `/api/v1/accounts/${accountId}/statements/${statementId}`,
+    );
+    return response.data;
+  },
+  exportTransactions: async (accountId) => {
+    const response = await api.get(
+      `/api/v1/accounts/${accountId}/transactions/export`,
+      { responseType: "blob" },
+    );
+    return response.data;
+  },
 };
 
 export const profileService = {
@@ -94,6 +115,27 @@ export const adminService = {
   },
   getLogs: async (params = {}) => {
     const response = await api.get("/api/v1/admin/logs", { params });
+    return response.data;
+  },
+  openAccount: async (data) => {
+    const response = await api.post("/api/v1/admin/accounts", data);
+    return response.data;
+  },
+  updateAccount: async (accountId, data) => {
+    const response = await api.put(`/api/v1/admin/accounts/${accountId}`, data);
+    return response.data;
+  },
+  lockUser: async (userId, isActive) => {
+    const response = await api.put(`/api/v1/admin/users/${userId}/lock`, {
+      is_active: isActive,
+    });
+    return response.data;
+  },
+  forcePasswordReset: async (userId, newPassword) => {
+    const response = await api.post(
+      `/api/v1/admin/users/${userId}/force-password-reset`,
+      { new_password: newPassword },
+    );
     return response.data;
   },
 };

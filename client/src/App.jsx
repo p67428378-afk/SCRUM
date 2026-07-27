@@ -11,6 +11,7 @@ import DashboardPage from "./pages/DashboardPage";
 import AccountDetailsPage from "./pages/AccountDetailsPage";
 import TransfersPage from "./pages/TransfersPage";
 import AdminSupportPage from "./pages/AdminSupportPage";
+import StatementsPage from "./pages/StatementsPage";
 import Button from "./components/common/Button";
 import { profileService } from "./services/api";
 
@@ -294,6 +295,19 @@ export default function App() {
             user ? (
               <AppLayout user={user}>
                 <ProfilePage />
+              </AppLayout>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/statements"
+          element={
+            user ? (
+              <AppLayout user={user}>
+                <StatementsPage />
               </AppLayout>
             ) : (
               <Navigate to="/login" replace />

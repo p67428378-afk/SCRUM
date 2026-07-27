@@ -8,6 +8,7 @@ import {
   ShieldAlert,
   LogOut,
   Plus,
+  FileText,
 } from "lucide-react";
 import { authService } from "../../services/api";
 
@@ -33,6 +34,7 @@ export default function Sidebar({ user, onNewTransaction }) {
     { path: "/accounts", label: "Accounts", icon: Landmark },
     { path: "/transfers", label: "Transfers", icon: ArrowLeftRight },
     { path: "/profile", label: "Profile & Alerts", icon: User },
+    { path: "/statements", label: "Statements", icon: FileText },
   ];
 
   if (user?.role === "admin") {

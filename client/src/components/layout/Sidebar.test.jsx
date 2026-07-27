@@ -21,6 +21,7 @@ describe("Sidebar Component", () => {
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Accounts")).toBeInTheDocument();
     expect(screen.getByText("Transfers")).toBeInTheDocument();
+    expect(screen.getByText("Statements")).toBeInTheDocument();
   });
 
   it("renders admin support link only for admin users", () => {
