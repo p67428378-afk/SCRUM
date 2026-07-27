@@ -1,3 +1,4 @@
+# Apex Bank API - Secure, scalable, and regulatorily compliant online banking platform API
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
