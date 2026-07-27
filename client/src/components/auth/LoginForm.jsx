@@ -27,12 +27,10 @@ export default function LoginForm({ onLoginSuccess }) {
     <div className="w-full max-w-md p-8 glass-card rounded-xl shadow-lg">
       <div className="text-center mb-8">
         <div className="w-12 h-12 rounded-full bg-brand-indigo flex items-center justify-center text-white font-bold text-xl mx-auto mb-3">
-          TF
+          AB
         </div>
         <h2 className="text-2xl font-bold text-on-surface">Secure Login</h2>
-        <p className="text-sm text-on-surface-variant mt-1">
-          Toyota Financial Savings Bank
-        </p>
+        <p className="text-sm text-on-surface-variant mt-1">Apex Bank</p>
       </div>
 
       {error && (

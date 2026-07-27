@@ -17,7 +17,7 @@ describe("Sidebar Component", () => {
       </BrowserRouter>,
     );
 
-    expect(screen.getByText("Toyota Financial")).toBeInTheDocument();
+    expect(screen.getByText("Apex Bank")).toBeInTheDocument();
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Accounts")).toBeInTheDocument();
     expect(screen.getByText("Transfers")).toBeInTheDocument();

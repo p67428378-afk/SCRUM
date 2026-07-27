@@ -47,13 +47,11 @@ export default function Sidebar({ user, onNewTransaction }) {
     <aside className="fixed left-0 top-0 h-screen w-sidebar-width bg-surface border-r border-outline-variant flex flex-col py-6 z-20">
       <div className="px-6 mb-8 flex items-center gap-2">
         <div className="w-10 h-10 rounded-full bg-brand-indigo flex items-center justify-center text-white font-bold">
-          TF
+          AB
         </div>
         <div>
-          <div className="text-lg font-bold text-on-surface">
-            Toyota Financial
-          </div>
-          <div className="text-xs text-on-surface-variant">Savings Bank</div>
+          <div className="text-lg font-bold text-on-surface">Apex Bank</div>
+          <div className="text-xs text-on-surface-variant">Online Banking</div>
         </div>
       </div>
 
