@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-bg text-on-background min-h-screen font-sans;
+  }
+}
+
+.glass-card {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.text-emerald {
+  color: #10b981;
+}
+
+.bg-indigo-btn {
+  background-color: #6366f1;
+  color: white;
+}
+
+.bg-indigo-btn:hover {
+  background-color: #4f46e5;
+}
+
+.btn-outline {
+  border: 1px solid #6366f1;
+  color: #6366f1;
+}
+
+.btn-outline:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+}
