@@ -8,6 +8,10 @@ import {
   Send,
   LifeBuoy,
   AlertTriangle,
+  Mail,
+  Bell,
+  Code,
+  Settings,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authService } from "../../services/api";
@@ -15,6 +19,7 @@ import { authService } from "../../services/api";
 export const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = authService.getCurrentUser();
 
   const handleLogout = async () => {
     try {
@@ -57,7 +62,31 @@ export const Sidebar = () => {
       path: "/compliance",
       icon: <AlertTriangle className="w-5 h-5" />,
     },
+    {
+      name: "Secure Messages",
+      path: "/messages",
+      icon: <Mail className="w-5 h-5" />,
+    },
+    {
+      name: "Alerts & Preferences",
+      path: "/alerts",
+      icon: <Bell className="w-5 h-5" />,
+    },
+    {
+      name: "Developer Settings",
+      path: "/settings/developer",
+      icon: <Code className="w-5 h-5" />,
+    },
   ];
+
+  // Only show Admin Config to admin users
+  if (user && user.role === "admin") {
+    menuItems.push({
+      name: "System Config",
+      path: "/admin/config",
+      icon: <Settings className="w-5 h-5" />,
+    });
+  }
 
   return (
     <aside className="w-64 bg-slate-800 border-r border-slate-700 flex flex-col h-screen sticky top-0">

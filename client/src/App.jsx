@@ -13,6 +13,10 @@ import TransactionHistoryPage from "./pages/TransactionHistoryPage";
 import TransfersPage from "./pages/TransfersPage";
 import SupportConsolePage from "./pages/SupportConsolePage";
 import CompliancePage from "./pages/CompliancePage";
+import MessagesPage from "./pages/MessagesPage";
+import AlertsPage from "./pages/AlertsPage";
+import DeveloperSettingsPage from "./pages/DeveloperSettingsPage";
+import AdminConfigPage from "./pages/AdminConfigPage";
 import AppLayout from "./components/layout/AppLayout";
 import { authService } from "./services/api";
 
@@ -95,6 +99,38 @@ function App() {
           element={
             <ProtectedRoute>
               <CompliancePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <MessagesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/alerts"
+          element={
+            <ProtectedRoute>
+              <AlertsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/developer"
+          element={
+            <ProtectedRoute>
+              <DeveloperSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/config"
+          element={
+            <ProtectedRoute>
+              <AdminConfigPage />
             </ProtectedRoute>
           }
         />

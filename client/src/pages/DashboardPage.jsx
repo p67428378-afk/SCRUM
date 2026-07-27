@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import api from "../services/api";
 import AccountCard from "../components/dashboard/AccountCard";
 import QuickActions from "../components/dashboard/QuickActions";
+import CoreBankingStatus from "../components/dashboard/CoreBankingStatus";
 import { useNavigate } from "react-router-dom";
 
 export const DashboardPage = () => {
@@ -83,6 +84,9 @@ export const DashboardPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Core Banking Status Widget */}
+      <CoreBankingStatus />
 
       {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400">
