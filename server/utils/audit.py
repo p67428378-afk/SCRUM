@@ -43,6 +43,7 @@ def log_event(
     # Persist to database
     try:
         import uuid
+
         from server.models.banking import AuditLog
 
         db_log = AuditLog(

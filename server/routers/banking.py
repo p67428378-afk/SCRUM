@@ -38,34 +38,47 @@ def get_current_user(current_data=Depends(get_current_user_and_session)):
     return user
 
 
+def generate_unique_account_number(db: Session) -> str:
+    while True:
+        account_number = "".join(random.choices("0123456789", k=10))
+        exists = (
+            db.query(Account).filter(Account.account_number == account_number).first()
+        )
+        if not exists:
+            return account_number
+
+
 def ensure_user_accounts(db: Session, user_id: UUID):
     # Check if user has any accounts. If not, seed default accounts.
     accounts = db.query(Account).filter(Account.user_id == user_id).all()
     if not accounts:
+        checking_num = generate_unique_account_number(db)
         checking = Account(
             id=uuid.uuid4(),
             user_id=user_id,
-            account_number="1234567890",
+            account_number=checking_num,
             account_type="checking",
             balance=12450.82,
             available_balance=12450.82,
             currency="USD",
             status="active",
         )
+        savings_num = generate_unique_account_number(db)
         savings = Account(
             id=uuid.uuid4(),
             user_id=user_id,
-            account_number="0987654321",
+            account_number=savings_num,
             account_type="savings",
             balance=45120.45,
             available_balance=45120.45,
             currency="USD",
             status="active",
         )
+        credit_num = generate_unique_account_number(db)
         credit = Account(
             id=uuid.uuid4(),
             user_id=user_id,
-            account_number="5555444433",
+            account_number=credit_num,
             account_type="credit",
             balance=1240.15,
             available_balance=8759.85,  # limit 10000

@@ -216,3 +216,34 @@ def test_alert_preferences(client):
     get_updated = client.get("/api/v1/alerts/preferences", headers=headers).json()
     assert get_updated["push_enabled"] is False
     assert get_updated["low_balance_threshold"] == 50.00
+
+
+def test_multiple_users_unique_accounts(client):
+    # Get accounts for regular user
+    headers_user = get_auth_headers(
+        client, username="testuser", password="testpassword"
+    )
+    response_user = client.get("/api/v1/accounts", headers=headers_user)
+    assert response_user.status_code == 200
+    accounts_user = response_user.json()
+    assert len(accounts_user) == 3
+    user_acc_nums = {a["account_number"] for a in accounts_user}
+    assert len(user_acc_nums) == 3
+    for num in user_acc_nums:
+        assert len(num) == 10
+        assert num.isdigit()
+
+    # Get accounts for admin user
+    headers_admin = get_auth_headers(client, username="admin", password="adminpassword")
+    response_admin = client.get("/api/v1/accounts", headers=headers_admin)
+    assert response_admin.status_code == 200
+    accounts_admin = response_admin.json()
+    assert len(accounts_admin) == 3
+    admin_acc_nums = {a["account_number"] for a in accounts_admin}
+    assert len(admin_acc_nums) == 3
+    for num in admin_acc_nums:
+        assert len(num) == 10
+        assert num.isdigit()
+
+    # Ensure no overlap between user and admin account numbers
+    assert user_acc_nums.isdisjoint(admin_acc_nums)
