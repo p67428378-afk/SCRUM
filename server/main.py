@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Toyota Financial Savings Bank API",
+    title="Apex Bank API",
     description="Secure, scalable, and regulatorily compliant online banking platform API",
     version="1.0.0",
     lifespan=lifespan,
