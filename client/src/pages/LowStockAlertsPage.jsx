@@ -33,12 +33,21 @@ const LowStockAlertsPage = ({ setAlertsCount }) => {
     },
   ];
 
+  const extractArray = (value, preferredKeys = []) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    for (const key of preferredKeys) {
+      if (Array.isArray(value[key])) return value[key];
+    }
+    return [];
+  };
+
   const loadAlerts = async () => {
     try {
       setLoading(true);
       setError("");
       const data = await getAlerts();
-      const list = data.alerts || data || [];
+      const list = extractArray(data, ["alerts", "items", "data"]);
       const finalAlerts = list.length > 0 ? list : mockAlerts;
       setAlerts(finalAlerts);
       if (setAlertsCount) {

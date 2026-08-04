@@ -41,12 +41,21 @@ const ItemCatalogPage = () => {
     },
   ];
 
+  const extractArray = (value, preferredKeys = []) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    for (const key of preferredKeys) {
+      if (Array.isArray(value[key])) return value[key];
+    }
+    return [];
+  };
+
   const loadItems = async () => {
     try {
       setLoading(true);
       setError("");
       const data = await getItems();
-      const list = data.items || data || [];
+      const list = extractArray(data, ["items", "data"]);
       setItems(list.length > 0 ? list : mockCatalog);
     } catch (err) {
       console.error("Failed to load catalog:", err);

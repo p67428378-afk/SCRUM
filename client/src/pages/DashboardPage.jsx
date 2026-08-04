@@ -63,6 +63,15 @@ const DashboardPage = ({ selectedWarehouse, setAlertsCount }) => {
     },
   ];
 
+  const extractArray = (value, preferredKeys = []) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    for (const key of preferredKeys) {
+      if (Array.isArray(value[key])) return value[key];
+    }
+    return [];
+  };
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -81,18 +90,18 @@ const DashboardPage = ({ selectedWarehouse, setAlertsCount }) => {
 
       let invData =
         invRes.status === "fulfilled"
-          ? invRes.value.items || invRes.value || []
+          ? extractArray(invRes.value, ["inventory", "items", "data"])
           : [];
       let itemData =
         itemsRes.status === "fulfilled"
-          ? itemsRes.value.items || itemsRes.value || []
+          ? extractArray(itemsRes.value, ["items", "data"])
           : [];
       let alertData =
         alertsRes.status === "fulfilled"
-          ? alertsRes.value.alerts || alertsRes.value || []
+          ? extractArray(alertsRes.value, ["alerts", "data"])
           : [];
 
-      if (invData.length === 0) {
+      if (!invData || invData.length === 0) {
         invData = mockInventory;
       }
 
@@ -115,16 +124,18 @@ const DashboardPage = ({ selectedWarehouse, setAlertsCount }) => {
     loadDashboardData();
   }, [selectedWarehouse]);
 
+  const safeInventory = Array.isArray(inventory) ? inventory : [];
+
   // Derived KPIs
-  const totalItemsOnHand = inventory.reduce(
+  const totalItemsOnHand = safeInventory.reduce(
     (sum, item) => sum + (item.quantity_on_hand || 0),
     0,
   );
-  const activeSKUs = new Set(inventory.map((i) => i.sku)).size;
-  const lowStockAlerts = inventory.filter(
+  const activeSKUs = new Set(safeInventory.map((i) => i.sku)).size;
+  const lowStockAlerts = safeInventory.filter(
     (i) => i.quantity_on_hand <= (i.reorder_threshold || 10),
   ).length;
-  const totalValuation = inventory.reduce(
+  const totalValuation = safeInventory.reduce(
     (sum, item) => sum + (item.quantity_on_hand || 0) * (item.unit_price || 20),
     0,
   );
@@ -198,7 +209,7 @@ const DashboardPage = ({ selectedWarehouse, setAlertsCount }) => {
       </div>
 
       <InventoryTable
-        inventory={inventory}
+        inventory={safeInventory}
         loading={loading}
         onOpenAdjustModal={handleOpenAdjustModal}
         onOpenItemDrawer={handleOpenItemDrawer}

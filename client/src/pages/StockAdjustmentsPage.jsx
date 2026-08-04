@@ -35,12 +35,21 @@ const StockAdjustmentsPage = () => {
     },
   ];
 
+  const extractArray = (value, preferredKeys = []) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    for (const key of preferredKeys) {
+      if (Array.isArray(value[key])) return value[key];
+    }
+    return [];
+  };
+
   const loadAdjustments = async () => {
     try {
       setLoading(true);
       setError("");
       const data = await getStockAdjustments();
-      const list = data.adjustments || data || [];
+      const list = extractArray(data, ["adjustments", "items", "data"]);
       setAdjustments(list.length > 0 ? list : mockAdjustments);
     } catch (err) {
       console.error("Failed to load adjustments:", err);
