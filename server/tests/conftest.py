@@ -15,6 +15,7 @@ os.environ["TESTING"] = "true"
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 from server.app.database import Base, get_db
+from server.app.seed_data import seed_data
 from server.app.main import app
 
 # Create in-memory SQLite engine with StaticPool
@@ -35,6 +36,7 @@ def db():
     Base.metadata.create_all(bind=engine)
     session = TestingSessionLocal()
     try:
+        seed_data(session)
         yield session
     finally:
         session.close()

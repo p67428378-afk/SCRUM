@@ -1,0 +1,2782 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Real-Time Bus Tracking API",
+    "description": "Live transit geolocation, route schedules, ETAs, and admin fleet management API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/residents/{id}": {
+      "put": {
+        "tags": [
+          "residents"
+        ],
+        "summary": "Update Resident",
+        "description": "Update resident profile and their family members.",
+        "operationId": "update_resident_api_v1_residents__id__put",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResidentUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResidentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/maintenance-requests": {
+      "post": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Create Maintenance Request",
+        "description": "Submit a new maintenance request.",
+        "operationId": "create_maintenance_request_api_v1_maintenance_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceRequestCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/maintenance-requests/{id}": {
+      "get": {
+        "tags": [
+          "maintenance"
+        ],
+        "summary": "Get Maintenance Request",
+        "description": "Get maintenance request details.",
+        "operationId": "get_maintenance_request_api_v1_maintenance_requests__id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bills": {
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Get Bills",
+        "description": "Get outstanding dues.",
+        "operationId": "get_bills_api_v1_bills_get",
+        "parameters": [
+          {
+            "name": "resident_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Resident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BillResponse"
+                  },
+                  "title": "Response Get Bills Api V1 Bills Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Make Payment",
+        "description": "Make a payment for a bill.",
+        "operationId": "make_payment_api_v1_payments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/announcements": {
+      "get": {
+        "tags": [
+          "communication"
+        ],
+        "summary": "Get Announcements",
+        "description": "Get announcements.",
+        "operationId": "get_announcements_api_v1_announcements_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AnnouncementResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Announcements Api V1 Announcements Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/discussions": {
+      "get": {
+        "tags": [
+          "communication"
+        ],
+        "summary": "Get Discussions",
+        "description": "Get discussion forums.",
+        "operationId": "get_discussions_api_v1_discussions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DiscussionResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Discussions Api V1 Discussions Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/discussions/{id}/comments": {
+      "post": {
+        "tags": [
+          "communication"
+        ],
+        "summary": "Post Comment",
+        "description": "Post a comment in a discussion.",
+        "operationId": "post_comment_api_v1_discussions__id__comments_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/facilities": {
+      "get": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Get Facilities",
+        "description": "Get list of facilities.",
+        "operationId": "get_facilities_api_v1_facilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FacilityResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Facilities Api V1 Facilities Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/facilities/{id}/availability": {
+      "get": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Get Facility Availability",
+        "description": "Get facility availability for a specific date (YYYY-MM-DD).",
+        "operationId": "get_facility_availability_api_v1_facilities__id__availability_get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AvailabilityResponse"
+                  },
+                  "title": "Response Get Facility Availability Api V1 Facilities  Id  Availability Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bookings": {
+      "post": {
+        "tags": [
+          "facilities"
+        ],
+        "summary": "Book Facility",
+        "description": "Book a facility.",
+        "operationId": "book_facility_api_v1_bookings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/visitors/pre-approve": {
+      "post": {
+        "tags": [
+          "visitors"
+        ],
+        "summary": "Pre Approve Visitor",
+        "description": "Pre-approve a visitor.",
+        "operationId": "pre_approve_visitor_api_v1_visitors_pre_approve_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisitorPreApprove"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisitorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/visitors/log": {
+      "get": {
+        "tags": [
+          "visitors"
+        ],
+        "summary": "Get Visitor Log",
+        "description": "Get visitor log.",
+        "operationId": "get_visitor_log_api_v1_visitors_log_get",
+        "parameters": [
+          {
+            "name": "resident_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Resident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VisitorResponse"
+                  },
+                  "title": "Response Get Visitor Log Api V1 Visitors Log Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routes": {
+      "get": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "List Routes",
+        "operationId": "list_routes_api_v1_routes_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by route name or code",
+              "title": "Q"
+            },
+            "description": "Search by route name or code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RouteResponse"
+                  },
+                  "title": "Response List Routes Api V1 Routes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Create Route",
+        "operationId": "create_route_api_v1_routes_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routes/{route_id}": {
+      "get": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Get Route Details",
+        "operationId": "get_route_details_api_v1_routes__route_id__get",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Route Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Delete Route",
+        "operationId": "delete_route_api_v1_routes__route_id__delete",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Route Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stops/search": {
+      "get": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Search Stops",
+        "operationId": "search_stops_api_v1_stops_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Autocomplete query for stop name or address",
+              "title": "Q"
+            },
+            "description": "Autocomplete query for stop name or address"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StopResponse"
+                  },
+                  "title": "Response Search Stops Api V1 Stops Search Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stops": {
+      "get": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "List Stops",
+        "operationId": "list_stops_api_v1_stops_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StopResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Stops Api V1 Stops Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Create Stop",
+        "operationId": "create_stop_api_v1_stops_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StopCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StopResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stops/{stop_id}/eta": {
+      "get": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Get Stop Eta",
+        "operationId": "get_stop_eta_api_v1_stops__stop_id__eta_get",
+        "parameters": [
+          {
+            "name": "stop_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Stop Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StopETASummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/buses": {
+      "get": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "List Buses",
+        "operationId": "list_buses_api_v1_buses_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BusResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Buses Api V1 Buses Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Create Bus",
+        "operationId": "create_bus_api_v1_buses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/buses/telemetry": {
+      "post": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Ingest Telemetry",
+        "operationId": "ingest_telemetry_api_v1_buses_telemetry_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelemetryIngest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alerts": {
+      "post": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "Create Alert",
+        "operationId": "create_alert_api_v1_alerts_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Bus Tracking"
+        ],
+        "summary": "List Alerts",
+        "operationId": "list_alerts_api_v1_alerts_get",
+        "parameters": [
+          {
+            "name": "user_email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AlertResponse"
+                  },
+                  "title": "Response List Alerts Api V1 Alerts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint.",
+        "operationId": "health_check__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlertCreate": {
+        "properties": {
+          "user_email": {
+            "type": "string",
+            "title": "User Email"
+          },
+          "bus_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bus Id"
+          },
+          "stop_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Id"
+          },
+          "threshold_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold Minutes",
+            "default": 5
+          },
+          "threshold_miles": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold Miles",
+            "default": 1.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_email"
+        ],
+        "title": "AlertCreate"
+      },
+      "AlertResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "user_email": {
+            "type": "string",
+            "title": "User Email"
+          },
+          "bus_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bus Id"
+          },
+          "stop_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Id"
+          },
+          "threshold_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold Minutes",
+            "default": 5
+          },
+          "threshold_miles": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold Miles",
+            "default": 1.0
+          },
+          "is_triggered": {
+            "type": "boolean",
+            "title": "Is Triggered"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user_email",
+          "is_triggered",
+          "created_at"
+        ],
+        "title": "AlertResponse"
+      },
+      "AnnouncementResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "content",
+          "created_at"
+        ],
+        "title": "AnnouncementResponse"
+      },
+      "AvailabilityResponse": {
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Time"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start_time",
+          "end_time",
+          "available"
+        ],
+        "title": "AvailabilityResponse"
+      },
+      "BillResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Amount"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "resident_id",
+          "amount",
+          "due_date",
+          "status",
+          "description"
+        ],
+        "title": "BillResponse"
+      },
+      "BookingCreate": {
+        "properties": {
+          "facility_id": {
+            "type": "string",
+            "title": "Facility Id"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Time"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "resident_id",
+          "start_time",
+          "end_time",
+          "purpose"
+        ],
+        "title": "BookingCreate"
+      },
+      "BookingResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "facility_id": {
+            "type": "string",
+            "title": "Facility Id"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Time"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "facility_id",
+          "resident_id",
+          "start_time",
+          "end_time",
+          "purpose",
+          "status",
+          "created_at"
+        ],
+        "title": "BookingResponse"
+      },
+      "BusCreate": {
+        "properties": {
+          "bus_number": {
+            "type": "string",
+            "title": "Bus Number"
+          },
+          "license_plate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Plate"
+          },
+          "route_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Id"
+          },
+          "driver_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver Name"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status",
+            "default": "Active"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bus_number"
+        ],
+        "title": "BusCreate"
+      },
+      "BusResponse": {
+        "properties": {
+          "bus_number": {
+            "type": "string",
+            "title": "Bus Number"
+          },
+          "license_plate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Plate"
+          },
+          "route_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Id"
+          },
+          "driver_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver Name"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latitude"
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longitude"
+          },
+          "speed_mph": {
+            "type": "number",
+            "title": "Speed Mph"
+          },
+          "heading": {
+            "type": "number",
+            "title": "Heading"
+          },
+          "last_seen_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Seen At"
+          },
+          "is_stale": {
+            "type": "boolean",
+            "title": "Is Stale",
+            "default": false
+          },
+          "route_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bus_number",
+          "id",
+          "status",
+          "speed_mph",
+          "heading",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BusResponse"
+      },
+      "CardDetails": {
+        "properties": {
+          "card_number": {
+            "type": "string",
+            "title": "Card Number"
+          },
+          "cvv": {
+            "type": "string",
+            "title": "Cvv"
+          },
+          "expiry": {
+            "type": "string",
+            "title": "Expiry"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card_number",
+          "cvv",
+          "expiry"
+        ],
+        "title": "CardDetails"
+      },
+      "CommentCreate": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "resident_id"
+        ],
+        "title": "CommentCreate"
+      },
+      "CommentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "discussion_id": {
+            "type": "string",
+            "title": "Discussion Id"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "resident_name": {
+            "type": "string",
+            "title": "Resident Name"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "discussion_id",
+          "resident_id",
+          "resident_name",
+          "content",
+          "created_at"
+        ],
+        "title": "CommentResponse"
+      },
+      "DiscussionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "resident_name": {
+            "type": "string",
+            "title": "Resident Name"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "comments_count": {
+            "type": "integer",
+            "title": "Comments Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "resident_id",
+          "resident_name",
+          "title",
+          "content",
+          "comments_count",
+          "created_at"
+        ],
+        "title": "DiscussionResponse"
+      },
+      "ETACalculation": {
+        "properties": {
+          "bus_id": {
+            "type": "string",
+            "title": "Bus Id"
+          },
+          "bus_number": {
+            "type": "string",
+            "title": "Bus Number"
+          },
+          "route_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Id"
+          },
+          "route_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route Name"
+          },
+          "distance_miles": {
+            "type": "number",
+            "title": "Distance Miles"
+          },
+          "eta_minutes": {
+            "type": "number",
+            "title": "Eta Minutes"
+          },
+          "arrival_message": {
+            "type": "string",
+            "title": "Arrival Message"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bus_id",
+          "bus_number",
+          "distance_miles",
+          "eta_minutes",
+          "arrival_message",
+          "status"
+        ],
+        "title": "ETACalculation"
+      },
+      "FacilityResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          },
+          "rate": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "capacity",
+          "rate"
+        ],
+        "title": "FacilityResponse"
+      },
+      "FamilyMemberCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "relationship": {
+            "type": "string",
+            "title": "Relationship"
+          },
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "relationship"
+        ],
+        "title": "FamilyMemberCreate"
+      },
+      "FamilyMemberResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "relationship": {
+            "type": "string",
+            "title": "Relationship"
+          },
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "relationship",
+          "id"
+        ],
+        "title": "FamilyMemberResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthCheckResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthCheckResponse"
+      },
+      "MaintenanceRequestCreate": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "description",
+          "priority",
+          "resident_id"
+        ],
+        "title": "MaintenanceRequestCreate"
+      },
+      "MaintenanceRequestResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "resident_id",
+          "category",
+          "description",
+          "priority",
+          "status",
+          "created_at"
+        ],
+        "title": "MaintenanceRequestResponse"
+      },
+      "PaymentCreate": {
+        "properties": {
+          "bill_id": {
+            "type": "string",
+            "title": "Bill Id"
+          },
+          "amount_paid": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Amount Paid"
+          },
+          "payment_method": {
+            "type": "string",
+            "title": "Payment Method"
+          },
+          "card_details": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CardDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "bill_id",
+          "amount_paid",
+          "payment_method"
+        ],
+        "title": "PaymentCreate"
+      },
+      "PaymentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "bill_id": {
+            "type": "string",
+            "title": "Bill Id"
+          },
+          "amount_paid": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Amount Paid"
+          },
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "payment_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Payment Date"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "bill_id",
+          "amount_paid",
+          "transaction_id",
+          "payment_date",
+          "status"
+        ],
+        "title": "PaymentResponse"
+      },
+      "ResidentResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "apartment_number": {
+            "type": "string",
+            "title": "Apartment Number"
+          },
+          "family_members": {
+            "items": {
+              "$ref": "#/components/schemas/FamilyMemberResponse"
+            },
+            "type": "array",
+            "title": "Family Members",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "phone_number",
+          "id",
+          "apartment_number"
+        ],
+        "title": "ResidentResponse"
+      },
+      "ResidentUpdate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number"
+          },
+          "family_members": {
+            "items": {
+              "$ref": "#/components/schemas/FamilyMemberCreate"
+            },
+            "type": "array",
+            "title": "Family Members",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "phone_number"
+        ],
+        "title": "ResidentUpdate"
+      },
+      "RouteCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "path_geojson": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path Geojson"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active",
+            "default": true
+          },
+          "stops": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RouteStopCreate"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stops",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "code"
+        ],
+        "title": "RouteCreate"
+      },
+      "RouteDetailResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "path_geojson": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path Geojson"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active",
+            "default": true
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "route_stops": {
+            "items": {
+              "$ref": "#/components/schemas/RouteStopResponse"
+            },
+            "type": "array",
+            "title": "Route Stops",
+            "default": []
+          },
+          "active_buses": {
+            "items": {
+              "$ref": "#/components/schemas/BusResponse"
+            },
+            "type": "array",
+            "title": "Active Buses",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "code",
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RouteDetailResponse"
+      },
+      "RouteResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "path_geojson": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path Geojson"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active",
+            "default": true
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "code",
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RouteResponse"
+      },
+      "RouteStopCreate": {
+        "properties": {
+          "stop_id": {
+            "type": "string",
+            "title": "Stop Id"
+          },
+          "stop_order": {
+            "type": "integer",
+            "title": "Stop Order"
+          },
+          "estimated_time_offset_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Time Offset Minutes",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "stop_id",
+          "stop_order"
+        ],
+        "title": "RouteStopCreate"
+      },
+      "RouteStopResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "stop_id": {
+            "type": "string",
+            "title": "Stop Id"
+          },
+          "stop_order": {
+            "type": "integer",
+            "title": "Stop Order"
+          },
+          "estimated_time_offset_minutes": {
+            "type": "integer",
+            "title": "Estimated Time Offset Minutes"
+          },
+          "stop": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StopResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "stop_id",
+          "stop_order",
+          "estimated_time_offset_minutes"
+        ],
+        "title": "RouteStopResponse"
+      },
+      "StopCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "latitude",
+          "longitude"
+        ],
+        "title": "StopCreate"
+      },
+      "StopETASummary": {
+        "properties": {
+          "stop_id": {
+            "type": "string",
+            "title": "Stop Id"
+          },
+          "stop_name": {
+            "type": "string",
+            "title": "Stop Name"
+          },
+          "approaching_buses": {
+            "items": {
+              "$ref": "#/components/schemas/ETACalculation"
+            },
+            "type": "array",
+            "title": "Approaching Buses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stop_id",
+          "stop_name",
+          "approaching_buses"
+        ],
+        "title": "StopETASummary"
+      },
+      "StopResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "latitude",
+          "longitude",
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "StopResponse"
+      },
+      "TelemetryIngest": {
+        "properties": {
+          "bus_id": {
+            "type": "string",
+            "title": "Bus Id"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          },
+          "speed_mph": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speed Mph",
+            "default": 0.0
+          },
+          "heading": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heading",
+            "default": 0.0
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bus_id",
+          "latitude",
+          "longitude"
+        ],
+        "title": "TelemetryIngest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VisitorPreApprove": {
+        "properties": {
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "expected_arrival": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expected Arrival"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resident_id",
+          "name",
+          "expected_arrival"
+        ],
+        "title": "VisitorPreApprove"
+      },
+      "VisitorResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "resident_id": {
+            "type": "string",
+            "title": "Resident Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "expected_arrival": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expected Arrival"
+          },
+          "actual_arrival": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Arrival"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "resident_id",
+          "name",
+          "expected_arrival",
+          "status",
+          "created_at"
+        ],
+        "title": "VisitorResponse"
+      }
+    }
+  }
+}
