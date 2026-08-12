@@ -1,4 +1,5 @@
 import os
+import sys
 import uuid
 from typing import Generator, Optional
 from sqlalchemy import create_engine
@@ -6,7 +7,11 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.pool import StaticPool
 
-TESTING = os.getenv("TESTING", "").lower() in ("true", "1")
+TESTING = (
+    os.getenv("TESTING", "").lower() in ("true", "1")
+    or "PYTEST_CURRENT_TEST" in os.environ
+    or "pytest" in sys.modules
+)
 DEFAULT_DB_URL = "sqlite:///:memory:" if TESTING else "sqlite:///./test.db"
 DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
 

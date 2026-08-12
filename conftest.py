@@ -1,37 +1,20 @@
 import os
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
 os.environ["TESTING"] = "true"
 
 import server.database
-from server.database import Base, get_db, seed_data
+from server.database import Base, engine, SessionLocal, get_db, seed_data, init_db
 from server.models import User, Task  # noqa: F401 - ensure models register on Base
 from server.main import app
 from server.auth import create_access_token, get_password_hash
 
-# SQLite in-memory test engine with StaticPool
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
-
-engine = create_engine(
-    SQLALCHEMY_TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Override engine and SessionLocal in server.database so background tasks use test DB
-server.database.engine = engine
-server.database.SessionLocal = TestingSessionLocal
-
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
-    Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
+    init_db()
+    db = SessionLocal()
     seed_data(db)
     db.close()
     yield
@@ -39,7 +22,7 @@ def setup_test_db():
 
 
 def override_get_db():
-    db = TestingSessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
@@ -51,7 +34,7 @@ app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture
 def db_session():
-    db = TestingSessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
