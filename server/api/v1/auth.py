@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from server.database import get_db
+from server.database import get_db, seed_data
 from server.models import User
 from server.schemas import UserCreate, UserResponse, UserLogin, Token
 from server.auth import (
@@ -38,8 +38,21 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(login_in: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == login_in.email).first()
-    if not user or not verify_password(login_in.password, user.hashed_password):
+    login_email = (login_in.email or login_in.username or "").strip()
+    user = (
+        db.query(User)
+        .filter((User.email == login_email) | (User.id == login_email))
+        .first()
+    )
+    if not user:
+        seed_data(db)
+        user = (
+            db.query(User)
+            .filter((User.email == login_email) | (User.id == login_email))
+            .first()
+        )
+
+    if not user or not verify_password(login_in.password, str(user.hashed_password)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -51,7 +64,7 @@ def login(login_in: UserLogin, db: Session = Depends(get_db)):
         )
 
     access_token = create_access_token(
-        data={"sub": user.id, "email": user.email, "role": user.role}
+        data={"sub": str(user.id), "email": str(user.email), "role": str(user.role)}
     )
     return {"access_token": access_token, "token_type": "bearer"}
 

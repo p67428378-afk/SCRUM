@@ -36,7 +36,26 @@ graph TD
 - server/tests/test_tasks.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/components/layout/Navbar.jsx
+- client/src/components/tasks/EscalationAlertBanner.jsx
+- client/src/components/tasks/FailedStateShowcase.jsx
+- client/src/components/tasks/InitiateTaskForm.jsx
+- client/src/components/tasks/LiveTaskBanner.jsx
+- client/src/components/tasks/TaskAuditTable.jsx
+- client/src/components/tasks/TaskDetailCard.jsx
+- client/src/hooks/useTaskTracker.js
+- client/src/main.jsx
+- client/src/pages/LiveTaskMonitorPage.jsx
+- client/src/pages/TaskDashboardPage.jsx
+- client/src/pages/TaskHistoryPage.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/src/tests/TaskDashboard.test.jsx
+- client/src/tests/useTaskTracker.test.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - None

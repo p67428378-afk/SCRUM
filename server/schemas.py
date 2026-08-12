@@ -15,7 +15,8 @@ class TokenData(BaseModel):
 
 
 class UserLogin(BaseModel):
-    email: str
+    email: Optional[str] = None
+    username: Optional[str] = None
     password: str
 
 
