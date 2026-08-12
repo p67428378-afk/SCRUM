@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Text, Boolean, DateTime, JSON, Index
+from sqlalchemy import Column, String, Text, Boolean, DateTime, JSON, Integer, Index
 from server.database import Base
 
 
@@ -37,6 +37,8 @@ class Task(Base):
     status = Column(
         String(20), default="pending", index=True, nullable=False
     )  # pending, success, failed
+    logs = Column(JSON, default=list, nullable=False)
+    logs_count = Column(Integer, default=0, nullable=False)
     result = Column(JSON, nullable=True)
     error_code = Column(String(50), nullable=True)
     error_reason = Column(Text, nullable=True)

@@ -4,6 +4,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 from fastapi import WebSocket
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 import server.database
 from server.models import Task
@@ -44,21 +45,44 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+def append_log(task: Task, level: str, message: str) -> dict:
+    """
+    Appends a structured log entry to task.logs enforcing the 1,000 log line cap.
+    Returns the newly created log_entry dict.
+    """
+    now_str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    log_entry = {
+        "timestamp": now_str,
+        "level": level.upper(),
+        "message": message,
+    }
+
+    current_logs = list(task.logs or [])
+    # Enforce 1,000 max log cap
+    if len(current_logs) >= 1000:
+        current_logs = current_logs[-999:]
+
+    current_logs.append(log_entry)
+    task.logs = current_logs
+    task.logs_count = len(current_logs)
+    flag_modified(task, "logs")
+
+    return log_entry
+
+
 async def process_task(
     task_id: str, action_type: str, parameters: Optional[Dict[str, Any]] = None
 ):
     """
     Background worker function that executes a long-running action,
-    updates task state in DB, and broadcasts WebSocket status updates.
+    appends timestamped log entries, updates task state in DB,
+    and broadcasts real-time WebSocket status/log updates.
     """
     params = parameters or {}
     delay = params.get("processing_delay", 0.0)
     should_fail = params.get("should_fail", False)
     custom_error_code = params.get("error_code")
     custom_error_reason = params.get("error_reason")
-
-    if delay > 0:
-        await asyncio.sleep(delay)
 
     db: Session = server.database.SessionLocal()
     try:
@@ -67,6 +91,48 @@ async def process_task(
             logger.error(f"Task {task_id} not found in background worker")
             return
 
+        # 1. Log processing start
+        log1 = append_log(
+            task,
+            "INFO",
+            f"Pipeline processing started for action '{action_type}'. Task queued.",
+        )
+        task.updated_at = datetime.utcnow()
+        db.commit()
+
+        await manager.broadcast_task_update(
+            task_id,
+            {
+                "event": "log_update",
+                "task_id": task_id,
+                "status": task.status,
+                "new_log": log1,
+            },
+        )
+
+        if delay > 0:
+            await asyncio.sleep(delay)
+
+        # 2. Log step execution
+        log2 = append_log(
+            task,
+            "INFO",
+            "Executing data transformations and validating pipeline constraints...",
+        )
+        task.updated_at = datetime.utcnow()
+        db.commit()
+
+        await manager.broadcast_task_update(
+            task_id,
+            {
+                "event": "log_update",
+                "task_id": task_id,
+                "status": task.status,
+                "new_log": log2,
+            },
+        )
+
+        # Re-query task to update status
         now = datetime.utcnow()
         task.updated_at = now
 
@@ -88,8 +154,14 @@ async def process_task(
                 task.error_code = "PROC_500"
                 task.error_reason = f"Execution failed for action '{action_type}' due to unexpected processing error."
 
+            log_err = append_log(
+                task,
+                "ERROR",
+                f"Task terminated: {task.error_code} - {task.error_reason}",
+            )
             error_data = {"code": task.error_code, "reason": task.error_reason}
             result_data = None
+            final_log = log_err
         else:
             task.status = "success"
             task.error_code = None
@@ -112,22 +184,44 @@ async def process_task(
                     "details": params,
                 }
 
+            log_succ = append_log(
+                task,
+                "INFO",
+                f"Task '{action_type}' completed successfully. All steps finalized.",
+            )
             error_data = None
             result_data = task.result
+            final_log = log_succ
 
         db.commit()
         db.refresh(task)
 
-        # Broadcast update to WS clients
-        ws_payload = {
+        # Broadcast final status update & log update
+        ws_status_payload = {
+            "event": "status_change",
+            "task_id": task.id,
+            "status": task.status,
+            "updated_at": task.updated_at.isoformat(),
+            "new_log": final_log,
+            "logs": task.logs,
+            "result": result_data,
+            "error": error_data,
+            "error_reason": task.error_reason,
+        }
+        await manager.broadcast_task_update(task.id, ws_status_payload)
+
+        ws_compat_payload = {
             "event": "TASK_STATUS_UPDATE",
             "task_id": task.id,
             "status": task.status,
             "updated_at": task.updated_at.isoformat(),
+            "new_log": final_log,
+            "logs": task.logs,
             "result": result_data,
             "error": error_data,
+            "error_reason": task.error_reason,
         }
-        await manager.broadcast_task_update(task.id, ws_payload)
+        await manager.broadcast_task_update(task.id, ws_compat_payload)
 
     except Exception as e:
         logger.exception(

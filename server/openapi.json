@@ -220,6 +220,64 @@
         }
       }
     },
+    "/api/v1/tasks/history": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Get Tasks History",
+        "operationId": "get_tasks_history_api_v1_tasks_history_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskHistoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/tasks/{task_id}": {
       "get": {
         "tags": [
@@ -368,12 +426,63 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "LogEntry": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp",
+            "description": "ISO 8601 UTC timestamp"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "Log level: INFO, WARN, or ERROR",
+            "default": "INFO"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Log message text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "message"
+        ],
+        "title": "LogEntry"
+      },
       "TaskCreateRequest": {
         "properties": {
           "action_type": {
             "type": "string",
             "title": "Action Type",
             "description": "Type of long-running action, e.g. report_generation, file_upload, payment_processing"
+          },
+          "payload_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload Name",
+            "description": "Optional name/identifier of payload"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority",
+            "description": "Optional priority level",
+            "default": "normal"
           },
           "parameters": {
             "anyOf": [
@@ -413,6 +522,89 @@
         ],
         "title": "TaskErrorDetail"
       },
+      "TaskHistoryItem": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "action_type": {
+            "type": "string",
+            "title": "Action Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Reason"
+          },
+          "logs_count": {
+            "type": "integer",
+            "title": "Logs Count",
+            "default": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id",
+          "action_type",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TaskHistoryItem"
+      },
+      "TaskHistoryResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TaskHistoryItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "TaskHistoryResponse"
+      },
       "TaskResponse": {
         "properties": {
           "task_id": {
@@ -435,6 +627,41 @@
           "status_url": {
             "type": "string",
             "title": "Status Url"
+          },
+          "logs": {
+            "items": {
+              "$ref": "#/components/schemas/LogEntry"
+            },
+            "type": "array",
+            "title": "Logs",
+            "default": []
+          },
+          "logs_count": {
+            "type": "integer",
+            "title": "Logs Count",
+            "default": 0
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Reason"
           }
         },
         "type": "object",
@@ -492,6 +719,19 @@
             ],
             "title": "Escalation Message"
           },
+          "logs": {
+            "items": {
+              "$ref": "#/components/schemas/LogEntry"
+            },
+            "type": "array",
+            "title": "Logs",
+            "default": []
+          },
+          "logs_count": {
+            "type": "integer",
+            "title": "Logs Count",
+            "default": 0
+          },
           "result": {
             "anyOf": [
               {},
@@ -510,6 +750,28 @@
                 "type": "null"
               }
             ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Reason"
           }
         },
         "type": "object",

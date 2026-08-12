@@ -1,11 +1,12 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
     BackgroundTasks,
     Response,
+    Query,
     status,
     WebSocket,
     WebSocketDisconnect,
@@ -18,7 +19,10 @@ from server.schemas import (
     TaskCreateRequest,
     TaskResponse,
     TaskStatusDetailResponse,
+    TaskHistoryResponse,
+    TaskHistoryItem,
     TaskErrorDetail,
+    LogEntry,
 )
 from server.auth import get_current_user
 from server.services.task_engine import process_task, manager
@@ -36,8 +40,19 @@ def create_task(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    now_str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    initial_log = {
+        "timestamp": now_str,
+        "level": "INFO",
+        "message": f"Task created and queued for action '{task_in.action_type}'.",
+    }
+
     task = Task(
-        user_id=current_user.id, action_type=task_in.action_type, status="pending"
+        user_id=current_user.id,
+        action_type=task_in.action_type,
+        status="pending",
+        logs=[initial_log],
+        logs_count=1,
     )
     db.add(task)
     db.commit()
@@ -57,7 +72,40 @@ def create_task(
         "action_type": task.action_type,
         "created_at": task.created_at,
         "status_url": status_url,
+        "logs": task.logs or [],
+        "logs_count": task.logs_count or len(task.logs or []),
+        "error_code": task.error_code,
+        "error_reason": task.error_reason,
     }
+
+
+@router.get("/tasks/history", response_model=TaskHistoryResponse)
+def get_tasks_history(
+    skip: int = 0,
+    limit: int = 50,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Task).filter(Task.user_id == current_user.id)
+    total = query.count()
+    tasks = query.order_by(Task.created_at.desc()).offset(skip).limit(limit).all()
+
+    items = []
+    for task in tasks:
+        items.append(
+            TaskHistoryItem(
+                task_id=task.id,
+                action_type=task.action_type,
+                status=task.status,
+                error_code=task.error_code,
+                error_reason=task.error_reason,
+                logs_count=task.logs_count or len(task.logs or []),
+                created_at=task.created_at,
+                updated_at=task.updated_at,
+            )
+        )
+
+    return TaskHistoryResponse(items=items, total=total)
 
 
 @router.get("/tasks/{task_id}/status", response_model=TaskStatusDetailResponse)
@@ -93,6 +141,15 @@ def get_task_status(
     if task.error_code and task.error_reason:
         error_detail = TaskErrorDetail(code=task.error_code, reason=task.error_reason)
 
+    logs_list = [
+        LogEntry(
+            timestamp=log.get("timestamp", ""),
+            level=log.get("level", "INFO"),
+            message=log.get("message", ""),
+        )
+        for log in (task.logs or [])
+    ]
+
     return {
         "task_id": task.id,
         "status": task.status,
@@ -102,8 +159,12 @@ def get_task_status(
         "elapsed_seconds": elapsed,
         "is_escalated": is_escalated,
         "escalation_message": escalation_message,
+        "logs": logs_list,
+        "logs_count": task.logs_count or len(logs_list),
         "result": task.result,
         "error": error_detail,
+        "error_code": task.error_code,
+        "error_reason": task.error_reason,
     }
 
 
@@ -140,6 +201,15 @@ def list_tasks(
                 code=task.error_code, reason=task.error_reason
             )
 
+        logs_list = [
+            LogEntry(
+                timestamp=log.get("timestamp", ""),
+                level=log.get("level", "INFO"),
+                message=log.get("message", ""),
+            )
+            for log in (task.logs or [])
+        ]
+
         result_list.append(
             {
                 "task_id": task.id,
@@ -150,19 +220,25 @@ def list_tasks(
                 "elapsed_seconds": elapsed,
                 "is_escalated": is_escalated,
                 "escalation_message": escalation_message,
+                "logs": logs_list,
+                "logs_count": task.logs_count or len(logs_list),
                 "result": task.result,
                 "error": error_detail,
+                "error_code": task.error_code,
+                "error_reason": task.error_reason,
             }
         )
     return result_list
 
 
 async def websocket_task_status(
-    websocket: WebSocket, task_id: str, db: Session = Depends(get_db)
+    websocket: WebSocket,
+    task_id: str,
+    token: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
 ):
     await manager.connect(task_id, websocket)
     try:
-        # Send current task status on initial connect
         task = db.query(Task).filter(Task.id == task_id).first()
         if task:
             now = datetime.utcnow()
@@ -186,8 +262,10 @@ async def websocket_task_status(
                 "elapsed_seconds": elapsed,
                 "is_escalated": is_escalated,
                 "escalation_message": escalation_message,
+                "logs": task.logs or [],
                 "result": task.result,
                 "error": error_detail,
+                "error_reason": task.error_reason,
             }
             await websocket.send_json(initial_payload)
 

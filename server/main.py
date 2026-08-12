@@ -1,6 +1,7 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, WebSocket
+from typing import Optional
+from fastapi import FastAPI, Depends, WebSocket, Query
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
@@ -48,9 +49,12 @@ app.include_router(tasks_router)
 # Register WebSocket endpoint directly on app
 @app.websocket("/api/v1/ws/tasks/{task_id}")
 async def ws_app_direct(
-    websocket: WebSocket, task_id: str, db: Session = Depends(get_db)
+    websocket: WebSocket,
+    task_id: str,
+    token: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
 ):
-    await websocket_task_status(websocket, task_id, db)
+    await websocket_task_status(websocket, task_id, token, db)
 
 
 @app.get("/health", tags=["Health"])
