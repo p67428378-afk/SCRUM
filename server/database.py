@@ -6,14 +6,16 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.pool import StaticPool
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+TESTING = os.getenv("TESTING", "").lower() in ("true", "1")
+DEFAULT_DB_URL = "sqlite:///:memory:" if TESTING else "sqlite:///./test.db"
+DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
 
 connect_args = {}
 engine_kwargs = {}
 
 if DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
-    if ":memory:" in DATABASE_URL:
+    if ":memory:" in DATABASE_URL or TESTING:
         engine_kwargs["poolclass"] = StaticPool
 
 engine = create_engine(

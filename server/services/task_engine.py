@@ -52,7 +52,7 @@ async def process_task(
     updates task state in DB, and broadcasts WebSocket status updates.
     """
     params = parameters or {}
-    delay = params.get("processing_delay", 0.05)
+    delay = params.get("processing_delay", 0.0)
     should_fail = params.get("should_fail", False)
     custom_error_code = params.get("error_code")
     custom_error_reason = params.get("error_reason")
