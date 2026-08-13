@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy manifest only and install dependencies cleanly
 COPY client/package.json ./
-RUN npm install --force
+RUN npm install --force --force
 
 # Copy source and build
 COPY client/ ./
