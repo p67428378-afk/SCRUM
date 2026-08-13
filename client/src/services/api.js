@@ -107,4 +107,9 @@ export const getMyLoans = async () => {
   return response.data;
 };
 
+export const getAdminAnalytics = async () => {
+  const response = await api.get("/api/v1/admin/analytics");
+  return response.data;
+};
+
 export default api;

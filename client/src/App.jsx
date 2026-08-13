@@ -10,6 +10,7 @@ import Navbar from "./components/layout/Navbar";
 import CatalogPage from "./pages/CatalogPage";
 import MyLoansPage from "./pages/MyLoansPage";
 import AdminInventoryPage from "./pages/AdminInventoryPage";
+import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 
@@ -60,6 +61,14 @@ export const App = () => {
                 element={
                   <ProtectedRoute requireLibrarian={true}>
                     <AdminInventoryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/analytics"
+                element={
+                  <ProtectedRoute requireLibrarian={true}>
+                    <AdminAnalyticsPage />
                   </ProtectedRoute>
                 }
               />

@@ -7,6 +7,7 @@ import {
   LogOut,
   User,
   ShieldCheck,
+  BarChart2,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../common/Button";
@@ -64,17 +65,31 @@ export const Navbar = () => {
               )}
 
               {isLibrarian && (
-                <Link
-                  to="/admin"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive("/admin")
-                      ? "bg-purple-50 text-purple-700"
-                      : "text-slate-600 hover:bg-slate-100"
-                  }`}
-                >
-                  <Settings size={16} />
-                  <span>Librarian Admin</span>
-                </Link>
+                <>
+                  <Link
+                    to="/admin"
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive("/admin")
+                        ? "bg-purple-50 text-purple-700"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <Settings size={16} />
+                    <span>Inventory</span>
+                  </Link>
+
+                  <Link
+                    to="/admin/analytics"
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive("/admin/analytics")
+                        ? "bg-purple-50 text-purple-700"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <BarChart2 size={16} />
+                    <span>Analytics</span>
+                  </Link>
+                </>
               )}
             </nav>
           </div>
