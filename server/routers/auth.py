@@ -46,18 +46,18 @@ async def login(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    content_type = request.headers.get("content-type", "")
     email = None
     password = None
 
-    if "application/json" in content_type:
-        try:
-            body = await request.json()
+    try:
+        body = await request.json()
+        if isinstance(body, dict):
             email = body.get("email") or body.get("username")
             password = body.get("password")
-        except Exception:
-            pass
-    else:
+    except Exception:
+        pass
+
+    if not email or not password:
         try:
             form = await request.form()
             email = form.get("username") or form.get("email")
@@ -109,7 +109,7 @@ def refresh_token(current_user: models.User = Depends(get_current_user)):
         data={
             "sub": current_user.id,
             "role": current_user.role.value
-            if hasattr(user_role := current_user.role, "value")
+            if hasattr(current_user.role, "value")
             else str(current_user.role),
         }
     )

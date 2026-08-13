@@ -53,8 +53,14 @@ graph TD
 - client/postcss.config.js
 - client/src/App.jsx
 - client/src/App.test.jsx
+- client/src/components/admin/AnalyticsDashboard.jsx
+- client/src/components/admin/AnalyticsDashboard.test.jsx
 - client/src/components/admin/BookFormCard.jsx
+- client/src/components/admin/GenrePopularityChart.jsx
+- client/src/components/admin/GenrePopularityChart.test.jsx
 - client/src/components/admin/InventoryTable.jsx
+- client/src/components/admin/PurchasingRecommendationTable.jsx
+- client/src/components/admin/PurchasingRecommendationTable.test.jsx
 - client/src/components/catalog/BookCard.jsx
 - client/src/components/common/Badge.jsx
 - client/src/components/common/Button.jsx
@@ -64,6 +70,8 @@ graph TD
 - client/src/components/loans/LoansTable.jsx
 - client/src/context/AuthContext.jsx
 - client/src/main.jsx
+- client/src/pages/AdminAnalyticsPage.jsx
+- client/src/pages/AdminAnalyticsPage.test.jsx
 - client/src/pages/AdminInventoryPage.jsx
 - client/src/pages/CatalogPage.jsx
 - client/src/pages/LoginPage.jsx

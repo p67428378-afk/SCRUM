@@ -19,11 +19,16 @@ def test_checkout_book_success(client, member_headers):
 
 
 def test_renew_loan_success(client, member_headers):
-    # Get user's active loans
-    my_loans_res = client.get("/api/v1/loans/my-loans", headers=member_headers)
-    loans = my_loans_res.json()
-    assert len(loans) > 0
-    loan_id = loans[0]["id"]
+    # Checkout a book first
+    list_res = client.get("/api/v1/books")
+    book = list_res.json()["items"][0]
+    checkout_res = client.post(
+        "/api/v1/loans/checkout",
+        json={"book_id": book["id"]},
+        headers=member_headers,
+    )
+    assert checkout_res.status_code == 201
+    loan_id = checkout_res.json()["id"]
 
     renew_res = client.post(f"/api/v1/loans/renew/{loan_id}", headers=member_headers)
     assert renew_res.status_code == 200
@@ -32,19 +37,37 @@ def test_renew_loan_success(client, member_headers):
 
 
 def test_renew_loan_twice_fails(client, member_headers):
-    my_loans_res = client.get("/api/v1/loans/my-loans", headers=member_headers)
-    loans = my_loans_res.json()
-    loan_id = loans[0]["id"]
+    # Checkout a book first and renew it once
+    list_res = client.get("/api/v1/books")
+    book = list_res.json()["items"][0]
+    checkout_res = client.post(
+        "/api/v1/loans/checkout",
+        json={"book_id": book["id"]},
+        headers=member_headers,
+    )
+    assert checkout_res.status_code == 201
+    loan_id = checkout_res.json()["id"]
 
-    renew_res = client.post(f"/api/v1/loans/renew/{loan_id}", headers=member_headers)
-    assert renew_res.status_code == 400
-    assert "already been renewed" in renew_res.json()["detail"]
+    renew_res1 = client.post(f"/api/v1/loans/renew/{loan_id}", headers=member_headers)
+    assert renew_res1.status_code == 200
+
+    # Try renewing a second time
+    renew_res2 = client.post(f"/api/v1/loans/renew/{loan_id}", headers=member_headers)
+    assert renew_res2.status_code == 400
+    assert "already been renewed" in renew_res2.json()["detail"]
 
 
 def test_return_book_success(client, member_headers):
-    my_loans_res = client.get("/api/v1/loans/my-loans", headers=member_headers)
-    loans = my_loans_res.json()
-    loan_id = loans[0]["id"]
+    # Checkout a book first
+    list_res = client.get("/api/v1/books")
+    book = list_res.json()["items"][0]
+    checkout_res = client.post(
+        "/api/v1/loans/checkout",
+        json={"book_id": book["id"]},
+        headers=member_headers,
+    )
+    assert checkout_res.status_code == 201
+    loan_id = checkout_res.json()["id"]
 
     return_res = client.post(f"/api/v1/loans/return/{loan_id}", headers=member_headers)
     assert return_res.status_code == 200

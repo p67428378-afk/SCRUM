@@ -1,21 +1,41 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.pool import StaticPool
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./library.db")
 
-# For SQLite compatibility when running tests
+# For SQLite compatibility
 connect_args = {}
+engine_kwargs = {}
 if DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
+    if ":memory:" in DATABASE_URL:
+        engine_kwargs["poolclass"] = StaticPool
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, connect_args=connect_args, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+_db_initialized = False
+
+
+def init_db():
+    global _db_initialized
+    Base.metadata.create_all(bind=engine)
+    _db_initialized = True
+
 
 def get_db():
+    global _db_initialized
+    if not _db_initialized:
+        init_db()
+        db = SessionLocal()
+        try:
+            seed_data(db)
+        finally:
+            db.close()
     db = SessionLocal()
     try:
         yield db
@@ -23,12 +43,8 @@ def get_db():
         db.close()
 
 
-def init_db():
-    Base.metadata.create_all(bind=engine)
-
-
 def seed_data(db):
-    from server import models
+    import server.models as models
     from server.security import get_password_hash
     from sqlalchemy.exc import IntegrityError
 
