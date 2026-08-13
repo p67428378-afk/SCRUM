@@ -4,4 +4,4 @@ _Maintained automatically by the SDLC Assistant. Lists features implemented in t
 
 ## Implemented Features
 
-- **SCRUM-51** — Library Management System - Catalog, Borrowing, and User Management
+- **SCRUM-51** — Library Management System - Catalog, Borrowing, User Management, and Admin Analytics

@@ -1,16 +1,16 @@
 # Project Features
 
-## SCRUM-51 — Library Management System - Catalog, Borrowing, and User Management
+## SCRUM-51 — Library Management System - Catalog, Borrowing, User Management, and Admin Analytics
 
 ### Feature Summary
-Library Management System - Catalog, Borrowing, and User Management
+Library Management System - Catalog, Borrowing, User Management, and Admin Analytics
 
 ### User Stories
-# Library Management System - Catalog, Borrowing, and User Management
+# Library Management System - Catalog, Borrowing, User Management, and Admin Analytics
 
 **Objective:**
-Provide a comprehensive full-stack library management system that enables librarians to manage catalog items and borrowing transactions while allowing members to search books, reserve titles, and track their loan status.
-This platform streamlines library operations, automates due-date tracking and fine calculations, and delivers an intuitive self-service portal for readers.
+Provide a comprehensive full-stack library management system that enables librarians to manage catalog items, borrowing transactions, and view data-driven analytics for purchasing and inventory decisions, while allowing members to search books, reserve titles, and track loan status.
+This platform streamlines library operations, automates due-date tracking and fine calculations, and delivers interactive visual analytics panels alongside self-service user portals.
 
 **Key Features:**
 - Role-based authentication and user portal for Members and Librarians.
@@ -18,18 +18,19 @@ This platform streamlines library operations, automates due-date tracking and fi
 - Borrowing and return workflow with automatic inventory updates and due date tracking.
 - Fine calculation and renewal mechanisms for active loans.
 - Interactive user dashboard showing current loans, borrowing history, and saved titles.
+- Admin purchasing & inventory analytics dashboard with interactive chart visualizations (Recharts / Chart.js) for popular genres, turn-around rates, active members, and total fines.
 
 **Description:**
-As a Library Administrator / Member,  
-I want a centralized, web-based Library Management System,  
-So that librarians can efficiently manage book inventory and loans while members can seamlessly search, borrow, and track books.
+As a Library Administrator / Member,
+I want a centralized, web-based Library Management System with admin analytics and reporting data,
+So that librarians can efficiently manage book inventory, make informed purchasing and inventory decisions, and members can seamlessly search, borrow, and track books.
 
 **Acceptance Criteria:**
 
 - **User Authentication and Role-Based Access Control (RBAC):**
-  - **Explanation:** The system must support JWT-based authentication with two distinct roles: `Librarian` (admin access to manage inventory, view all loans, oversee fines) and `Member` (standard access to search catalog, borrow/reserve books, view personal history).
-  - **Example:** A user logs in at `/api/v1/auth/login` with valid credentials. Upon successful authentication, a JWT access token containing role claims is returned and stored in frontend state to gate protected routes (`/admin` vs `/dashboard`).
-  - **Edge Cases:** Expired tokens automatically trigger a refresh attempt via `/api/v1/auth/refresh` or redirect the user to login with an error message if invalid.
+  - **Explanation:** The system must support JWT-based authentication with two distinct roles: `Librarian` (admin access to manage inventory, view all loans, oversee fines, and access `/api/v1/admin/analytics`) and `Member` (standard access to search catalog, borrow/reserve books, view personal history).
+  - **Example:** A user logs in at `/api/v1/auth/login` with valid credentials. Upon successful authentication, a JWT access token containing role claims is returned and stored in frontend state to gate protected routes (`/admin`, `/admin/analytics` vs `/dashboard`).
+  - **Edge Cases:** Expired tokens automatically trigger a refresh attempt via `/api/v1/auth/refresh` or redirect the user to login with an error message if invalid. Accessing `/api/v1/admin/analytics` with a Member token returns HTTP 403 Forbidden.
 
 - **Book Catalog Management (CRUD & Search):**
   - **Explanation:** Librarians can create, update, delete, and view catalog entries (title, author, ISBN, genre, total copies, available copies). Members can perform fuzzy text search by title, author, or genre with pagination.
@@ -51,18 +52,34 @@ So that librarians can efficiently manage book inventory and loans while members
   - **Example:** A member logs into the React SPA, views their active loans in a responsive grid, clicks "Renew", and receives real-time UI feedback with updated due dates.
   - **Edge Cases:** Network failures during API calls display non-intrusive toast notifications and maintain optimistic UI consistency.
 
+- **Admin Purchasing & Inventory Analytics API (`GET /api/v1/admin/analytics`):**
+  - **Explanation:** The backend provides a dedicated REST endpoint `GET /api/v1/admin/analytics` accessible only to `Librarian` users. It returns aggregated metrics to support inventory management and book purchasing decisions:
+    1. `most_popular_genres`: Top genres ranked by checkout frequency.
+    2. `turn_around_rates`: Average loan turnover / return duration in days.
+    3. `active_members_count`: Count of active borrowing members.
+    4. `total_fines_collected`: Total value of collected overdue fines.
+  - **Example:** A librarian makes a GET request to `/api/v1/admin/analytics`. The server aggregates borrowing data and returns HTTP 200 with structured JSON containing top genres, turnover rate, member count, and fine totals.
+  - **Edge Cases:** Unauthenticated or unauthorized (`Member`) access returns HTTP 401 or 403. Databases with zero checkout records return empty genre lists and zero values without runtime exceptions.
+
+- **Interactive Chart Visualization Panel in Librarian Portal (Recharts / Chart.js):**
+  - **Explanation:** Embedded visualization panel within the Librarian portal using Recharts or Chart.js to render graphical charts (e.g., genre popularity bar charts, turn-around trend graphs) and key metric scorecards.
+  - **Example:** A librarian opens the `/admin/analytics` panel in the React app, viewing a Recharts bar chart of popular genres to decide which categories need additional copy orders.
+  - **Edge Cases:** API connection timeouts or errors trigger an error boundary UI with retry capabilities.
+
 **Technical Requirements:**
-- **Backend Architecture:** Python 3.11 with FastAPI and SQLAlchemy 2.x ORM targeting PostgreSQL database (SQLite in-memory for pytest suite). All primary keys use UUID v4, and timestamps follow UTC ISO 8601 format (compliant with Constitution Section 4.1).
-- **Frontend Architecture:** React 18 SPA bundled with Vite, styled using Tailwind CSS, lucide-react icons, and react-router-dom for navigation (compliant with Constitution Section 4.2). API requests handled via Axios configured with `VITE_API_BASE_URL`.
-- **API Contracts:** RESTful endpoints under `/api/v1/` (`/auth`, `/books`, `/loans`, `/users`). Automatic OpenAPI / Swagger UI interactive documentation available at `/docs`.
+- **Backend Architecture:** Python 3.11 with FastAPI and SQLAlchemy 2.x ORM targeting PostgreSQL database (SQLite in-memory for pytest suite). All primary keys use UUID v4, and timestamps follow UTC ISO 8601 format (compliant with Constitution Section 4.1). Includes SQL aggregation queries for admin analytics.
+- **Frontend Architecture:** React 18 SPA bundled with Vite, styled using Tailwind CSS, lucide-react icons, Recharts / Chart.js for data visualization, and react-router-dom for navigation (compliant with Constitution Section 4.2). API requests handled via Axios configured with `VITE_API_BASE_URL`.
+- **API Contracts:** RESTful endpoints under `/api/v1/` (`/auth`, `/books`, `/loans`, `/users`, `/admin/analytics`). Automatic OpenAPI / Swagger UI interactive documentation available at `/docs`.
 - **CORS & Environment:** Backend main module configures `CORSMiddleware` supporting origins from `ALLOWED_ORIGINS` (defaulting to `http://localhost:5173`). `.env.example` provided for both client and server.
 
 ### Acceptance Criteria
-- User Authentication and Role-Based Access Control (RBAC): JWT-based auth supporting Librarian and Member roles.
-- Book Catalog Management (CRUD & Search): Complete catalog CRUD for Librarians and fuzzy search with pagination for Members.
-- Borrowing and Return Workflow: Checkout/return operations, 14-day borrowing window, active loan limits (e.g., max 5 books), available copy tracking.
-- Loan Renewal and Fine Calculation: Single renewal if no reservations, automatic overdue fine calculations ($0.50/day).
-- Responsive Frontend Dashboard & Catalog UI: React SPA with Tailwind CSS, book search filters, loan history, and management controls.
+- User Authentication and Role-Based Access Control (RBAC)
+- Book Catalog Management (CRUD & Search)
+- Borrowing and Return Workflow
+- Loan Renewal and Fine Calculation
+- Responsive Frontend Dashboard & Catalog UI
+- Admin Purchasing & Inventory Analytics API (GET /api/v1/admin/analytics)
+- Interactive Chart Visualization Panel in Librarian Portal (Recharts / Chart.js)
 
 ### Backend Tasks
 - None specified
@@ -74,18 +91,19 @@ So that librarians can efficiently manage book inventory and loans while members
 Not yet authored.
 
 ### API Endpoints
-- `POST /api/v1/auth/register` — Register new user account
-- `POST /api/v1/auth/login` — Authenticate credentials & return JWT
-- `GET /api/v1/auth/me` — Fetch current authenticated profile
-- `GET /api/v1/books` — List & fuzzy search catalog (query, genre, skip, limit)
-- `POST /api/v1/books` — Create new catalog entry (Librarian only)
-- `GET /api/v1/books/{id}` — Get book details by ID
-- `PUT /api/v1/books/{id}` — Update existing book entry (Librarian only)
-- `DELETE /api/v1/books/{id}` — Delete book entry (blocked if active loans exist)
-- `POST /api/v1/loans/checkout` — Checkout available book (Member only)
-- `POST /api/v1/loans/return/{id}` — Return borrowed book & calculate fine
-- `POST /api/v1/loans/renew/{id}` — Renew active loan (single renewal)
-- `GET /api/v1/loans/my-loans` — Fetch user's active & past loans
+- `POST /api/v1/auth/register` — Register new user account [EXISTING]
+- `POST /api/v1/auth/login` — Authenticate credentials & return JWT [EXISTING]
+- `GET /api/v1/auth/me` — Fetch current authenticated profile [EXISTING]
+- `GET /api/v1/books` — List & fuzzy search catalog (query, genre, skip, limit) [EXISTING]
+- `POST /api/v1/books` — Create new catalog entry (Librarian only) [EXISTING]
+- `GET /api/v1/books/{id}` — Get book details by ID [EXISTING]
+- `PUT /api/v1/books/{id}` — Update existing book entry (Librarian only) [EXISTING]
+- `DELETE /api/v1/books/{id}` — Delete book entry (blocked if active loans exist) [EXISTING]
+- `POST /api/v1/loans/checkout` — Checkout available book (Member only) [EXISTING]
+- `POST /api/v1/loans/return/{id}` — Return borrowed book & calculate fine [EXISTING]
+- `POST /api/v1/loans/renew/{id}` — Renew active loan (single renewal) [EXISTING]
+- `GET /api/v1/loans/my-loans` — Fetch user's active & past loans [EXISTING]
+- `GET /api/v1/admin/analytics` — Computes and returns aggregated operational and inventory metrics for library purchasing decisions (Librarian only) [NEW]
 
 ### UI Components
 Not yet authored.

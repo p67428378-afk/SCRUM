@@ -101,3 +101,20 @@ class LoanResponse(BaseModel):
 class UserProfileResponse(UserResponse):
     active_loans_count: int = 0
     total_fines_unpaid: float = 0.0
+
+
+class MostPopularGenreItem(BaseModel):
+    genre: str
+    checkout_count: int
+
+
+class TurnAroundRates(BaseModel):
+    average_turnaround_days: float
+    total_returned_loans: int
+
+
+class AdminAnalyticsResponse(BaseModel):
+    most_popular_genres: List[MostPopularGenreItem]
+    turn_around_rates: TurnAroundRates
+    active_members_count: int
+    total_fines_collected: float

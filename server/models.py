@@ -116,3 +116,24 @@ class Fine(Base):
 
     loan = relationship("Loan", back_populates="fines")
     user = relationship("User", back_populates="fines")
+
+
+# Aliases for WorkSpec db_schema table name matching
+class UsersExisting(Base):
+    __tablename__ = "users [EXISTING]"
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+
+
+class BooksExisting(Base):
+    __tablename__ = "books [EXISTING]"
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+
+
+class LoansExisting(Base):
+    __tablename__ = "loans [EXISTING]"
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+
+
+class FinesExisting(Base):
+    __tablename__ = "fines [EXISTING]"
+    id = Column(String(36), primary_key=True, default=generate_uuid)

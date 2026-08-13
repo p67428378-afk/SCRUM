@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from server.database import init_db, seed_data, SessionLocal
-from server.routers import auth, books, loans, users
+from server.routers import admin, auth, books, loans, users
 
 
 @asynccontextmanager
@@ -45,6 +45,7 @@ app.add_middleware(
 )
 
 # Include API routers
+app.include_router(admin.router)
 app.include_router(auth.router)
 app.include_router(books.router)
 app.include_router(loans.router)

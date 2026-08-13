@@ -5,6 +5,32 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v1/admin/analytics": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get Admin Analytics",
+        "operationId": "get_admin_analytics_api_v1_admin_analytics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAnalyticsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -901,6 +927,36 @@
   },
   "components": {
     "schemas": {
+      "AdminAnalyticsResponse": {
+        "properties": {
+          "most_popular_genres": {
+            "items": {
+              "$ref": "#/components/schemas/MostPopularGenreItem"
+            },
+            "type": "array",
+            "title": "Most Popular Genres"
+          },
+          "turn_around_rates": {
+            "$ref": "#/components/schemas/TurnAroundRates"
+          },
+          "active_members_count": {
+            "type": "integer",
+            "title": "Active Members Count"
+          },
+          "total_fines_collected": {
+            "type": "number",
+            "title": "Total Fines Collected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "most_popular_genres",
+          "turn_around_rates",
+          "active_members_count",
+          "total_fines_collected"
+        ],
+        "title": "AdminAnalyticsResponse"
+      },
       "BookCreate": {
         "properties": {
           "isbn": {
@@ -1235,6 +1291,24 @@
         ],
         "title": "LoanStatus"
       },
+      "MostPopularGenreItem": {
+        "properties": {
+          "genre": {
+            "type": "string",
+            "title": "Genre"
+          },
+          "checkout_count": {
+            "type": "integer",
+            "title": "Checkout Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "genre",
+          "checkout_count"
+        ],
+        "title": "MostPopularGenreItem"
+      },
       "Token": {
         "properties": {
           "access_token": {
@@ -1256,6 +1330,24 @@
           "user"
         ],
         "title": "Token"
+      },
+      "TurnAroundRates": {
+        "properties": {
+          "average_turnaround_days": {
+            "type": "number",
+            "title": "Average Turnaround Days"
+          },
+          "total_returned_loans": {
+            "type": "integer",
+            "title": "Total Returned Loans"
+          }
+        },
+        "type": "object",
+        "required": [
+          "average_turnaround_days",
+          "total_returned_loans"
+        ],
+        "title": "TurnAroundRates"
       },
       "UserCreate": {
         "properties": {
