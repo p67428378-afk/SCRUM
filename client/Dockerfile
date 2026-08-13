@@ -2,14 +2,13 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Copy lockfile + manifest together for a reproducible install
-COPY client/package.json client/package-lock.json ./
-RUN npm install
+# Copy manifest only and install dependencies cleanly
+COPY client/package.json ./
+RUN npm install --force
 
 # Copy source and build
 COPY client/ ./
 # Accept backend URL at build time so Vite bakes it into the JS bundle.
-# Passed via --build-arg VITE_API_BASE_URL=<backend-cloud-run-url> in CI.
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
