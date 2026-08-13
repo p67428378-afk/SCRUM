@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy lockfile + manifest together for a reproducible install
 COPY client/package.json client/package-lock.json ./
-RUN npm ci
+RUN npm install
 
 # Copy source and build
 COPY client/ ./
