@@ -47,7 +47,32 @@ graph TD
 - server/tests/test_orders.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/components/Navbar.test.jsx
+- client/src/components/cart/CartDrawer.jsx
+- client/src/components/checkout/AddressForm.jsx
+- client/src/components/layout/Navbar.jsx
+- client/src/components/menu/MenuItemCard.jsx
+- client/src/components/profile/ProfileHeader.jsx
+- client/src/components/staff/ActiveOrdersTable.jsx
+- client/src/components/staff/MenuAvailabilityControl.jsx
+- client/src/components/tracking/OrderLifecycleTimeline.jsx
+- client/src/main.jsx
+- client/src/pages/CheckoutPage.jsx
+- client/src/pages/DigitalMenuCartPage.jsx
+- client/src/pages/DigitalMenuCartPage.test.jsx
+- client/src/pages/LoginPage.jsx
+- client/src/pages/OrderTrackingPage.jsx
+- client/src/pages/ProfilePage.jsx
+- client/src/pages/RegisterPage.jsx
+- client/src/pages/StaffDashboardPage.jsx
+- client/src/services/api.js
+- client/src/services/api.test.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - POST /api/v1/auth/register
