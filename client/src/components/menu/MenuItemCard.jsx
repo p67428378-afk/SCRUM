@@ -12,6 +12,28 @@ export default function MenuItemCard({ item, onAddToCart, cartQuantity = 0 }) {
     is_available = true,
   } = item;
 
+  const getImageSrc = (itemName, url) => {
+    const nameLower = (itemName || "").toLowerCase();
+    const badUrls = ["1601050690597", "1626074353765", "1546173159"];
+    const isBadUrl = url && badUrls.some((b) => url.includes(b));
+
+    if (nameLower.includes("jamun") || nameLower.includes("gulab")) {
+      return "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&q=80&w=600";
+    }
+    if (nameLower.includes("naan") || nameLower.includes("garlic")) {
+      return "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=600";
+    }
+    if (nameLower.includes("lassi") || nameLower.includes("mango")) {
+      return "https://images.unsplash.com/photo-1570696516188-ade861b84a49?auto=format&fit=crop&q=80&w=600";
+    }
+
+    if (!url || isBadUrl) {
+      return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=600";
+    }
+
+    return url;
+  };
+
   // Render tag badge
   const renderTagBadge = (tag) => {
     const cleanTag = tag.trim();
@@ -71,10 +93,7 @@ export default function MenuItemCard({ item, onAddToCart, cartQuantity = 0 }) {
         {/* Image Container */}
         <div className="relative h-48 w-full bg-amber-50 overflow-hidden">
           <img
-            src={
-              image_url ||
-              "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=600"
-            }
+            src={getImageSrc(name, image_url)}
             alt={name}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
