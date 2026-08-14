@@ -5,35 +5,43 @@ from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from server.app import models, schemas
-from server.app.config import settings
+
 
 def generate_otp() -> str:
     # Generate a 6-digit OTP
     return f"{random.randint(100000, 999999)}"
 
+
 def create_otp_transaction(db: Session, mobile_number: str) -> models.OTPTransaction:
     otp_code = generate_otp()
     otp_reference_id = str(uuid.uuid4())
-    expires_at = datetime.utcnow() + timedelta(minutes=5) # OTP valid for 5 minutes
+    expires_at = datetime.utcnow() + timedelta(minutes=5)  # OTP valid for 5 minutes
 
     db_otp = models.OTPTransaction(
         otp_reference_id=otp_reference_id,
         mobile_number=mobile_number,
         otp_code=otp_code,
         expires_at=expires_at,
-        is_verified=False
+        is_verified=False,
     )
     db.add(db_otp)
     db.commit()
     db.refresh(db_otp)
     return db_otp
 
-def verify_otp(db: Session, otp_reference_id: str, otp_code: str, mobile_number: str) -> bool:
-    db_otp = db.query(models.OTPTransaction).filter(
-        models.OTPTransaction.otp_reference_id == otp_reference_id,
-        models.OTPTransaction.mobile_number == mobile_number,
-        models.OTPTransaction.is_verified == False
-    ).first()
+
+def verify_otp(
+    db: Session, otp_reference_id: str, otp_code: str, mobile_number: str
+) -> bool:
+    db_otp = (
+        db.query(models.OTPTransaction)
+        .filter(
+            models.OTPTransaction.otp_reference_id == otp_reference_id,
+            models.OTPTransaction.mobile_number == mobile_number,
+            models.OTPTransaction.is_verified == False,
+        )
+        .first()
+    )
 
     if not db_otp:
         return False
@@ -48,14 +56,22 @@ def verify_otp(db: Session, otp_reference_id: str, otp_code: str, mobile_number:
     db.commit()
     return True
 
-def get_alert_rule_by_card(db: Session, card_identifier: str) -> Optional[models.AlertRule]:
-    return db.query(models.AlertRule).filter(models.AlertRule.card_identifier == card_identifier).first()  # type: ignore
+
+def get_alert_rule_by_card(
+    db: Session, card_identifier: str
+) -> Optional[models.AlertRule]:
+    return (
+        db.query(models.AlertRule)
+        .filter(models.AlertRule.card_identifier == card_identifier)
+        .first()
+    )  # type: ignore
+
 
 def create_or_update_alert_rule(
     db: Session,
     card_identifier: str,
     daily_spend_threshold: float,
-    alert_delivery_channel: str
+    alert_delivery_channel: str,
 ) -> models.AlertRule:
     db_alert = get_alert_rule_by_card(db, card_identifier)
     if db_alert:
@@ -69,17 +85,21 @@ def create_or_update_alert_rule(
             daily_spend_threshold=daily_spend_threshold,
             alert_delivery_channel=alert_delivery_channel,
             status="ACTIVE",
-            current_daily_spend=0
+            current_daily_spend=0,
         )
         db.add(db_alert)
     db.commit()
     db.refresh(db_alert)
     return db_alert
 
+
 def get_all_active_alerts(db: Session) -> list[models.AlertRule]:
     return db.query(models.AlertRule).filter(models.AlertRule.status == "ACTIVE").all()
 
-def record_spend(db: Session, card_identifier: str, amount: float) -> tuple[Optional[models.AlertRule], bool, str]:
+
+def record_spend(
+    db: Session, card_identifier: str, amount: float
+) -> tuple[Optional[models.AlertRule], bool, str]:
     """
     Records a spend transaction.
     Returns (alert_rule, breached, sms_message)
@@ -113,31 +133,36 @@ def record_spend(db: Session, card_identifier: str, amount: float) -> tuple[Opti
 
 # --- Secure Employee Account Management CRUD ---
 
+
 def create_audit_log(
     db: Session,
     action_type: str,
     actor_id: Optional[str],
     target_id: Optional[str],
-    details: str
+    details: str,
 ) -> models.AuditLog:
     db_log = models.AuditLog(
-        action_type=action_type,
-        actor_id=actor_id,
-        target_id=target_id,
-        details=details
+        action_type=action_type, actor_id=actor_id, target_id=target_id, details=details
     )
     db.add(db_log)
     db.commit()
     db.refresh(db_log)
     return db_log
 
+
 def create_user(db: Session, user_in: schemas.UserCreateRequest) -> models.User:
     # Check if employee_id or email already exists
-    existing_emp = db.query(models.User).filter(models.User.employee_id == user_in.employee_id).first()
+    existing_emp = (
+        db.query(models.User)
+        .filter(models.User.employee_id == user_in.employee_id)
+        .first()
+    )
     if existing_emp:
         raise ValueError("Employee ID already exists")
-    
-    existing_email = db.query(models.User).filter(models.User.email == user_in.email).first()
+
+    existing_email = (
+        db.query(models.User).filter(models.User.email == user_in.email).first()
+    )
     if existing_email:
         raise ValueError("Email already exists")
 
@@ -146,7 +171,7 @@ def create_user(db: Session, user_in: schemas.UserCreateRequest) -> models.User:
         first_name=user_in.first_name,
         last_name=user_in.last_name,
         email=user_in.email,
-        status=user_in.status or "ACTIVE"
+        status=user_in.status or "ACTIVE",
     )
     db.add(db_user)
     db.commit()
@@ -158,22 +183,28 @@ def create_user(db: Session, user_in: schemas.UserCreateRequest) -> models.User:
         action_type="USER_CREATED",
         actor_id=None,  # System or current admin (none for now as we don't have auth context)
         target_id=db_user.id,  # type: ignore
-        details=f"New user {db_user.first_name} {db_user.last_name} ({db_user.employee_id}) created"
+        details=f"New user {db_user.first_name} {db_user.last_name} ({db_user.employee_id}) created",
     )
 
     return db_user
 
+
 def get_user(db: Session, user_id: str) -> Optional[models.User]:
     return db.query(models.User).filter(models.User.id == user_id).first()
 
-def update_user(db: Session, user_id: str, user_in: schemas.UserUpdateRequest) -> Optional[models.User]:
+
+def update_user(
+    db: Session, user_id: str, user_in: schemas.UserUpdateRequest
+) -> Optional[models.User]:
     db_user = get_user(db, user_id)
     if not db_user:
         return None
 
     # Check if email is being updated and already exists
     if user_in.email != db_user.email:
-        existing_email = db.query(models.User).filter(models.User.email == user_in.email).first()
+        existing_email = (
+            db.query(models.User).filter(models.User.email == user_in.email).first()
+        )
         if existing_email:
             raise ValueError("Email already exists")
 
@@ -192,10 +223,11 @@ def update_user(db: Session, user_id: str, user_in: schemas.UserUpdateRequest) -
         action_type="USER_UPDATED",
         actor_id=None,
         target_id=db_user.id,  # type: ignore
-        details=f"User {db_user.employee_id} details updated"
+        details=f"User {db_user.employee_id} details updated",
     )
 
     return db_user
+
 
 def deactivate_user(db: Session, user_id: str) -> Optional[models.User]:
     db_user = get_user(db, user_id)
@@ -213,23 +245,24 @@ def deactivate_user(db: Session, user_id: str) -> Optional[models.User]:
         action_type="USER_DEACTIVATED",
         actor_id=None,
         target_id=db_user.id,  # type: ignore
-        details=f"User {db_user.employee_id} deactivated"
+        details=f"User {db_user.employee_id} deactivated",
     )
 
     return db_user
 
+
 def get_roles(db: Session) -> List[models.Role]:
     return db.query(models.Role).all()
 
+
 def create_role(db: Session, role_in: schemas.RoleCreateRequest) -> models.Role:
-    existing_role = db.query(models.Role).filter(models.Role.name == role_in.name).first()
+    existing_role = (
+        db.query(models.Role).filter(models.Role.name == role_in.name).first()
+    )
     if existing_role:
         raise ValueError("Role name already exists")
 
-    db_role = models.Role(
-        name=role_in.name,
-        description=role_in.description
-    )
+    db_role = models.Role(name=role_in.name, description=role_in.description)
     db.add(db_role)
     db.commit()
     db.refresh(db_role)
@@ -240,19 +273,31 @@ def create_role(db: Session, role_in: schemas.RoleCreateRequest) -> models.Role:
         action_type="ROLE_CREATED",
         actor_id=None,
         target_id=db_role.id,  # type: ignore
-        details=f"New role '{db_role.name}' created"
+        details=f"New role '{db_role.name}' created",
     )
 
     return db_role
 
-def assign_user_roles(db: Session, user_id: str, role_ids: List[str]) -> Optional[models.User]:
+
+def assign_user_roles(
+    db: Session, user_id: str, role_ids: List[str]
+) -> Optional[models.User]:
     db_user = get_user(db, user_id)
     if not db_user:
         return None
 
     # Verify all role_ids exist
     roles = db.query(models.Role).filter(models.Role.id.in_(role_ids)).all()
-    print("CRUD ASSIGN ROLES:", [r.id for r in roles], "INPUT:", role_ids, "DB BIND:", db.get_bind().url, "ALL ROLES IN DB:", [(r.id, r.name) for r in db.query(models.Role).all()])
+    print(
+        "CRUD ASSIGN ROLES:",
+        [r.id for r in roles],
+        "INPUT:",
+        role_ids,
+        "DB BIND:",
+        db.get_bind().url,
+        "ALL ROLES IN DB:",
+        [(r.id, r.name) for r in db.query(models.Role).all()],
+    )
     if len(roles) != len(role_ids):
         raise ValueError("One or more role IDs do not exist")
 
@@ -268,21 +313,29 @@ def assign_user_roles(db: Session, user_id: str, role_ids: List[str]) -> Optiona
         action_type="ROLE_ASSIGNED",
         actor_id=None,
         target_id=db_user.id,  # type: ignore
-        details=f"Roles assigned to user {db_user.employee_id}: {role_names}"
+        details=f"Roles assigned to user {db_user.employee_id}: {role_names}",
     )
 
     return db_user
 
+
 def get_permissions(db: Session) -> List[models.Permission]:
     return db.query(models.Permission).all()
 
-def update_user_permissions(db: Session, user_id: str, permission_ids: List[str]) -> Optional[models.User]:
+
+def update_user_permissions(
+    db: Session, user_id: str, permission_ids: List[str]
+) -> Optional[models.User]:
     db_user = get_user(db, user_id)
     if not db_user:
         return None
 
     # Verify all permission_ids exist
-    permissions = db.query(models.Permission).filter(models.Permission.id.in_(permission_ids)).all()
+    permissions = (
+        db.query(models.Permission)
+        .filter(models.Permission.id.in_(permission_ids))
+        .all()
+    )
     if len(permissions) != len(permission_ids):
         raise ValueError("One or more permission IDs do not exist")
 
@@ -298,18 +351,25 @@ def update_user_permissions(db: Session, user_id: str, permission_ids: List[str]
         action_type="PERMISSION_MODIFIED",
         actor_id=None,
         target_id=db_user.id,  # type: ignore
-        details=f"Direct permissions modified for user {db_user.employee_id}: {perm_names}"
+        details=f"Direct permissions modified for user {db_user.employee_id}: {perm_names}",
     )
 
     return db_user
 
-def update_role_permissions(db: Session, role_id: str, permission_ids: List[str]) -> Optional[models.Role]:
+
+def update_role_permissions(
+    db: Session, role_id: str, permission_ids: List[str]
+) -> Optional[models.Role]:
     db_role = db.query(models.Role).filter(models.Role.id == role_id).first()
     if not db_role:
         return None
 
     # Verify all permission_ids exist
-    permissions = db.query(models.Permission).filter(models.Permission.id.in_(permission_ids)).all()
+    permissions = (
+        db.query(models.Permission)
+        .filter(models.Permission.id.in_(permission_ids))
+        .all()
+    )
     if len(permissions) != len(permission_ids):
         raise ValueError("One or more permission IDs do not exist")
 
@@ -325,10 +385,11 @@ def update_role_permissions(db: Session, role_id: str, permission_ids: List[str]
         action_type="PERMISSION_MODIFIED",
         actor_id=None,
         target_id=db_role.id,  # type: ignore
-        details=f"Permissions modified for role '{db_role.name}': {perm_names}"
+        details=f"Permissions modified for role '{db_role.name}': {perm_names}",
     )
 
     return db_role
+
 
 def get_dashboard_users(
     db: Session,
@@ -336,7 +397,7 @@ def get_dashboard_users(
     limit: int = 20,
     search: Optional[str] = None,
     role: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
 ) -> Tuple[List[models.User], int]:
     query = db.query(models.User)
 
@@ -347,7 +408,7 @@ def get_dashboard_users(
                 models.User.first_name.ilike(search_filter),  # type: ignore
                 models.User.last_name.ilike(search_filter),  # type: ignore
                 models.User.email.ilike(search_filter),  # type: ignore
-                models.User.employee_id.ilike(search_filter)  # type: ignore
+                models.User.employee_id.ilike(search_filter),  # type: ignore
             )
         )
 
@@ -361,22 +422,22 @@ def get_dashboard_users(
     users = query.offset(skip).limit(limit).all()
     return users, total
 
+
 def get_dashboard_roles(
-    db: Session,
-    skip: int = 0,
-    limit: int = 20
+    db: Session, skip: int = 0, limit: int = 20
 ) -> Tuple[List[models.Role], int]:
     query = db.query(models.Role)
     total = query.count()
     roles = query.offset(skip).limit(limit).all()
     return roles, total
 
+
 def get_audit_logs(
     db: Session,
     skip: int = 0,
     limit: int = 20,
     action_type: Optional[str] = None,
-    actor_id: Optional[str] = None
+    actor_id: Optional[str] = None,
 ) -> Tuple[List[models.AuditLog], int]:
     query = db.query(models.AuditLog)
 

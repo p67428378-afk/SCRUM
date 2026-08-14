@@ -3,6 +3,7 @@ import re
 from typing import Optional, List
 from datetime import datetime
 
+
 class AlertRegisterRequest(BaseModel):
     alertDeliveryChannel: str = Field(..., description="Delivery channel, e.g., SMS")
     cardNumber: str = Field(..., description="16-digit debit card number")
@@ -25,9 +26,11 @@ class AlertRegisterRequest(BaseModel):
             raise ValueError("Invalid mobile number format")
         return cleaned
 
+
 class AlertRegisterResponse(BaseModel):
     otpReferenceId: str
     status: str
+
 
 class OTPSendRequest(BaseModel):
     mobileNumber: str
@@ -40,9 +43,11 @@ class OTPSendRequest(BaseModel):
             raise ValueError("Invalid mobile number format")
         return cleaned
 
+
 class OTPSendResponse(BaseModel):
     otpReferenceId: str
     status: str
+
 
 class OTPVerifyRequest(BaseModel):
     alertDeliveryChannel: str
@@ -72,11 +77,13 @@ class OTPVerifyRequest(BaseModel):
             raise ValueError("OTP code must be exactly 6 digits")
         return v
 
+
 class OTPVerifyResponse(BaseModel):
     alertDeliveryChannel: str
     cardIdentifier: str
     dailySpendThreshold: float
     status: str
+
 
 class AlertRuleResponse(BaseModel):
     alert_delivery_channel: str
@@ -87,6 +94,7 @@ class AlertRuleResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class SimulateSpendRequest(BaseModel):
     cardNumber: str
@@ -99,6 +107,7 @@ class SimulateSpendRequest(BaseModel):
             raise ValueError("Card number must be exactly 16 digits")
         return cleaned
 
+
 class SimulateSpendResponse(BaseModel):
     status: str
     breached: bool
@@ -108,6 +117,7 @@ class SimulateSpendResponse(BaseModel):
 
 # --- Secure Employee Account Management Schemas ---
 
+
 class PermissionBase(BaseModel):
     id: str
     name: str
@@ -115,6 +125,7 @@ class PermissionBase(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class RoleBase(BaseModel):
     id: str
@@ -124,8 +135,10 @@ class RoleBase(BaseModel):
     class Config:
         from_attributes = True
 
+
 class RoleWithPermissions(RoleBase):
     permissions: List[PermissionBase] = []
+
 
 class UserCreateRequest(BaseModel):
     email: str
@@ -134,11 +147,13 @@ class UserCreateRequest(BaseModel):
     last_name: str
     status: Optional[str] = "ACTIVE"
 
+
 class UserUpdateRequest(BaseModel):
     email: str
     first_name: str
     last_name: str
     status: str
+
 
 class UserResponse(BaseModel):
     id: str
@@ -153,37 +168,47 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class UserDetailResponse(UserResponse):
     roles: List[RoleBase] = []
     permissions: List[PermissionBase] = []
 
+
 class UserDeactivateResponse(BaseModel):
     message: str
+
 
 class RoleCreateRequest(BaseModel):
     name: str
     description: Optional[str] = None
 
+
 class UserRolesUpdateRequest(BaseModel):
     role_ids: List[str]
+
 
 class UserRolesUpdateResponse(BaseModel):
     user_id: str
     roles: List[RoleBase]
 
+
 class UserPermissionsUpdateRequest(BaseModel):
     permission_ids: List[str]
+
 
 class UserPermissionsUpdateResponse(BaseModel):
     user_id: str
     permissions: List[PermissionBase]
 
+
 class RolePermissionsUpdateRequest(BaseModel):
     permission_ids: List[str]
+
 
 class RolePermissionsUpdateResponse(BaseModel):
     role_id: str
     permissions: List[PermissionBase]
+
 
 class DashboardUserItem(BaseModel):
     id: str
@@ -198,9 +223,11 @@ class DashboardUserItem(BaseModel):
     class Config:
         from_attributes = True
 
+
 class DashboardUsersResponse(BaseModel):
     total: int
     users: List[DashboardUserItem]
+
 
 class DashboardRoleItem(BaseModel):
     id: str
@@ -211,9 +238,11 @@ class DashboardRoleItem(BaseModel):
     class Config:
         from_attributes = True
 
+
 class DashboardRolesResponse(BaseModel):
     total: int
     roles: List[DashboardRoleItem]
+
 
 class AuditLogItem(BaseModel):
     id: str
@@ -225,6 +254,7 @@ class AuditLogItem(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class DashboardAuditLogsResponse(BaseModel):
     total: int

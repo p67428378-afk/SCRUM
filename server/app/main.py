@@ -7,9 +7,7 @@ from server.app.database import engine, Base
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title=settings.PROJECT_NAME
-)
+app = FastAPI(title=settings.PROJECT_NAME)
 
 # Set all CORS enabled origins
 app.add_middleware(
@@ -22,14 +20,17 @@ app.add_middleware(
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+
 @app.get("/")
 def root():
     return {"message": "Welcome to the Debit Card Spend Alert Microservice API"}
+
 
 @app.on_event("startup")
 def seed_data():
     from server.app.database import SessionLocal
     from server.app.models import Permission, Role
+
     db = SessionLocal()
     try:
         # Seed permissions
@@ -51,8 +52,16 @@ def seed_data():
 
         # Seed roles
         roles_data = [
-            ("System Administrator", "Full system access", ["View Dashboard", "Manage Users", "Manage Roles", "View Audit Logs"]),
-            ("Branch Manager", "Branch management access", ["View Dashboard", "View Audit Logs"]),
+            (
+                "System Administrator",
+                "Full system access",
+                ["View Dashboard", "Manage Users", "Manage Roles", "View Audit Logs"],
+            ),
+            (
+                "Branch Manager",
+                "Branch management access",
+                ["View Dashboard", "View Audit Logs"],
+            ),
             ("Teller", "Basic teller access", ["View Dashboard"]),
         ]
         for name, desc, perm_names in roles_data:

@@ -1,4 +1,5 @@
 import os
+
 os.environ["TESTING"] = "true"
 
 import pytest
@@ -9,7 +10,6 @@ from sqlalchemy.pool import StaticPool
 
 from server.app.main import app
 from server.app.database import Base, get_db
-from server.app import models
 
 # Setup test database
 engine = create_engine(
@@ -19,6 +19,7 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 # Override get_db dependency
 def override_get_db():
     db = TestingSessionLocal()
@@ -27,8 +28,10 @@ def override_get_db():
     finally:
         db.close()
 
+
 def seed_test_data():
     from server.app.models import Permission, Role
+
     db = TestingSessionLocal()
     try:
         # Seed permissions
@@ -50,8 +53,16 @@ def seed_test_data():
 
         # Seed roles
         roles_data = [
-            ("System Administrator", "Full system access", ["View Dashboard", "Manage Users", "Manage Roles", "View Audit Logs"]),
-            ("Branch Manager", "Branch management access", ["View Dashboard", "View Audit Logs"]),
+            (
+                "System Administrator",
+                "Full system access",
+                ["View Dashboard", "Manage Users", "Manage Roles", "View Audit Logs"],
+            ),
+            (
+                "Branch Manager",
+                "Branch management access",
+                ["View Dashboard", "View Audit Logs"],
+            ),
             ("Teller", "Basic teller access", ["View Dashboard"]),
         ]
         for name, desc, perm_names in roles_data:
@@ -64,19 +75,26 @@ def seed_test_data():
     finally:
         db.close()
 
+
 @pytest.fixture(autouse=True)
 def setup_db():
-    # Force override get_db for this test module
+    # Save previous override
+    prev_override = app.dependency_overrides.get(get_db)
     app.dependency_overrides[get_db] = override_get_db
     Base.metadata.create_all(bind=engine)
     seed_test_data()
     yield
     Base.metadata.drop_all(bind=engine)
-    # Clean up override
-    if get_db in app.dependency_overrides:
-        del app.dependency_overrides[get_db]
+    # Restore previous override
+    if prev_override is not None:
+        app.dependency_overrides[get_db] = prev_override
+    else:
+        if get_db in app.dependency_overrides:
+            del app.dependency_overrides[get_db]
+
 
 client = TestClient(app)
+
 
 def test_create_user_success():
     payload = {
@@ -84,7 +102,7 @@ def test_create_user_success():
         "employee_id": "EMP100",
         "first_name": "John",
         "last_name": "Doe",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
     }
     response = client.post("/api/v1/admin/users", json=payload)
     assert response.status_code == 201
@@ -96,12 +114,13 @@ def test_create_user_success():
     assert data["last_name"] == "Doe"
     assert data["status"] == "ACTIVE"
 
+
 def test_create_user_duplicate_employee_id():
     payload = {
         "email": "john.doe@example.com",
         "employee_id": "EMP100",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     response = client.post("/api/v1/admin/users", json=payload)
     assert response.status_code == 201
@@ -110,18 +129,19 @@ def test_create_user_duplicate_employee_id():
         "email": "another.email@example.com",
         "employee_id": "EMP100",
         "first_name": "Jane",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     response_dup = client.post("/api/v1/admin/users", json=payload_dup)
     assert response_dup.status_code == 409
     assert "Employee ID already exists" in response_dup.json()["detail"]
+
 
 def test_create_user_duplicate_email():
     payload = {
         "email": "john.doe@example.com",
         "employee_id": "EMP100",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     response = client.post("/api/v1/admin/users", json=payload)
     assert response.status_code == 201
@@ -130,22 +150,24 @@ def test_create_user_duplicate_email():
         "email": "john.doe@example.com",
         "employee_id": "EMP101",
         "first_name": "Jane",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     response_dup = client.post("/api/v1/admin/users", json=payload_dup)
     assert response_dup.status_code == 409
     assert "Email already exists" in response_dup.json()["detail"]
 
+
 def test_get_user_not_found():
     response = client.get("/api/v1/admin/users/non-existent-id")
     assert response.status_code == 404
+
 
 def test_get_user_success():
     payload = {
         "email": "john.doe@example.com",
         "employee_id": "EMP100",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     create_res = client.post("/api/v1/admin/users", json=payload)
     user_id = create_res.json()["id"]
@@ -158,12 +180,13 @@ def test_get_user_success():
     assert "roles" in data
     assert "permissions" in data
 
+
 def test_update_user_success():
     payload = {
         "email": "john.doe@example.com",
         "employee_id": "EMP100",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     create_res = client.post("/api/v1/admin/users", json=payload)
     user_id = create_res.json()["id"]
@@ -172,7 +195,7 @@ def test_update_user_success():
         "email": "john.updated@example.com",
         "first_name": "Johnny",
         "last_name": "Doey",
-        "status": "INACTIVE"
+        "status": "INACTIVE",
     }
     response = client.put(f"/api/v1/admin/users/{user_id}", json=update_payload)
     assert response.status_code == 200
@@ -182,12 +205,13 @@ def test_update_user_success():
     assert data["last_name"] == "Doey"
     assert data["status"] == "INACTIVE"
 
+
 def test_deactivate_user_success():
     payload = {
         "email": "john.doe@example.com",
         "employee_id": "EMP100",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     create_res = client.post("/api/v1/admin/users", json=payload)
     user_id = create_res.json()["id"]
@@ -200,11 +224,9 @@ def test_deactivate_user_success():
     get_res = client.get(f"/api/v1/admin/users/{user_id}")
     assert get_res.json()["status"] == "INACTIVE"
 
+
 def test_create_role_success():
-    payload = {
-        "name": "Loan Officer",
-        "description": "Basic loan officer role"
-    }
+    payload = {"name": "Loan Officer", "description": "Basic loan officer role"}
     response = client.post("/api/v1/admin/roles", json=payload)
     assert response.status_code == 201
     data = response.json()
@@ -212,16 +234,15 @@ def test_create_role_success():
     assert data["name"] == "Loan Officer"
     assert data["description"] == "Basic loan officer role"
 
+
 def test_create_role_duplicate_name():
-    payload = {
-        "name": "Loan Officer",
-        "description": "Basic loan officer role"
-    }
+    payload = {"name": "Loan Officer", "description": "Basic loan officer role"}
     client.post("/api/v1/admin/roles", json=payload)
 
     response = client.post("/api/v1/admin/roles", json=payload)
     assert response.status_code == 400
     assert "Role name already exists" in response.json()["detail"]
+
 
 def test_assign_user_roles_success():
     # 1. Create user
@@ -229,29 +250,25 @@ def test_assign_user_roles_success():
         "email": "john.doe@example.com",
         "employee_id": "EMP100",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     user_res = client.post("/api/v1/admin/users", json=user_payload)
     user_id = user_res.json()["id"]
 
     # 2. Create role
-    role_payload = {
-        "name": "Loan Officer",
-        "description": "Basic loan officer role"
-    }
+    role_payload = {"name": "Loan Officer", "description": "Basic loan officer role"}
     role_res = client.post("/api/v1/admin/roles", json=role_payload)
     role_id = role_res.json()["id"]
 
     # 3. Assign role
-    assign_payload = {
-        "role_ids": [role_id]
-    }
+    assign_payload = {"role_ids": [role_id]}
     response = client.put(f"/api/v1/admin/users/{user_id}/roles", json=assign_payload)
     assert response.status_code == 200
     data = response.json()
     assert data["user_id"] == user_id
     assert len(data["roles"]) == 1
     assert data["roles"][0]["id"] == role_id
+
 
 def test_get_permissions():
     response = client.get("/api/v1/admin/permissions")
@@ -261,13 +278,14 @@ def test_get_permissions():
     assert len(data) > 0
     assert any(p["name"] == "View Dashboard" for p in data)
 
+
 def test_update_user_permissions_success():
     # 1. Create user
     user_payload = {
         "email": "john.doe@example.com",
         "employee_id": "EMP100",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     user_res = client.post("/api/v1/admin/users", json=user_payload)
     user_id = user_res.json()["id"]
@@ -277,9 +295,7 @@ def test_update_user_permissions_success():
     perm_id = perm_res.json()[0]["id"]
 
     # 3. Update user permissions
-    payload = {
-        "permission_ids": [perm_id]
-    }
+    payload = {"permission_ids": [perm_id]}
     response = client.patch(f"/api/v1/admin/users/{user_id}/permissions", json=payload)
     assert response.status_code == 200
     data = response.json()
@@ -287,12 +303,10 @@ def test_update_user_permissions_success():
     assert len(data["permissions"]) == 1
     assert data["permissions"][0]["id"] == perm_id
 
+
 def test_update_role_permissions_success():
     # 1. Create role
-    role_payload = {
-        "name": "Loan Officer",
-        "description": "Basic loan officer role"
-    }
+    role_payload = {"name": "Loan Officer", "description": "Basic loan officer role"}
     role_res = client.post("/api/v1/admin/roles", json=role_payload)
     role_id = role_res.json()["id"]
 
@@ -301,9 +315,7 @@ def test_update_role_permissions_success():
     perm_id = perm_res.json()[0]["id"]
 
     # 3. Update role permissions
-    payload = {
-        "permission_ids": [perm_id]
-    }
+    payload = {"permission_ids": [perm_id]}
     response = client.patch(f"/api/v1/admin/roles/{role_id}/permissions", json=payload)
     assert response.status_code == 200
     data = response.json()
@@ -311,13 +323,14 @@ def test_update_role_permissions_success():
     assert len(data["permissions"]) == 1
     assert data["permissions"][0]["id"] == perm_id
 
+
 def test_dashboard_users_and_roles_and_audit_logs():
     # 1. Create user
     user_payload = {
         "email": "john.doe@example.com",
         "employee_id": "EMP100",
         "first_name": "John",
-        "last_name": "Doe"
+        "last_name": "Doe",
     }
     client.post("/api/v1/admin/users", json=user_payload)
 
@@ -332,7 +345,7 @@ def test_dashboard_users_and_roles_and_audit_logs():
     response_roles = client.get("/api/v1/admin/dashboard/roles")
     assert response_roles.status_code == 200
     data_roles = response_roles.json()
-    assert data_roles["total"] >= 3 # Seeded roles
+    assert data_roles["total"] >= 3  # Seeded roles
 
     # 4. Get dashboard audit logs
     response_logs = client.get("/api/v1/admin/dashboard/audit-logs")
