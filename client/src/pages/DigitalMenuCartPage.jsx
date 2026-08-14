@@ -58,7 +58,7 @@ export default function DigitalMenuCartPage({
         "Traditional Indian flatbread brushed with garlic and fresh butter.",
       price: 3.5,
       image_url:
-        "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=600",
+        "https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&q=80&w=600",
       dietary_tags: "Veg",
       is_available: true,
     },
@@ -69,7 +69,7 @@ export default function DigitalMenuCartPage({
         "Soft milk solids dumplings fried and soaked in cardamom rose syrup served with rabri.",
       price: 6.99,
       image_url:
-        "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=600",
+        "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=600",
       dietary_tags: "Veg",
       is_available: true,
     },
@@ -80,7 +80,7 @@ export default function DigitalMenuCartPage({
         "Refreshing sweet yogurt drink blended with Alphonso mango pulp.",
       price: 4.5,
       image_url:
-        "https://images.unsplash.com/photo-1570831739435-660143a4e5d3?auto=format&fit=crop&q=80&w=600",
+        "https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&q=80&w=600",
       dietary_tags: "Veg",
       is_available: true,
     },

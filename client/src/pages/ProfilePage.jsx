@@ -291,7 +291,7 @@ export default function ProfilePage({ currentUser, onUserChange, onReorder }) {
             <h3 className="text-lg font-bold text-gray-900">Order History</h3>
           </div>
           <span className="text-xs font-bold text-gray-500">
-            {orders.length} Past Orders
+            {orders.length} {orders.length === 1 ? "Past Order" : "Past Orders"}
           </span>
         </div>
 
