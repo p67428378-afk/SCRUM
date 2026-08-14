@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   getDashboardUsers,
   createUser,
@@ -6,18 +6,18 @@ import {
   deactivateUser,
   getRoles,
   assignUserRoles,
-} from '../services/api';
-import EmployeeTable from '../components/dashboard/EmployeeTable';
-import Button from '../components/common/Button';
+} from "../services/api";
+import EmployeeTable from "../components/dashboard/EmployeeTable";
+import Button from "../components/common/Button";
 
 export const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
 
   // Modal states
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -26,11 +26,11 @@ export const UserManagement = () => {
 
   // Form states
   const [formData, setFormData] = useState({
-    employee_id: '',
-    first_name: '',
-    last_name: '',
-    email: '',
-    status: 'ACTIVE',
+    employee_id: "",
+    first_name: "",
+    last_name: "",
+    email: "",
+    status: "ACTIVE",
   });
   const [selectedRoleIds, setSelectedRoleIds] = useState([]);
 
@@ -46,8 +46,8 @@ export const UserManagement = () => {
       setUsers(data.users || []);
       setError(null);
     } catch (err) {
-      console.error('Error fetching users:', err);
-      setError('Failed to load users.');
+      console.error("Error fetching users:", err);
+      setError("Failed to load users.");
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ export const UserManagement = () => {
       const data = await getRoles();
       setRoles(data || []);
     } catch (err) {
-      console.error('Error fetching roles:', err);
+      console.error("Error fetching roles:", err);
     }
   };
 
@@ -73,11 +73,11 @@ export const UserManagement = () => {
   const handleOpenAddModal = () => {
     setSelectedUser(null);
     setFormData({
-      employee_id: '',
-      first_name: '',
-      last_name: '',
-      email: '',
-      status: 'ACTIVE',
+      employee_id: "",
+      first_name: "",
+      last_name: "",
+      email: "",
+      status: "ACTIVE",
     });
     setIsUserModalOpen(true);
   };
@@ -97,7 +97,13 @@ export const UserManagement = () => {
   const handleOpenRoleModal = (user) => {
     setSelectedUser(user);
     const userRoleIds = user.roles
-      ? user.roles.map((r) => (typeof r === 'string' ? roles.find((role) => role.name === r)?.id : r.id)).filter(Boolean)
+      ? user.roles
+          .map((r) =>
+            typeof r === "string"
+              ? roles.find((role) => role.name === r)?.id
+              : r.id,
+          )
+          .filter(Boolean)
       : [];
     setSelectedRoleIds(userRoleIds);
     setIsRoleModalOpen(true);
@@ -114,8 +120,8 @@ export const UserManagement = () => {
       setIsUserModalOpen(false);
       fetchUsers();
     } catch (err) {
-      console.error('Error saving user:', err);
-      setError(err.response?.data?.detail || 'Failed to save user.');
+      console.error("Error saving user:", err);
+      setError(err.response?.data?.detail || "Failed to save user.");
     }
   };
 
@@ -126,36 +132,38 @@ export const UserManagement = () => {
       setIsRoleModalOpen(false);
       fetchUsers();
     } catch (err) {
-      console.error('Error assigning roles:', err);
-      setError('Failed to assign roles.');
+      console.error("Error assigning roles:", err);
+      setError("Failed to assign roles.");
     }
   };
 
   const handleDeactivate = async (userId) => {
-    if (window.confirm('Are you sure you want to deactivate this user?')) {
+    if (window.confirm("Are you sure you want to deactivate this user?")) {
       try {
         await deactivateUser(userId);
         fetchUsers();
       } catch (err) {
-        console.error('Error deactivating user:', err);
-        setError('Failed to deactivate user.');
+        console.error("Error deactivating user:", err);
+        setError("Failed to deactivate user.");
       }
     }
   };
 
   const handleActivate = async (user) => {
     try {
-      await updateUser(user.id, { ...user, status: 'ACTIVE' });
+      await updateUser(user.id, { ...user, status: "ACTIVE" });
       fetchUsers();
     } catch (err) {
-      console.error('Error activating user:', err);
-      setError('Failed to activate user.');
+      console.error("Error activating user:", err);
+      setError("Failed to activate user.");
     }
   };
 
   const handleRoleCheckboxChange = (roleId) => {
     setSelectedRoleIds((prev) =>
-      prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId]
+      prev.includes(roleId)
+        ? prev.filter((id) => id !== roleId)
+        : [...prev, roleId],
     );
   };
 
@@ -163,25 +171,37 @@ export const UserManagement = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-on-surface-variant">
-          <span className="font-label-md uppercase tracking-wider">Administration</span>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="font-label-md text-primary font-bold">User Management</span>
+          <span className="font-label-md uppercase tracking-wider">
+            Administration
+          </span>
+          <span className="material-symbols-outlined text-[14px]">
+            chevron_right
+          </span>
+          <span className="font-label-md text-primary font-bold">
+            User Management
+          </span>
         </div>
       </div>
 
       {error && (
         <div className="bg-error-container text-on-error-container p-4 rounded-lg text-body-md flex justify-between items-center">
           <span>{error}</span>
-          <button onClick={() => setError(null)} className="font-bold">X</button>
+          <button onClick={() => setError(null)} className="font-bold">
+            X
+          </button>
         </div>
       )}
 
       <section className="bg-white rounded-xl card-shadow border border-[#dee2e6] overflow-hidden">
         <div className="p-gutter border-b border-[#dee2e6] flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-headline-md font-headline-md text-on-surface">Employee Accounts</h2>
+          <h2 className="text-headline-md font-headline-md text-on-surface">
+            Employee Accounts
+          </h2>
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">
+                search
+              </span>
               <input
                 className="pl-10 pr-4 py-2 border border-outline-variant rounded-lg w-[240px] focus:ring-2 focus:ring-primary focus:border-primary text-body-md"
                 placeholder="Search employees..."
@@ -221,7 +241,9 @@ export const UserManagement = () => {
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-on-surface-variant">Loading employees...</div>
+          <div className="p-8 text-center text-on-surface-variant">
+            Loading employees...
+          </div>
         ) : (
           <EmployeeTable
             users={users}
@@ -238,64 +260,89 @@ export const UserManagement = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4 card-shadow">
             <h3 className="text-headline-sm font-bold">
-              {selectedUser ? 'Edit Employee Account' : 'Provision New Employee Account'}
+              {selectedUser
+                ? "Edit Employee Account"
+                : "Provision New Employee Account"}
             </h3>
             <form onSubmit={handleUserSubmit} className="space-y-4">
               {!selectedUser && (
                 <div>
-                  <label className="block text-label-md text-on-surface-variant mb-1">Employee ID</label>
+                  <label className="block text-label-md text-on-surface-variant mb-1">
+                    Employee ID
+                  </label>
                   <input
                     type="text"
                     required
                     className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-md"
                     value={formData.employee_id}
-                    onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, employee_id: e.target.value })
+                    }
                   />
                 </div>
               )}
               <div>
-                <label className="block text-label-md text-on-surface-variant mb-1">First Name</label>
+                <label className="block text-label-md text-on-surface-variant mb-1">
+                  First Name
+                </label>
                 <input
                   type="text"
                   required
                   className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-md"
                   value={formData.first_name}
-                  onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, first_name: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <label className="block text-label-md text-on-surface-variant mb-1">Last Name</label>
+                <label className="block text-label-md text-on-surface-variant mb-1">
+                  Last Name
+                </label>
                 <input
                   type="text"
                   required
                   className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-md"
                   value={formData.last_name}
-                  onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, last_name: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <label className="block text-label-md text-on-surface-variant mb-1">Email</label>
+                <label className="block text-label-md text-on-surface-variant mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
                   required
                   className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-md"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                 />
               </div>
               <div>
-                <label className="block text-label-md text-on-surface-variant mb-1">Status</label>
+                <label className="block text-label-md text-on-surface-variant mb-1">
+                  Status
+                </label>
                 <select
                   className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-md"
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
                 >
                   <option value="ACTIVE">Active</option>
                   <option value="INACTIVE">Inactive</option>
                 </select>
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <Button onClick={() => setIsUserModalOpen(false)} variant="outline">
+                <Button
+                  onClick={() => setIsUserModalOpen(false)}
+                  variant="outline"
+                >
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary">
@@ -311,14 +358,20 @@ export const UserManagement = () => {
       {isRoleModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4 card-shadow">
-            <h3 className="text-headline-sm font-bold">Assign Functional Roles</h3>
+            <h3 className="text-headline-sm font-bold">
+              Assign Functional Roles
+            </h3>
             <p className="text-body-md text-on-surface-variant">
-              Assign roles to {selectedUser?.first_name} {selectedUser?.last_name}
+              Assign roles to {selectedUser?.first_name}{" "}
+              {selectedUser?.last_name}
             </p>
             <form onSubmit={handleRoleSubmit} className="space-y-4">
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {roles.map((role) => (
-                  <label key={role.id} className="flex items-center gap-3 p-2 hover:bg-surface-container-low rounded-lg cursor-pointer">
+                  <label
+                    key={role.id}
+                    className="flex items-center gap-3 p-2 hover:bg-surface-container-low rounded-lg cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       checked={selectedRoleIds.includes(role.id)}
@@ -327,13 +380,18 @@ export const UserManagement = () => {
                     />
                     <div>
                       <p className="text-body-md font-bold">{role.name}</p>
-                      <p className="text-label-md text-on-surface-variant">{role.description}</p>
+                      <p className="text-label-md text-on-surface-variant">
+                        {role.description}
+                      </p>
                     </div>
                   </label>
                 ))}
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <Button onClick={() => setIsRoleModalOpen(false)} variant="outline">
+                <Button
+                  onClick={() => setIsRoleModalOpen(false)}
+                  variant="outline"
+                >
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary">

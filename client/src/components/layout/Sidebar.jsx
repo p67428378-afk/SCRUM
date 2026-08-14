@@ -1,13 +1,13 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 export const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { id: 'users', label: 'Users', icon: 'group' },
-    { id: 'roles', label: 'Roles', icon: 'badge' },
-    { id: 'permissions', label: 'Permissions', icon: 'security' },
-    { id: 'audit-logs', label: 'Audit Logs', icon: 'history' },
+    { id: "dashboard", label: "Dashboard", icon: "dashboard" },
+    { id: "users", label: "Users", icon: "group" },
+    { id: "roles", label: "Roles", icon: "badge" },
+    { id: "permissions", label: "Permissions", icon: "security" },
+    { id: "audit-logs", label: "Audit Logs", icon: "history" },
   ];
 
   return (
@@ -24,8 +24,8 @@ export const Sidebar = ({ activeTab, setActiveTab }) => {
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center gap-4 px-6 py-3 text-left transition-all ${
                   activeTab === item.id
-                    ? 'sidebar-active text-white'
-                    : 'text-white/70 hover:bg-white/10'
+                    ? "sidebar-active text-white"
+                    : "text-white/70 hover:bg-white/10"
                 }`}
               >
                 <span className="material-symbols-outlined">{item.icon}</span>

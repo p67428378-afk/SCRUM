@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -12,14 +9,14 @@ export default {
         "surface-container-high": "#e5e8ee",
         "tertiary-fixed": "#d7e3ff",
         "surface-container-lowest": "#ffffff",
-        "error": "#ba1a1a",
+        error: "#ba1a1a",
         "surface-dim": "#d7dadf",
         "surface-container": "#ebeef3",
         "surface-variant": "#e0e3e8",
         "on-secondary-container": "#007327",
         "inverse-primary": "#acc7ff",
         "on-primary-fixed": "#001a40",
-        "tertiary": "#004085",
+        tertiary: "#004085",
         "on-secondary": "#ffffff",
         "on-background": "#181c20",
         "on-error-container": "#93000a",
@@ -28,16 +25,16 @@ export default {
         "primary-container": "#0056b3",
         "primary-fixed": "#d7e2ff",
         "surface-container-low": "#f1f4f9",
-        "background": "#f7f9ff",
+        background: "#f7f9ff",
         "on-tertiary-fixed": "#001b3f",
         "on-surface-variant": "#424752",
-        "secondary": "#006e25",
-        "primary": "#003f87",
+        secondary: "#006e25",
+        primary: "#003f87",
         "inverse-on-surface": "#eef1f6",
         "on-tertiary": "#ffffff",
         "outline-variant": "#c2c6d4",
         "on-primary-fixed-variant": "#004491",
-        "surface": "#f7f9ff",
+        surface: "#f7f9ff",
         "on-tertiary-fixed-variant": "#0c458b",
         "on-surface": "#181c20",
         "surface-bright": "#f7f9ff",
@@ -49,20 +46,20 @@ export default {
         "surface-tint": "#115cb9",
         "on-tertiary-container": "#bad0ff",
         "tertiary-fixed-dim": "#abc7ff",
-        "outline": "#727784",
+        outline: "#727784",
         "secondary-fixed-dim": "#66df75",
         "inverse-surface": "#2d3135",
         "on-primary": "#ffffff",
-        "error-container": "#ffdad6"
+        "error-container": "#ffdad6",
       },
       spacing: {
-        "unit": "4px",
-        "gutter": "24px",
+        unit: "4px",
+        gutter: "24px",
         "container-max-width": "1440px",
         "margin-mobile": "16px",
-        "margin-desktop": "32px"
-      }
+        "margin-desktop": "32px",
+      },
     },
   },
   plugins: [],
-}
+};

@@ -1,36 +1,46 @@
-import React, { useState } from 'react';
-import Sidebar from './components/layout/Sidebar';
-import AdminDashboard from './pages/AdminDashboard';
-import UserManagement from './pages/UserManagement';
+import React, { useState } from "react";
+import Sidebar from "./components/layout/Sidebar";
+import AdminDashboard from "./pages/AdminDashboard";
+import UserManagement from "./pages/UserManagement";
 
 export const App = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+      case "dashboard":
         return <AdminDashboard onNavigate={setActiveTab} />;
-      case 'users':
+      case "users":
         return <UserManagement />;
-      case 'roles':
+      case "roles":
         return (
           <div className="bg-white p-6 rounded-xl border border-[#dee2e6] card-shadow">
-            <h2 className="text-headline-md font-bold mb-4">Roles Management</h2>
-            <p className="text-body-md text-on-surface-variant">Roles management interface is coming soon.</p>
+            <h2 className="text-headline-md font-bold mb-4">
+              Roles Management
+            </h2>
+            <p className="text-body-md text-on-surface-variant">
+              Roles management interface is coming soon.
+            </p>
           </div>
         );
-      case 'permissions':
+      case "permissions":
         return (
           <div className="bg-white p-6 rounded-xl border border-[#dee2e6] card-shadow">
-            <h2 className="text-headline-md font-bold mb-4">Permissions Management</h2>
-            <p className="text-body-md text-on-surface-variant">Permissions management interface is coming soon.</p>
+            <h2 className="text-headline-md font-bold mb-4">
+              Permissions Management
+            </h2>
+            <p className="text-body-md text-on-surface-variant">
+              Permissions management interface is coming soon.
+            </p>
           </div>
         );
-      case 'audit-logs':
+      case "audit-logs":
         return (
           <div className="bg-white p-6 rounded-xl border border-[#dee2e6] card-shadow">
             <h2 className="text-headline-md font-bold mb-4">Audit Logs</h2>
-            <p className="text-body-md text-on-surface-variant">Audit logs interface is coming soon.</p>
+            <p className="text-body-md text-on-surface-variant">
+              Audit logs interface is coming soon.
+            </p>
           </div>
         );
       default:
@@ -43,9 +53,13 @@ export const App = () => {
       {/* TopNavBar (Fixed Header) */}
       <header className="bg-primary-container h-[64px] w-full sticky top-0 z-50 flex items-center justify-between px-margin-desktop border-b border-outline-variant shadow-sm">
         <div className="flex items-center gap-4">
-          <span className="text-headline-sm font-bold text-white">Enterprise Admin</span>
+          <span className="text-headline-sm font-bold text-white">
+            Enterprise Admin
+          </span>
           <div className="h-6 w-px bg-white/20 ml-2"></div>
-          <h1 className="text-white font-headline-sm font-bold ml-2">Secure Employee Account Management</h1>
+          <h1 className="text-white font-headline-sm font-bold ml-2">
+            Secure Employee Account Management
+          </h1>
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 cursor-pointer text-white hover:opacity-80 transition-opacity">
