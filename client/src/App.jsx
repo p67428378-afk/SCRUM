@@ -34,7 +34,7 @@ export default function App() {
         <footer className="bg-[#1f1f2e] border-t border-[#2d2d42] py-8 text-center text-xs text-[#9ea3b8] mt-12">
           <div className="max-w-7xl mx-auto px-4 space-y-2">
             <p className="font-bold text-white">
-              AURA • World Tour 2026 Ticket Booking Platform
+              AUJLA • World Tour 2026 Ticket Booking Platform
             </p>
             <p>
               Powered by React 18, Vite, Tailwind CSS & FastAPI • PCI-DSS SAQ A

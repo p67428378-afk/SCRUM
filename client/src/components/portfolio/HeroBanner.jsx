@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import { Calendar, Play, Radio } from "lucide-react";
 
 export default function HeroBanner({ artist }) {
-  const name = artist?.name || "AURA";
+  const name = artist?.name || "Karan Aujla";
   const bio =
     artist?.bio ||
-    "Global pop sensation taking the world stage by storm with record-breaking synth-pop hits and electrifying live performances.";
+    "Acclaimed Punjabi singer, rapper, and songwriter known for chart-topping global hits like 'Tauba Tauba', 'Softly', and '52 Bars', infectious fusion beats, and record-breaking world tours.";
   const monthlyListeners = artist?.monthly_listeners || 42500000;
   const heroImage =
     artist?.hero_image_url ||
@@ -32,7 +32,7 @@ export default function HeroBanner({ artist }) {
       <div className="relative z-10 p-8 sm:p-12 lg:p-16 max-w-3xl flex flex-col items-start space-y-6">
         <div className="inline-flex items-center space-x-2 bg-[#7a3bed]/20 border border-[#7a3bed]/40 px-3 py-1.5 rounded-full text-xs font-bold text-[#a855f7] tracking-widest uppercase">
           <Radio className="w-3.5 h-3.5 animate-pulse text-[#21c45c]" />
-          <span>AURA • WORLD TOUR 2026</span>
+          <span>AUJLA • WORLD TOUR 2026</span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-none">

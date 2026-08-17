@@ -15,7 +15,7 @@ describe("ConcertsPage Component", () => {
       items: [
         {
           id: "123e4567-e89b-12d3-a456-426614174000",
-          tour_name: "AURA Berlin Night",
+          tour_name: "Aujla Berlin Night",
           event_date: "2026-10-24T20:00:00Z",
           status: "On Sale",
           country: "Germany",
@@ -39,7 +39,7 @@ describe("ConcertsPage Component", () => {
     ).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText(/AURA Berlin Night/i)).toBeInTheDocument();
+      expect(screen.getByText(/Aujla Berlin Night/i)).toBeInTheDocument();
     });
   });
 });

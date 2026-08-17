@@ -28,7 +28,7 @@ export default function Navbar() {
           </div>
           <div>
             <span className="text-xl font-extrabold text-white tracking-wider block">
-              AURA
+              AUJLA
             </span>
             <span className="text-[10px] text-[#7a3bed] font-bold tracking-widest uppercase block -mt-1">
               World Tour
@@ -94,7 +94,7 @@ export default function Navbar() {
                   placeholder="BK-XXXXXXXX"
                   value={lookupRef}
                   onChange={(e) => setLookupRef(e.target.value)}
-                  className="w-[#100%] w-full bg-[#12121c] border border-[#2d2d42] rounded-xl px-4 py-2.5 text-white placeholder-[#5d637e] focus:outline-none focus:border-[#7a3bed]"
+                  className="w-full bg-[#12121c] border border-[#2d2d42] rounded-xl px-4 py-2.5 text-white placeholder-[#5d637e] focus:outline-none focus:border-[#7a3bed]"
                 />
               </div>
 

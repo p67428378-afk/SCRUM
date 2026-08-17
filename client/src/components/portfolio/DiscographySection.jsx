@@ -1,35 +1,128 @@
 import React from "react";
-import { Disc, Music, Disc3 } from "lucide-react";
+import { Disc3, Music, Play, ListMusic } from "lucide-react";
+
+const KARAN_AUJLA_ALBUM_SONGS = {
+  "making memories": [
+    "Softly",
+    "Admirin' You",
+    "Try Me",
+    "Champion's Anthem",
+    "Girl, I Love You",
+    "JEE'S",
+    "What?",
+    "You",
+    "Bachke Bachke",
+  ],
+  "four you": ["52 Bars", "Take It Easy", "Fallin Apart", "Yeah Naah"],
+  bacthafucup: [
+    "Chu Gon Do?",
+    "Click That Bhaia",
+    "Here & There",
+    "Ask About Me",
+    "Sharabi",
+  ],
+  "four me": ["Winning Speech", "Antidote", "MF", "I'm Better Now"],
+  "tauba tauba & chart-toppers": [
+    "Tauba Tauba",
+    "White Brown Black",
+    "On Top",
+    "Players",
+    "Mexicana",
+    "Don't Look",
+  ],
+};
 
 export default function DiscographySection({ discography = [] }) {
   const fallbackDiscography = [
     {
       id: "d1",
-      title: "Neon Odyssey",
-      release_year: 2025,
+      title: "Making Memories",
+      release_year: 2023,
       cover_image_url:
         "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=400&q=80",
-      track_count: 12,
+      track_count: 9,
+      songs: [
+        "Softly",
+        "Admirin' You",
+        "Try Me",
+        "Champion's Anthem",
+        "Girl, I Love You",
+        "JEE'S",
+        "What?",
+        "You",
+        "Bachke Bachke",
+      ],
     },
     {
       id: "d2",
-      title: "Midnight Echoes",
+      title: "Four You",
       release_year: 2023,
       cover_image_url:
         "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80",
-      track_count: 10,
+      track_count: 4,
+      songs: ["52 Bars", "Take It Easy", "Fallin Apart", "Yeah Naah"],
     },
     {
       id: "d3",
-      title: "Starlight Horizons",
+      title: "Bacthafucup",
       release_year: 2021,
       cover_image_url:
         "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80",
-      track_count: 14,
+      track_count: 13,
+      songs: [
+        "Chu Gon Do?",
+        "Click That Bhaia",
+        "Here & There",
+        "Ask About Me",
+        "Sharabi",
+      ],
+    },
+    {
+      id: "d4",
+      title: "Four Me",
+      release_year: 2024,
+      cover_image_url:
+        "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=400&q=80",
+      track_count: 4,
+      songs: ["Winning Speech", "Antidote", "MF", "I'm Better Now"],
+    },
+    {
+      id: "d5",
+      title: "Tauba Tauba & Chart-Toppers",
+      release_year: 2024,
+      cover_image_url:
+        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=400&q=80",
+      track_count: 6,
+      songs: [
+        "Tauba Tauba",
+        "White Brown Black",
+        "On Top",
+        "Players",
+        "Mexicana",
+        "Don't Look",
+      ],
     },
   ];
 
   const items = discography.length > 0 ? discography : fallbackDiscography;
+
+  const getSongsForItem = (album) => {
+    if (album.songs && Array.isArray(album.songs) && album.songs.length > 0) {
+      return album.songs;
+    }
+    const titleKey = (album.title || "").toLowerCase();
+    if (KARAN_AUJLA_ALBUM_SONGS[titleKey]) {
+      return KARAN_AUJLA_ALBUM_SONGS[titleKey];
+    }
+    return [
+      "Tauba Tauba",
+      "Softly",
+      "52 Bars",
+      "Admirin' You",
+      "Winning Speech",
+      "White Brown Black",
+    ];
+  };
 
   return (
     <section id="discography" className="py-8">
@@ -38,51 +131,77 @@ export default function DiscographySection({ discography = [] }) {
           <Disc3 className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-white">
-            Discography Highlights
-          </h2>
+          <h2 className="text-2xl font-bold text-white">Discography & Songs</h2>
           <p className="text-xs text-[#9ea3b8]">
-            Chart-topping studio albums and hit singles
+            Karan Aujla's chart-topping albums, hit EPs, and popular tracks
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((album) => (
-          <div
-            key={album.id || album.title}
-            className="bg-[#1f1f2e] border border-[#2d2d42] rounded-2xl p-4 flex items-center space-x-4 hover:border-[#7a3bed]/50 transition-all hover:shadow-xl hover:shadow-[#7a3bed]/10 group"
-          >
-            <div className="w-20 h-20 rounded-xl overflow-hidden bg-[#12121c] flex-shrink-0 relative">
-              <img
-                src={
-                  album.cover_image_url ||
-                  "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80"
-                }
-                alt={album.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src =
-                    "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80";
-                }}
-              />
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {items.map((album) => {
+          const songs = getSongsForItem(album);
 
-            <div className="flex-1 min-w-0">
-              <span className="text-[10px] font-bold text-[#7a3bed] uppercase tracking-wider block mb-1">
-                Studio Album • {album.release_year}
-              </span>
-              <h3 className="text-base font-bold text-white truncate group-hover:text-[#a855f7] transition-colors">
-                {album.title}
-              </h3>
-              <div className="flex items-center space-x-2 text-xs text-[#9ea3b8] mt-2">
-                <Music className="w-3.5 h-3.5 text-[#a855f7]" />
-                <span>{album.track_count} Tracks</span>
+          return (
+            <div
+              key={album.id || album.title}
+              className="bg-[#1f1f2e] border border-[#2d2d42] rounded-2xl p-5 flex flex-col justify-between hover:border-[#7a3bed]/50 transition-all hover:shadow-xl hover:shadow-[#7a3bed]/10 group"
+            >
+              <div>
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-[#12121c] flex-shrink-0 relative">
+                    <img
+                      src={
+                        album.cover_image_url ||
+                        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80"
+                      }
+                      alt={album.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80";
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-bold text-[#7a3bed] uppercase tracking-wider block mb-1">
+                      Studio Release • {album.release_year}
+                    </span>
+                    <h3 className="text-base font-bold text-white truncate group-hover:text-[#a855f7] transition-colors">
+                      {album.title}
+                    </h3>
+                    <div className="flex items-center space-x-2 text-xs text-[#9ea3b8] mt-1.5">
+                      <Music className="w-3.5 h-3.5 text-[#a855f7]" />
+                      <span>{album.track_count || songs.length} Tracks</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Featured Songs list */}
+                <div className="bg-[#12121c] border border-[#2d2d42] rounded-xl p-3 space-y-2">
+                  <div className="flex items-center space-x-1.5 text-[11px] font-bold text-[#a855f7] uppercase tracking-wider">
+                    <ListMusic className="w-3.5 h-3.5" />
+                    <span>Featured Tracks</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {songs.map((song, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center space-x-1 bg-[#1f1f2e] border border-[#2d2d42] px-2.5 py-1 rounded-lg text-xs font-medium text-white hover:border-[#7a3bed]/60 hover:text-[#a855f7] transition-colors"
+                      >
+                        <Play className="w-2.5 h-2.5 text-[#21c45c]" />
+                        <span>{song}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

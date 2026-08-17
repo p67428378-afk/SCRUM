@@ -4,7 +4,7 @@ import App from "./App";
 
 vi.mock("./services/api", () => ({
   getPortfolio: vi.fn().mockResolvedValue({
-    name: "AURA",
+    name: "Karan Aujla",
     bio: "Test bio",
     monthly_listeners: 1000000,
     discography: [],
@@ -15,7 +15,7 @@ vi.mock("./services/api", () => ({
 describe("App Component", () => {
   it("renders the brand title in the navbar", async () => {
     render(<App />);
-    const brandElements = screen.getAllByText(/AURA/i);
+    const brandElements = screen.getAllByText(/AUJLA/i);
     expect(brandElements.length).toBeGreaterThan(0);
   });
 

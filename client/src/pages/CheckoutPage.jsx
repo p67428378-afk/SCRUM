@@ -4,7 +4,7 @@ import { createPaymentIntent, bookTickets } from "../services/api";
 import TimerBanner from "../components/common/TimerBanner";
 import CurrencySelector from "../components/checkout/CurrencySelector";
 import StripePaymentForm from "../components/checkout/StripePaymentForm";
-import { ArrowLeft, Ticket, AlertTriangle, ShieldCheck } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 export default function CheckoutPage() {
   const location = useLocation();
@@ -147,7 +147,7 @@ export default function CheckoutPage() {
               Reservation Summary
             </span>
             <h3 className="text-lg font-bold text-white mt-1">
-              {concert?.tour_name || "AURA World Tour"}
+              {concert?.tour_name || "Aujla World Tour"}
             </h3>
             <p className="text-xs text-[#9ea3b8]">
               {concert?.venue?.name}, {concert?.venue?.city}

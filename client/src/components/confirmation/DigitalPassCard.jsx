@@ -1,12 +1,10 @@
 import React from "react";
 import {
   Download,
-  QrCode,
   CheckCircle,
   Mail,
   Calendar,
   MapPin,
-  Ticket,
   ExternalLink,
 } from "lucide-react";
 import Badge from "../common/Badge";
@@ -20,7 +18,7 @@ export default function DigitalPassCard({ booking }) {
     digital_pass = {},
   } = booking || {};
 
-  const tourName = concert?.tour_name || "AURA • World Tour 2026";
+  const tourName = concert?.tour_name || "AUJLA • World Tour 2026";
   const city = concert?.city || "London";
   const venue = concert?.venue || "The O2 Arena";
   const eventDate = concert?.event_date
@@ -38,7 +36,7 @@ export default function DigitalPassCard({ booking }) {
     const element = document.createElement("a");
     const file = new Blob(
       [
-        `AURA WORLD TOUR 2026 - OFFICIAL TICKET PASS\n\nBooking Reference: ${booking_reference}\nTour: ${tourName}\nVenue: ${venue}, ${city}\nDate & Time: ${eventDate}\nEmail: ${user_email}\nStatus: ${status}\nQR Pass Code: ${qrData}\n`,
+        `AUJLA WORLD TOUR 2026 - OFFICIAL TICKET PASS\n\nArtist: Karan Aujla\nBooking Reference: ${booking_reference}\nTour: ${tourName}\nVenue: ${venue}, ${city}\nDate & Time: ${eventDate}\nEmail: ${user_email}\nStatus: ${status}\nQR Pass Code: ${qrData}\n`,
       ],
       { type: "text/plain" },
     );

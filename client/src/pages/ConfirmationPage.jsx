@@ -6,7 +6,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import DigitalPassCard from "../components/confirmation/DigitalPassCard";
-import { Sparkles, Calendar, ArrowLeft, Mail, AlertCircle } from "lucide-react";
+import { Sparkles, ArrowLeft, Mail } from "lucide-react";
 
 export default function ConfirmationPage() {
   const { bookingId } = useParams();
@@ -29,7 +29,7 @@ export default function ConfirmationPage() {
           status: "CONFIRMED",
           user_email: emailQuery || "test@example.com",
           concert: {
-            tour_name: "AURA • World Tour 2026",
+            tour_name: "AUJLA • World Tour 2026",
             city: "London",
             venue: "The O2 Arena",
             event_date: new Date(Date.now() + 86400000 * 60).toISOString(),
