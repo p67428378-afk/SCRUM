@@ -50,7 +50,7 @@ const KARAN_AUJLA_ALBUMS = [
     title: "Street Dreams",
     release_year: 2024,
     cover_image_url:
-      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80",
     track_count: 7,
     songs: [
       "100 Million",

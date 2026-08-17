@@ -5,6 +5,9 @@ import HeroBanner from "../components/portfolio/HeroBanner";
 import DiscographySection from "../components/portfolio/DiscographySection";
 import { Calendar, Sparkles, AlertCircle } from "lucide-react";
 
+const KARAN_AUJLA_STAGE_PICTURE =
+  "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80";
+
 const KARAN_AUJLA_REAL_BIO =
   'Jaskaran Singh "Karan" Aujla is a global Punjabi music icon, singer, rapper, and songwriter celebrated for worldwide chart-topping hits like "Tauba Tauba", "Softly", "52 Bars", "Admirin\' You", "Winning Speech", and "White Brown Black". Born in Ghudani Kalan, Punjab, he has redefined Punjabi hip-hop with viral hooks, distinct vocals, and record-breaking sold-out world tours.';
 
@@ -57,7 +60,7 @@ const KARAN_AUJLA_REAL_DISCOGRAPHY = [
     title: "Street Dreams",
     release_year: 2024,
     cover_image_url:
-      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80",
     track_count: 7,
     songs: [
       "100 Million",
@@ -125,9 +128,7 @@ export default function PortfolioPage() {
             ...data,
             name: "Karan Aujla",
             bio: KARAN_AUJLA_REAL_BIO,
-            hero_image_url:
-              data?.hero_image_url ||
-              "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
+            hero_image_url: KARAN_AUJLA_STAGE_PICTURE,
             monthly_listeners: data?.monthly_listeners || 42500000,
             discography:
               filteredDiscography.length > 0
@@ -151,8 +152,7 @@ export default function PortfolioPage() {
             name: "Karan Aujla",
             bio: KARAN_AUJLA_REAL_BIO,
             monthly_listeners: 42500000,
-            hero_image_url:
-              "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
+            hero_image_url: KARAN_AUJLA_STAGE_PICTURE,
             discography: KARAN_AUJLA_REAL_DISCOGRAPHY,
           });
           setLoading(false);
