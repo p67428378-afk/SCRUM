@@ -1,128 +1,108 @@
 import React from "react";
 import { Disc3, Music, Play, ListMusic } from "lucide-react";
 
-const KARAN_AUJLA_ALBUM_SONGS = {
-  "making memories": [
-    "Softly",
-    "Admirin' You",
-    "Try Me",
-    "Champion's Anthem",
-    "Girl, I Love You",
-    "JEE'S",
-    "What?",
-    "You",
-    "Bachke Bachke",
-  ],
-  "four you": ["52 Bars", "Take It Easy", "Fallin Apart", "Yeah Naah"],
-  bacthafucup: [
-    "Chu Gon Do?",
-    "Click That Bhaia",
-    "Here & There",
-    "Ask About Me",
-    "Sharabi",
-  ],
-  "four me": ["Winning Speech", "Antidote", "MF", "I'm Better Now"],
-  "tauba tauba & chart-toppers": [
-    "Tauba Tauba",
-    "White Brown Black",
-    "On Top",
-    "Players",
-    "Mexicana",
-    "Don't Look",
-  ],
-};
+const KARAN_AUJLA_ALBUMS = [
+  {
+    id: "d1",
+    title: "Making Memories",
+    release_year: 2023,
+    cover_image_url:
+      "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=400&q=80",
+    track_count: 9,
+    songs: [
+      "Softly",
+      "Admirin' You",
+      "Try Me",
+      "Champion's Anthem",
+      "Girl, I Love You",
+      "JEE'S",
+      "What?",
+      "You",
+      "Bachke Bachke",
+    ],
+  },
+  {
+    id: "d2",
+    title: "Four You",
+    release_year: 2023,
+    cover_image_url:
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80",
+    track_count: 4,
+    songs: ["52 Bars", "Take It Easy", "Fallin Apart", "Yeah Naah"],
+  },
+  {
+    id: "d3",
+    title: "BTFU (Bacthafucup)",
+    release_year: 2021,
+    cover_image_url:
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80",
+    track_count: 13,
+    songs: [
+      "Chu Gon Do?",
+      "Click That Bhaia",
+      "Here & There",
+      "Ask About Me",
+      "Sharabi",
+    ],
+  },
+  {
+    id: "d4",
+    title: "Street Dreams",
+    release_year: 2024,
+    cover_image_url:
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=400&q=80",
+    track_count: 7,
+    songs: [
+      "100 Million",
+      "Nothing Lasts",
+      "Straight Ballin'",
+      "Street Dreams",
+      "Top Class",
+    ],
+  },
+  {
+    id: "d5",
+    title: "Four Me",
+    release_year: 2024,
+    cover_image_url:
+      "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=400&q=80",
+    track_count: 4,
+    songs: ["Winning Speech", "Antidote", "MF", "I'm Better Now"],
+  },
+  {
+    id: "d6",
+    title: "Tauba Tauba & Chart-Toppers",
+    release_year: 2024,
+    cover_image_url:
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80",
+    track_count: 6,
+    songs: [
+      "Tauba Tauba",
+      "White Brown Black",
+      "On Top",
+      "Players",
+      "Mexicana",
+      "Don't Look",
+    ],
+  },
+];
+
+const INVALID_ALBUM_KEYWORDS = [
+  "midnight echoes",
+  "whispers in the wind",
+  "ethereal",
+  "ethereals",
+];
 
 export default function DiscographySection({ discography = [] }) {
-  const fallbackDiscography = [
-    {
-      id: "d1",
-      title: "Making Memories",
-      release_year: 2023,
-      cover_image_url:
-        "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&w=400&q=80",
-      track_count: 9,
-      songs: [
-        "Softly",
-        "Admirin' You",
-        "Try Me",
-        "Champion's Anthem",
-        "Girl, I Love You",
-        "JEE'S",
-        "What?",
-        "You",
-        "Bachke Bachke",
-      ],
-    },
-    {
-      id: "d2",
-      title: "Four You",
-      release_year: 2023,
-      cover_image_url:
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80",
-      track_count: 4,
-      songs: ["52 Bars", "Take It Easy", "Fallin Apart", "Yeah Naah"],
-    },
-    {
-      id: "d3",
-      title: "Bacthafucup",
-      release_year: 2021,
-      cover_image_url:
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80",
-      track_count: 13,
-      songs: [
-        "Chu Gon Do?",
-        "Click That Bhaia",
-        "Here & There",
-        "Ask About Me",
-        "Sharabi",
-      ],
-    },
-    {
-      id: "d4",
-      title: "Four Me",
-      release_year: 2024,
-      cover_image_url:
-        "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=400&q=80",
-      track_count: 4,
-      songs: ["Winning Speech", "Antidote", "MF", "I'm Better Now"],
-    },
-    {
-      id: "d5",
-      title: "Tauba Tauba & Chart-Toppers",
-      release_year: 2024,
-      cover_image_url:
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=400&q=80",
-      track_count: 6,
-      songs: [
-        "Tauba Tauba",
-        "White Brown Black",
-        "On Top",
-        "Players",
-        "Mexicana",
-        "Don't Look",
-      ],
-    },
-  ];
+  // Filter out any incorrect/generic albums if received from backend or cache
+  const validDiscography = (discography || []).filter((album) => {
+    const titleLower = (album.title || "").toLowerCase();
+    return !INVALID_ALBUM_KEYWORDS.some((kw) => titleLower.includes(kw));
+  });
 
-  const items = discography.length > 0 ? discography : fallbackDiscography;
-
-  const getSongsForItem = (album) => {
-    if (album.songs && Array.isArray(album.songs) && album.songs.length > 0) {
-      return album.songs;
-    }
-    const titleKey = (album.title || "").toLowerCase();
-    if (KARAN_AUJLA_ALBUM_SONGS[titleKey]) {
-      return KARAN_AUJLA_ALBUM_SONGS[titleKey];
-    }
-    return [
-      "Tauba Tauba",
-      "Softly",
-      "52 Bars",
-      "Admirin' You",
-      "Winning Speech",
-      "White Brown Black",
-    ];
-  };
+  const items =
+    validDiscography.length > 0 ? validDiscography : KARAN_AUJLA_ALBUMS;
 
   return (
     <section id="discography" className="py-8">
@@ -131,16 +111,29 @@ export default function DiscographySection({ discography = [] }) {
           <Disc3 className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-white">Discography & Songs</h2>
+          <h2 className="text-2xl font-bold text-white">
+            Discography & Official Albums
+          </h2>
           <p className="text-xs text-[#9ea3b8]">
-            Karan Aujla's chart-topping albums, hit EPs, and popular tracks
+            Explore Karan Aujla's real chart-topping albums, hit EPs, and
+            worldwide Punjabi anthems
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((album) => {
-          const songs = getSongsForItem(album);
+          const songs =
+            album.songs && Array.isArray(album.songs) && album.songs.length > 0
+              ? album.songs
+              : [
+                  "Tauba Tauba",
+                  "Softly",
+                  "52 Bars",
+                  "Admirin' You",
+                  "Winning Speech",
+                  "White Brown Black",
+                ];
 
           return (
             <div
@@ -167,7 +160,7 @@ export default function DiscographySection({ discography = [] }) {
 
                   <div className="flex-1 min-w-0">
                     <span className="text-[10px] font-bold text-[#7a3bed] uppercase tracking-wider block mb-1">
-                      Studio Release • {album.release_year}
+                      Karan Aujla Release • {album.release_year || 2023}
                     </span>
                     <h3 className="text-base font-bold text-white truncate group-hover:text-[#a855f7] transition-colors">
                       {album.title}
