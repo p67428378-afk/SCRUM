@@ -155,3 +155,38 @@ class OrderListResponse(BaseModel):
     total: int
     skip: int
     limit: int
+
+
+# Activity Log & Billing Schemas
+class UserActivityLogResponse(BaseModel):
+    id: str
+    user_id: Optional[str] = None
+    activity_type: str
+    endpoint: str
+    http_method: str
+    status_code: int
+    client_ip: Optional[str] = None
+    execution_ms: Optional[float] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserActivityLogList(BaseModel):
+    items: List[UserActivityLogResponse]
+    total: int
+    skip: int
+    limit: int
+
+
+class UserLoginStatsResponse(BaseModel):
+    id: Optional[str] = None
+    user_id: str
+    login_count: int
+    pricing_tier: str
+    last_login_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

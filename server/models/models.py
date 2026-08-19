@@ -1,15 +1,23 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Boolean, Float, Integer, Text, Numeric,
-    ForeignKey, DateTime
+    Column,
+    String,
+    Boolean,
+    Float,
+    Integer,
+    Text,
+    ForeignKey,
+    DateTime,
 )
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
+
 def utc_now():
     return datetime.now(timezone.utc)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -23,8 +31,19 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), default=utc_now)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
-    cart_items = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")
+    cart_items = relationship(
+        "CartItem", back_populates="user", cascade="all, delete-orphan"
+    )
     orders = relationship("Order", back_populates="user")
+    activity_logs = relationship(
+        "UserActivityLog", back_populates="user", cascade="all, delete-orphan"
+    )
+    login_stats = relationship(
+        "UserLoginStats",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
 
 class Category(Base):
@@ -53,7 +72,9 @@ class Product(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     category = relationship("Category", back_populates="products")
-    variants = relationship("ProductVariant", back_populates="product", cascade="all, delete-orphan")
+    variants = relationship(
+        "ProductVariant", back_populates="product", cascade="all, delete-orphan"
+    )
 
 
 class ProductVariant(Base):
@@ -103,7 +124,9 @@ class Order(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     user = relationship("User", back_populates="orders")
-    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+    items = relationship(
+        "OrderItem", back_populates="order", cascade="all, delete-orphan"
+    )
 
 
 class OrderItem(Base):
@@ -118,3 +141,34 @@ class OrderItem(Base):
 
     order = relationship("Order", back_populates="items")
     variant = relationship("ProductVariant", back_populates="order_items")
+
+
+class UserActivityLog(Base):
+    __tablename__ = "user_activity_logs"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
+    activity_type = Column(String(50), index=True, nullable=False)
+    endpoint = Column(String(255), index=True, nullable=False)
+    http_method = Column(String(10), nullable=False)
+    status_code = Column(Integer, nullable=False)
+    client_ip = Column(String(45), nullable=True)
+    execution_ms = Column(Float, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now, index=True)
+
+    user = relationship("User", back_populates="activity_logs")
+
+
+class UserLoginStats(Base):
+    __tablename__ = "user_login_stats"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(
+        String(36), ForeignKey("users.id"), unique=True, index=True, nullable=False
+    )
+    login_count = Column(Integer, default=1, nullable=False)
+    pricing_tier = Column(String(50), default="Standard", nullable=False)
+    last_login_at = Column(DateTime(timezone=True), default=utc_now)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    user = relationship("User", back_populates="login_stats")

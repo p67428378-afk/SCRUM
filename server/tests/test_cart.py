@@ -15,10 +15,11 @@ def test_cart_operations(client):
     variant_id = variant["id"]
 
     # Add item to cart
-    add_res = client.post("/api/v1/cart/items", json={
-        "variant_id": variant_id,
-        "quantity": 2
-    }, headers=headers)
+    add_res = client.post(
+        "/api/v1/cart/items",
+        json={"variant_id": variant_id, "quantity": 2},
+        headers=headers,
+    )
     assert add_res.status_code == 200
     cart = add_res.json()
     assert len(cart["items"]) == 1
@@ -26,9 +27,9 @@ def test_cart_operations(client):
     item_id = cart["items"][0]["id"]
 
     # Update quantity
-    update_res = client.put(f"/api/v1/cart/items/{item_id}", json={
-        "quantity": 1
-    }, headers=headers)
+    update_res = client.put(
+        f"/api/v1/cart/items/{item_id}", json={"quantity": 1}, headers=headers
+    )
     assert update_res.status_code == 200
     assert update_res.json()["items"][0]["quantity"] == 1
 

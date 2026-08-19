@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
+import server.database
+import server.main
 from server.database import get_db, seed_data
 from server.models.models import Base
 from server.main import app
@@ -17,6 +19,10 @@ engine = create_engine(
     poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Override SessionLocal so middleware in main.py uses test db in test session
+server.database.SessionLocal = TestingSessionLocal
+server.main.SessionLocal = TestingSessionLocal
 
 
 @pytest.fixture(scope="session", autouse=True)

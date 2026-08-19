@@ -5,22 +5,26 @@ from sqlalchemy import or_
 
 from server.database import get_db
 from server.models.models import Product, Category, ProductVariant
-from server.schemas.schemas import ProductDetailResponse, ProductListResponse, ProductResponse
+from server.schemas.schemas import ProductDetailResponse, ProductListResponse
 
 router = APIRouter(prefix="/api/v1/products", tags=["Products"])
 
 
 @router.get("", response_model=ProductListResponse)
 def list_products(
-    category: Optional[str] = Query(None, description="Category slug, name, or ID filter"),
+    category: Optional[str] = Query(
+        None, description="Category slug, name, or ID filter"
+    ),
     size: Optional[str] = Query(None, description="Size filter (e.g. S, M, L, XL)"),
     color: Optional[str] = Query(None, description="Color filter"),
     min_price: Optional[float] = Query(None, ge=0),
     max_price: Optional[float] = Query(None, ge=0),
-    q: Optional[str] = Query(None, description="Keyword search in title or description"),
+    q: Optional[str] = Query(
+        None, description="Keyword search in title or description"
+    ),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     query = db.query(Product).filter(Product.is_active == True)
 
@@ -30,7 +34,7 @@ def list_products(
             or_(
                 Category.slug.ilike(category),
                 Category.name.ilike(category),
-                Category.id == category
+                Category.id == category,
             )
         )
 
@@ -45,7 +49,7 @@ def list_products(
         query = query.filter(
             or_(
                 Product.title.ilike(search_pattern),
-                Product.description.ilike(search_pattern)
+                Product.description.ilike(search_pattern),
             )
         )
 
@@ -59,20 +63,18 @@ def list_products(
     total = query.distinct().count()
     items = query.distinct().offset(skip).limit(limit).all()
 
-    return {
-        "items": items,
-        "total": total,
-        "skip": skip,
-        "limit": limit
-    }
+    return {"items": items, "total": total, "skip": skip, "limit": limit}
 
 
 @router.get("/{product_id}", response_model=ProductDetailResponse)
 def get_product_details(product_id: str, db: Session = Depends(get_db)):
-    product = db.query(Product).filter(Product.id == product_id, Product.is_active == True).first()
+    product = (
+        db.query(Product)
+        .filter(Product.id == product_id, Product.is_active == True)
+        .first()
+    )
     if not product:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
         )
     return product

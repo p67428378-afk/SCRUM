@@ -4,4 +4,4 @@ _Maintained automatically by the SDLC Assistant. Lists features implemented in t
 
 ## Implemented Features
 
-- **SCRUM-91** - E-Commerce Shopping Website for Clothes and Accessories
+- **SCRUM-91** - E-Commerce Shopping Website for Clothes and Accessories with User Activity Logging

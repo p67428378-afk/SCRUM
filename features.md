@@ -1,13 +1,14 @@
 # Project Features
 
-## SCRUM-91 - E-Commerce Shopping Website for Clothes and Accessories
+## SCRUM-91 - E-Commerce Shopping Website for Clothes and Accessories with User Activity Logging
 
 ### Feature Summary
-An e-commerce platform where users can browse catalog items (clothes and accessories), filter by attributes, manage their cart, create an account, and checkout.
+E-Commerce Shopping Website for Clothes and Accessories with User Activity Logging feature tracking user logins for billing analytics and recording API gateway request activity.
 
 ### Key Features
-- Product Catalog & Browsing with filtering by category, size, color, price
-- Interactive Shopping Cart and Checkout workflow
-- User Account Management and Order History tracking
-- Responsive Modern UI built with React 18, Vite, and Tailwind CSS
-- FastAPI RESTful Backend with PostgreSQL/SQLite database
+- Product Catalog & Browsing
+- Shopping Cart & Checkout
+- User Account & Order History
+- Responsive & Modern UI
+- User Login Activity & Billing Analytics Integration
+- API Gateway Router Activity Logging

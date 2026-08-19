@@ -13,6 +13,8 @@ graph TD
   UI -->|HTTP / JSON| API
   API --> DB
   DB --- tbl_users["users"]
+  DB --- tbl_user_activity_logs["user_activity_logs"]
+  DB --- tbl_user_login_stats["user_login_stats"]
   DB --- tbl_categories["categories"]
   DB --- tbl_products["products"]
   DB --- tbl_product_variants["product_variants"]
@@ -40,13 +42,17 @@ graph TD
 - server/models/__init__.py
 - server/models/models.py
 - server/routers/__init__.py
+- server/routers/activity.py
 - server/routers/cart.py
 - server/routers/orders.py
 - server/routers/products.py
 - server/routers/users.py
 - server/schemas/__init__.py
 - server/schemas/schemas.py
+- server/services/__init__.py
+- server/services/billing_analytics.py
 - server/tests/__init__.py
+- server/tests/test_activity.py
 - server/tests/test_cart.py
 - server/tests/test_health.py
 - server/tests/test_orders.py
@@ -54,12 +60,41 @@ graph TD
 - server/tests/test_users.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/App.test.jsx
+- client/src/components/cart/CartItemRow.jsx
+- client/src/components/cart/OrderSummary.jsx
+- client/src/components/catalog/FilterSidebar.jsx
+- client/src/components/catalog/ProductCard.jsx
+- client/src/components/common/Badge.jsx
+- client/src/components/common/Button.jsx
+- client/src/components/common/Navbar.jsx
+- client/src/components/detail/ProductGallery.jsx
+- client/src/components/detail/VariantSelector.jsx
+- client/src/components/orders/TrackingStepper.jsx
+- client/src/context/AuthContext.jsx
+- client/src/context/CartContext.jsx
+- client/src/main.jsx
+- client/src/pages/CatalogPage.jsx
+- client/src/pages/CheckoutPage.jsx
+- client/src/pages/DetailPage.jsx
+- client/src/pages/LoginPage.jsx
+- client/src/pages/OrderHistoryPage.jsx
+- client/src/pages/RegisterPage.jsx
+- client/src/services/api.js
+- client/src/services/api.test.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - POST /api/v1/users/register
 - POST /api/v1/users/login
 - GET /api/v1/users/profile
+- GET /api/v1/activity/logs
+- GET /api/v1/activity/summary
 - GET /api/v1/products
 - GET /api/v1/products/{id}
 - GET /api/v1/cart
@@ -72,6 +107,8 @@ graph TD
 
 ## Data Model
 - users
+- user_activity_logs
+- user_login_stats
 - categories
 - products
 - product_variants

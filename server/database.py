@@ -44,7 +44,7 @@ def seed_data(db):
             hashed_password=hashed_pwd,
             full_name="Alex Smith",
             is_active=True,
-            role="user"
+            role="user",
         )
         db.add(test_user)
 
@@ -58,7 +58,7 @@ def seed_data(db):
             hashed_password=hashed_pwd,
             full_name="Admin User",
             is_active=True,
-            role="admin"
+            role="admin",
         )
         db.add(admin_user)
 
@@ -71,7 +71,7 @@ def seed_data(db):
             id=str(uuid.uuid4()),
             name="Clothing",
             slug="clothing",
-            description="Apparel, jackets, t-shirts, and pants"
+            description="Apparel, jackets, t-shirts, and pants",
         )
         db.add(clothing_cat)
         db.commit()
@@ -83,7 +83,7 @@ def seed_data(db):
             id=str(uuid.uuid4()),
             name="Accessories",
             slug="accessories",
-            description="Sunglasses, bags, hats, and jewelry"
+            description="Sunglasses, bags, hats, and jewelry",
         )
         db.add(acc_cat)
         db.commit()
@@ -98,7 +98,7 @@ def seed_data(db):
             description="Timeless denim trucker jacket with button closure and chest pockets.",
             price=89.99,
             image_url="https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80",
-            is_active=True
+            is_active=True,
         )
         db.add(p1)
         db.commit()
@@ -110,7 +110,7 @@ def seed_data(db):
             size="M",
             color="Blue",
             stock_quantity=15,
-            sku="DENIM-JKT-BLU-M"
+            sku="DENIM-JKT-BLU-M",
         )
         p1_v2 = ProductVariant(
             id=str(uuid.uuid4()),
@@ -118,7 +118,7 @@ def seed_data(db):
             size="L",
             color="Blue",
             stock_quantity=10,
-            sku="DENIM-JKT-BLU-L"
+            sku="DENIM-JKT-BLU-L",
         )
         p1_v3 = ProductVariant(
             id=str(uuid.uuid4()),
@@ -126,7 +126,7 @@ def seed_data(db):
             size="M",
             color="Black",
             stock_quantity=8,
-            sku="DENIM-JKT-BLK-M"
+            sku="DENIM-JKT-BLK-M",
         )
         db.add_all([p1_v1, p1_v2, p1_v3])
 
@@ -137,7 +137,7 @@ def seed_data(db):
             description="100% premium cotton crewneck t-shirt with modern minimal print.",
             price=25.00,
             image_url="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80",
-            is_active=True
+            is_active=True,
         )
         db.add(p2)
         db.commit()
@@ -149,7 +149,7 @@ def seed_data(db):
             size="S",
             color="White",
             stock_quantity=20,
-            sku="TSHIRT-WHT-S"
+            sku="TSHIRT-WHT-S",
         )
         p2_v2 = ProductVariant(
             id=str(uuid.uuid4()),
@@ -157,7 +157,7 @@ def seed_data(db):
             size="M",
             color="White",
             stock_quantity=25,
-            sku="TSHIRT-WHT-M"
+            sku="TSHIRT-WHT-M",
         )
         p2_v3 = ProductVariant(
             id=str(uuid.uuid4()),
@@ -165,7 +165,7 @@ def seed_data(db):
             size="L",
             color="Black",
             stock_quantity=18,
-            sku="TSHIRT-BLK-L"
+            sku="TSHIRT-BLK-L",
         )
         db.add_all([p2_v1, p2_v2, p2_v3])
 
@@ -176,7 +176,7 @@ def seed_data(db):
             description="UV400 protection polarized aviator sunglasses with gold metal frame.",
             price=45.00,
             image_url="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=600&q=80",
-            is_active=True
+            is_active=True,
         )
         db.add(p3)
         db.commit()
@@ -188,7 +188,7 @@ def seed_data(db):
             size="One Size",
             color="Gold",
             stock_quantity=30,
-            sku="SUNGLS-GLD-OS"
+            sku="SUNGLS-GLD-OS",
         )
         p3_v2 = ProductVariant(
             id=str(uuid.uuid4()),
@@ -196,7 +196,7 @@ def seed_data(db):
             size="One Size",
             color="Black",
             stock_quantity=25,
-            sku="SUNGLS-BLK-OS"
+            sku="SUNGLS-BLK-OS",
         )
         db.add_all([p3_v1, p3_v2])
 
@@ -207,7 +207,7 @@ def seed_data(db):
             description="Genuine leather crossbody bag with adjustable strap and brass hardware.",
             price=79.50,
             image_url="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80",
-            is_active=True
+            is_active=True,
         )
         db.add(p4)
         db.commit()
@@ -219,7 +219,7 @@ def seed_data(db):
             size="One Size",
             color="Brown",
             stock_quantity=12,
-            sku="LEATHER-BAG-BRN"
+            sku="LEATHER-BAG-BRN",
         )
         p4_v2 = ProductVariant(
             id=str(uuid.uuid4()),
@@ -227,7 +227,7 @@ def seed_data(db):
             size="One Size",
             color="Black",
             stock_quantity=10,
-            sku="LEATHER-BAG-BLK"
+            sku="LEATHER-BAG-BLK",
         )
         db.add_all([p4_v1, p4_v2])
 

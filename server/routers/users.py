@@ -1,4 +1,5 @@
 import uuid
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -12,16 +13,20 @@ from server.dependencies.auth import (
     get_current_user,
 )
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
 
-@router.post("/register", response_model=UserProfileResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=UserProfileResponse, status_code=status.HTTP_201_CREATED
+)
 def register_user(user_in: UserRegister, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == user_in.email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email is already registered"
+            detail="Email is already registered",
         )
 
     user = User(
@@ -30,7 +35,7 @@ def register_user(user_in: UserRegister, db: Session = Depends(get_db)):
         hashed_password=get_password_hash(user_in.password),
         full_name=user_in.full_name,
         is_active=True,
-        role="user"
+        role="user",
     )
     db.add(user)
     db.commit()
@@ -49,11 +54,22 @@ def login_user(credentials: UserLogin, db: Session = Depends(get_db)):
         )
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user account"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user account"
         )
 
-    access_token = create_access_token(data={"sub": user.id, "email": user.email, "role": user.role})
+    # Record user login in billing analytics (Fault-tolerant)
+    try:
+        from server.services.billing_analytics import record_user_login_event
+
+        record_user_login_event(user.id, db)
+    except Exception as e:
+        logger.warning(
+            f"Failed to record login event for user {user.id} in billing analytics: {e}"
+        )
+
+    access_token = create_access_token(
+        data={"sub": user.id, "email": user.email, "role": user.role}
+    )
     return {"access_token": access_token, "token_type": "bearer"}
 
 
