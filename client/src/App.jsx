@@ -1,3 +1,4 @@
+// SCRUM-114: Continent and Country Portfolio Display
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/layout/Navbar.jsx";
