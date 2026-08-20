@@ -1,49 +1,69 @@
-import os
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
+from server.core.config import settings
 from server.database import init_db
-from server.routers import items, inventory, adjustments, alerts, warehouses, categories
+from server.api.v1.regions import router as regions_router
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: initialize database tables and seed initial data
+    # Startup: initialize database and seed static dataset
+    logger.info("Initializing database and seeding data...")
     init_db()
     yield
+    # Shutdown
+    logger.info("Application shutdown.")
 
 
 app = FastAPI(
-    title="Inventory Management System API",
-    description="API for managing inventory stock levels, catalog items, stock adjustments, and low-stock alerts.",
-    version="1.0.0",
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
-# CORS Configuration
-ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173",
-).split(",")
-
+# Configure CORS Middleware
+origins = settings.get_allowed_origins()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in ALLOWED_ORIGINS if origin.strip()],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register API Routers
-app.include_router(items.router, prefix="/api/v1", tags=["Items"])
-app.include_router(inventory.router, prefix="/api/v1", tags=["Inventory"])
-app.include_router(adjustments.router, prefix="/api/v1", tags=["Stock Adjustments"])
-app.include_router(alerts.router, prefix="/api/v1", tags=["Alerts"])
-app.include_router(warehouses.router, prefix="/api/v1", tags=["Warehouses"])
-app.include_router(categories.router, prefix="/api/v1", tags=["Categories"])
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
 
 
-@app.get("/", tags=["Health"])
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled internal server error: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": "An unexpected error occurred while retrieving regional location data."
+        },
+    )
+
+
+@app.get("/health", tags=["health"])
 def health_check():
-    return {"status": "ok", "message": "Inventory Management System API is running"}
+    return {"status": "ok", "app": settings.PROJECT_NAME, "version": settings.VERSION}
+
+
+# Include API v1 routes
+app.include_router(regions_router, prefix=settings.API_V1_STR)

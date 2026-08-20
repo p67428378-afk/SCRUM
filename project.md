@@ -4,4 +4,4 @@ _Maintained automatically by the SDLC Assistant. Lists features implemented in t
 
 ## Implemented Features
 
-- **SCRUM-2** — Implement Inventory Management System
+- **SCRUM-2** - Implement Inventory Management System

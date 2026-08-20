@@ -1,4 +1,56 @@
-# SCRUM
+# BharatGeo Portal - Indian Geography Regional API
+
+Full-stack interactive map and regional directory portal for Indian States and Union Territories.
+
+### Prerequisites
+- Python 3.11+
+- virtualenv / venv
+
+### Setup Instructions
+
+1. **Create and Activate Virtual Environment**:
+   ```bash
+   python -m venv venv
+   # On Linux/macOS
+   source venv/bin/activate
+   # On Windows
+   venv\Scripts\activate
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   pip install -r server/requirements.txt
+   ```
+
+3. **Environment Variables**:
+   Copy `.env.example` to `.env` or set environment variables:
+   ```env
+   DATABASE_URL=sqlite:///./app.db
+   REDIS_URL=redis://localhost:6379/0
+   ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+   ```
+
+4. **Start Backend Server**:
+   ```bash
+   python -m uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+   The API will be available at `http://localhost:8000/api/v1/regions`.
+
+5. **Run Tests**:
+   ```bash
+   pytest server/tests/
+   ```
+
+## Full-Stack Local Development
+
+- **Backend API**: Runs on `http://localhost:8000`
+- **Frontend App**: Runs on `http://localhost:5173` (Vite dev server)
+
+### Endpoints
+- `GET /api/v1/regions` - List all 28 states and 8 Union Territories
+  - Query parameters:
+    - `type`: `all` (default), `state`, or `union_territory`
+    - `q`: Search string matching state name or capital city
 
 ## Server
 
