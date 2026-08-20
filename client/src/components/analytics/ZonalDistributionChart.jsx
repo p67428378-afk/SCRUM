@@ -56,11 +56,13 @@ export default function ZonalDistributionChart({ regions }) {
                     {zone.name}
                   </span>
                   <span className="text-[#707A8C]">
-                    ({zone.states} States | {zone.uts} UTs)
+                    ({zone.states} {zone.states === 1 ? "State" : "States"} |{" "}
+                    {zone.uts} {zone.uts === 1 ? "UT" : "UTs"})
                   </span>
                 </div>
                 <span className="font-bold text-[#2563EB]">
-                  {zone.total} Regions ({percentage}%)
+                  {zone.total} {zone.total === 1 ? "Region" : "Regions"} (
+                  {percentage}%)
                 </span>
               </div>
 
