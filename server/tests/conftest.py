@@ -29,6 +29,13 @@ def setup_db():
     Base.metadata.drop_all(bind=engine)
 
 
+@pytest.fixture(autouse=True)
+def ensure_seed_data():
+    db = TestingSessionLocal()
+    seed_data(db)
+    db.close()
+
+
 def override_get_db():
     db = TestingSessionLocal()
     try:

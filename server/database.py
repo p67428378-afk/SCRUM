@@ -35,9 +35,6 @@ def init_db():
 def seed_data(db):
     from server.models import Continent, Country, PortfolioInvestment
 
-    if db.query(Continent).first() is not None:
-        return
-
     continents_data = [
         {"name": "Europe", "code": "EU"},
         {"name": "Asia", "code": "AS"},
@@ -49,9 +46,17 @@ def seed_data(db):
 
     continent_map = {}
     for c_data in continents_data:
-        cont = Continent(name=c_data["name"], code=c_data["code"])
-        db.add(cont)
-        db.flush()
+        cont = (
+            db.query(Continent)
+            .filter(
+                (Continent.code == c_data["code"]) | (Continent.name == c_data["name"])
+            )
+            .first()
+        )
+        if not cont:
+            cont = Continent(name=c_data["name"], code=c_data["code"])
+            db.add(cont)
+            db.flush()
         continent_map[c_data["name"]] = cont
 
     countries_data = [
@@ -200,6 +205,11 @@ def seed_data(db):
     ]
 
     for c_item in countries_data:
+        country = (
+            db.query(Country)
+            .filter((Country.code == c_item["code"]) | (Country.name == c_item["name"]))
+            .first()
+        )
         cont_obj = continent_map.get(c_item["continent"])
         if not cont_obj:
             target_name = c_item["continent"].lower()
@@ -207,31 +217,42 @@ def seed_data(db):
                 if target_name in cont_name.lower() or cont_name.lower() in target_name:
                     cont_obj = obj
                     break
-        if not cont_obj:
-            continue
-        country = Country(
-            continent_id=cont_obj.id,
-            name=c_item["name"],
-            code=c_item["code"],
-            capital=c_item["capital"],
-            population=c_item["population"],
-            region=c_item["region"],
-            portfolio_status=c_item["portfolio_status"],
-            total_investment_usd=c_item["total_investment_usd"],
-        )
-        db.add(country)
-        db.flush()
+
+        if not country:
+            if not cont_obj:
+                continue
+            country = Country(
+                continent_id=cont_obj.id,
+                name=c_item["name"],
+                code=c_item["code"],
+                capital=c_item["capital"],
+                population=c_item["population"],
+                region=c_item["region"],
+                portfolio_status=c_item["portfolio_status"],
+                total_investment_usd=c_item["total_investment_usd"],
+            )
+            db.add(country)
+            db.flush()
 
         for inv in c_item["investments"]:
-            investment = PortfolioInvestment(
-                country_id=country.id,
-                asset_name=inv["asset_name"],
-                sector=inv["sector"],
-                amount_usd=inv["amount_usd"],
-                status=inv["status"],
-                date_added=inv["date_added"],
+            existing_inv = (
+                db.query(PortfolioInvestment)
+                .filter(
+                    PortfolioInvestment.country_id == country.id,
+                    PortfolioInvestment.asset_name == inv["asset_name"],
+                )
+                .first()
             )
-            db.add(investment)
+            if not existing_inv:
+                investment = PortfolioInvestment(
+                    country_id=country.id,
+                    asset_name=inv["asset_name"],
+                    sector=inv["sector"],
+                    amount_usd=inv["amount_usd"],
+                    status=inv["status"],
+                    date_added=inv["date_added"],
+                )
+                db.add(investment)
 
     try:
         db.commit()
