@@ -202,6 +202,12 @@ def seed_data(db):
     for c_item in countries_data:
         cont_obj = continent_map.get(c_item["continent"])
         if not cont_obj:
+            target_name = c_item["continent"].lower()
+            for cont_name, obj in continent_map.items():
+                if target_name in cont_name.lower() or cont_name.lower() in target_name:
+                    cont_obj = obj
+                    break
+        if not cont_obj:
             continue
         country = Country(
             continent_id=cont_obj.id,

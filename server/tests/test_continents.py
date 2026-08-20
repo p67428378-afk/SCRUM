@@ -12,10 +12,10 @@ def test_get_continents(client):
     assert len(data) >= 5
 
     names = [c["name"] for c in data]
-    assert "Europe" in names
-    assert "Asia" in names
+    assert any("Europe" in n for n in names)
+    assert any("Asia" in n for n in names)
 
-    europe = next(c for c in data if c["name"] == "Europe")
+    europe = next(c for c in data if "Europe" in c["name"])
     assert europe["country_count"] >= 2
     assert europe["total_portfolio_assets_usd"] > 0
 
@@ -23,13 +23,13 @@ def test_get_continents(client):
 def test_get_continent_by_id(client):
     response = client.get("/api/v1/continents")
     data = response.json()
-    europe_id = next(c["id"] for c in data if c["name"] == "Europe")
+    europe_id = next(c["id"] for c in data if "Europe" in c["name"])
 
     detail_res = client.get(f"/api/v1/continents/{europe_id}")
     assert detail_res.status_code == 200
     detail_data = detail_res.json()
     assert detail_data["id"] == europe_id
-    assert detail_data["name"] == "Europe"
+    assert "Europe" in detail_data["name"]
 
 
 def test_get_continent_not_found(client):

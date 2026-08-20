@@ -38,26 +38,23 @@ def get_countries(
             or_(
                 Country.name.ilike(search_pattern),
                 Country.code.ilike(search_pattern),
+                Country.capital.ilike(search_pattern),
+                Country.region.ilike(search_pattern),
+                Continent.name.ilike(search_pattern),
             )
         )
 
     target_continent_id = continent_id or continent
     if target_continent_id:
-        cont_match = (
-            db.query(Continent)
-            .filter(
-                or_(
-                    Continent.id == target_continent_id,
-                    Continent.name.ilike(target_continent_id),
-                    Continent.code.ilike(target_continent_id),
-                )
+        target_str = target_continent_id.strip()
+        query = query.filter(
+            or_(
+                Country.continent_id == target_str,
+                Continent.name.ilike(f"%{target_str}%"),
+                Continent.code.ilike(f"%{target_str}%"),
+                Continent.id == target_str,
             )
-            .first()
         )
-        if cont_match:
-            query = query.filter(Country.continent_id == cont_match.id)
-        else:
-            query = query.filter(Country.continent_id == target_continent_id)
 
     if status:
         query = query.filter(Country.portfolio_status.ilike(status.strip()))
@@ -94,6 +91,9 @@ def get_country_detail(country_id: str, db: Session = Depends(get_db)):
             or_(
                 Country.id == country_id,
                 Country.code.ilike(country_id),
+                Country.code.ilike(f"%{country_id}%"),
+                Country.name.ilike(country_id),
+                Country.name.ilike(f"%{country_id}%"),
             )
         )
         .first()
@@ -193,7 +193,19 @@ def add_investment(
     data: PortfolioInvestmentCreate,
     db: Session = Depends(get_db),
 ):
-    country = db.query(Country).filter(Country.id == country_id).first()
+    country = (
+        db.query(Country)
+        .filter(
+            or_(
+                Country.id == country_id,
+                Country.code.ilike(country_id),
+                Country.code.ilike(f"%{country_id}%"),
+                Country.name.ilike(country_id),
+                Country.name.ilike(f"%{country_id}%"),
+            )
+        )
+        .first()
+    )
     if not country:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

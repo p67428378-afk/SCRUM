@@ -41,7 +41,26 @@ graph TD
 - server/tests/test_countries.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/components/common/Badge.jsx
+- client/src/components/common/StatCard.jsx
+- client/src/components/common/StatCard.test.jsx
+- client/src/components/continents/ContinentCard.jsx
+- client/src/components/continents/ContinentCard.test.jsx
+- client/src/components/countries/CountryFilterBar.jsx
+- client/src/components/countries/CountryTable.jsx
+- client/src/components/layout/Navbar.jsx
+- client/src/main.jsx
+- client/src/pages/ContinentsDashboardPage.jsx
+- client/src/pages/ContinentsDashboardPage.test.jsx
+- client/src/pages/CountryDetailPage.jsx
+- client/src/pages/CountryExplorerPage.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - GET /api/v1/continents

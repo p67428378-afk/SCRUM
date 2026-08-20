@@ -1,6 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from server.database import get_db
 from server.models import Continent, Country
@@ -33,7 +34,18 @@ def get_continents(db: Session = Depends(get_db)):
 
 @router.get("/{continent_id}", response_model=ContinentResponse)
 def get_continent_by_id(continent_id: str, db: Session = Depends(get_db)):
-    c = db.query(Continent).filter(Continent.id == continent_id).first()
+    c = (
+        db.query(Continent)
+        .filter(
+            or_(
+                Continent.id == continent_id,
+                Continent.code.ilike(continent_id),
+                Continent.name.ilike(continent_id),
+                Continent.name.ilike(f"%{continent_id}%"),
+            )
+        )
+        .first()
+    )
     if not c:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Continent not found"
