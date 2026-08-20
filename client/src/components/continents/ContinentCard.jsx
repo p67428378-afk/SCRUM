@@ -11,6 +11,8 @@ export default function ContinentCard({ continent }) {
     maximumFractionDigits: 0,
   }).format(continent.total_portfolio_assets_usd || 0);
 
+  const countryCount = continent.country_count || 0;
+
   return (
     <div className="bg-white border border-[#e3e8f0] rounded-xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
       <div>
@@ -34,11 +36,9 @@ export default function ContinentCard({ continent }) {
           <div>
             <div className="flex items-center gap-1.5 text-xs text-[#707a8c] mb-1">
               <Flag className="w-3.5 h-3.5" />
-              <span>Countries</span>
+              <span>{countryCount === 1 ? "Country" : "Countries"}</span>
             </div>
-            <p className="text-base font-bold text-[#171c29]">
-              {continent.country_count || 0}
-            </p>
+            <p className="text-base font-bold text-[#171c29]">{countryCount}</p>
           </div>
 
           <div>
