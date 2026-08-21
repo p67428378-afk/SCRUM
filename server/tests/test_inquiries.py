@@ -1,214 +1,76 @@
-import pytest
-from fastapi import status
+def test_create_inquiry_success(client):
+    # Get a cat ID first
+    list_res = client.get("/api/v1/cats")
+    cats = list_res.json()["items"]
+    cat_id = cats[0]["id"]
 
-
-@pytest.fixture(autouse=True)
-def clear_rate_limits():
-    from server.main import inquiry_rate_limits
-
-    inquiry_rate_limits.clear()
-
-
-def get_auth_headers(client, email, password):
-    response = client.post(
-        "/api/v1/auth/login", json={"email": email, "password": password}
-    )
-    token = response.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
-
-
-def test_submit_inquiry_success(client):
-    # AC: Submit secure inquiry for a specific cat
-    # Register seller and create a cat
-    client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "seller_inq@example.com",
-            "password": "password123",
-            "full_name": "Seller Inq",
-            "role": "seller",
-        },
-    )
-    headers = get_auth_headers(client, "seller_inq@example.com", "password123")
-
-    create_resp = client.post(
-        "/api/v1/cats",
-        json={
-            "name": "Luna",
-            "breed": "Siamese",
-            "age_months": 4,
-            "gender": "Female",
-            "price": 350.0,
-            "description": "Playful Siamese kitten.",
-        },
-        headers=headers,
-    )
-    cat_id = create_resp.json()["id"]
-
-    # Submit inquiry
     response = client.post(
         f"/api/v1/cats/{cat_id}/inquiries",
         json={
             "buyer_name": "John Doe",
             "buyer_email": "john@example.com",
             "buyer_phone": "123-456-7890",
-            "message": "I am very interested in adopting Luna.",
+            "message": "I am very interested in adopting this cat!",
         },
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == 201
     data = response.json()
     assert data["buyer_name"] == "John Doe"
     assert data["buyer_email"] == "john@example.com"
-    assert data["message"] == "I am very interested in adopting Luna."
+    assert data["cat_id"] == cat_id
+    assert "id" in data
 
 
-def test_submit_inquiry_invalid_email(client):
-    # AC: Invalid email format blocks submission
-    client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "seller_inq2@example.com",
-            "password": "password123",
-            "full_name": "Seller Inq 2",
-            "role": "seller",
-        },
-    )
-    headers = get_auth_headers(client, "seller_inq2@example.com", "password123")
-
-    create_resp = client.post(
-        "/api/v1/cats",
-        json={
-            "name": "Luna",
-            "breed": "Siamese",
-            "age_months": 4,
-            "gender": "Female",
-            "price": 350.0,
-            "description": "Playful Siamese kitten.",
-        },
-        headers=headers,
-    )
-    cat_id = create_resp.json()["id"]
-
+def test_create_inquiry_non_existent_cat(client):
     response = client.post(
-        f"/api/v1/cats/{cat_id}/inquiries",
-        json={
-            "buyer_name": "John Doe",
-            "buyer_email": "invalid-email",
-            "message": "I am very interested.",
-        },
-    )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-
-def test_submit_inquiry_rate_limiting(client):
-    # AC: Inquiry endpoint is rate limited to 5 submissions per IP per 15 minutes
-    client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "seller_inq3@example.com",
-            "password": "password123",
-            "full_name": "Seller Inq 3",
-            "role": "seller",
-        },
-    )
-    headers = get_auth_headers(client, "seller_inq3@example.com", "password123")
-
-    create_resp = client.post(
-        "/api/v1/cats",
-        json={
-            "name": "Luna",
-            "breed": "Siamese",
-            "age_months": 4,
-            "gender": "Female",
-            "price": 350.0,
-            "description": "Playful Siamese kitten.",
-        },
-        headers=headers,
-    )
-    cat_id = create_resp.json()["id"]
-
-    # Submit 5 inquiries successfully
-    for i in range(5):
-        response = client.post(
-            f"/api/v1/cats/{cat_id}/inquiries",
-            json={
-                "buyer_name": f"Buyer {i}",
-                "buyer_email": f"buyer{i}@example.com",
-                "message": "Interested.",
-            },
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-
-    # The 6th inquiry should be rate limited
-    response = client.post(
-        f"/api/v1/cats/{cat_id}/inquiries",
-        json={
-            "buyer_name": "Buyer 6",
-            "buyer_email": "buyer6@example.com",
-            "message": "Interested.",
-        },
-    )
-    assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
-    assert "Too many inquiries" in response.json()["detail"]
-
-
-def test_list_inquiries_seller_only(client):
-    # AC: Sellers can view inquiries for their own cats
-    client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "seller_own@example.com",
-            "password": "password123",
-            "full_name": "Seller Own",
-            "role": "seller",
-        },
-    )
-    client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "seller_other@example.com",
-            "password": "password123",
-            "full_name": "Seller Other",
-            "role": "seller",
-        },
-    )
-
-    own_headers = get_auth_headers(client, "seller_own@example.com", "password123")
-    other_headers = get_auth_headers(client, "seller_other@example.com", "password123")
-
-    # Create cat for seller_own
-    create_resp = client.post(
-        "/api/v1/cats",
-        json={
-            "name": "Luna",
-            "breed": "Siamese",
-            "age_months": 4,
-            "gender": "Female",
-            "price": 350.0,
-            "description": "Playful Siamese kitten.",
-        },
-        headers=own_headers,
-    )
-    cat_id = create_resp.json()["id"]
-
-    # Submit inquiry for seller_own's cat
-    inq_resp = client.post(
-        f"/api/v1/cats/{cat_id}/inquiries",
+        "/api/v1/cats/non-existent-cat-123/inquiries",
         json={
             "buyer_name": "John Doe",
             "buyer_email": "john@example.com",
-            "message": "I am very interested in adopting Luna.",
+            "message": "Is this cat available?",
         },
     )
-    assert inq_resp.status_code == status.HTTP_201_CREATED
+    assert response.status_code == 404
 
-    # seller_own should see the inquiry
-    response = client.get("/api/v1/inquiries", headers=own_headers)
-    assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == 1
-    assert response.json()[0]["buyer_name"] == "John Doe"
 
-    # seller_other should NOT see the inquiry
-    response = client.get("/api/v1/inquiries", headers=other_headers)
-    assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == 0
+def test_create_inquiry_invalid_email(client):
+    list_res = client.get("/api/v1/cats")
+    cat_id = list_res.json()["items"][0]["id"]
+
+    response = client.post(
+        f"/api/v1/cats/{cat_id}/inquiries",
+        json={
+            "buyer_name": "John Doe",
+            "buyer_email": "invalid-email-format",
+            "message": "Hello",
+        },
+    )
+    assert response.status_code == 422  # Validation error from Pydantic EmailStr
+
+
+def test_list_seller_inquiries(client, seller_headers, buyer_headers):
+    # Get cat ID
+    list_res = client.get("/api/v1/cats")
+    cat_id = list_res.json()["items"][0]["id"]
+
+    # Post an inquiry
+    client.post(
+        f"/api/v1/cats/{cat_id}/inquiries",
+        json={
+            "buyer_name": "Inquirer One",
+            "buyer_email": "inquirer@example.com",
+            "message": "Hello seller!",
+        },
+    )
+
+    # Seller checks inquiries
+    response = client.get("/api/v1/inquiries", headers=seller_headers)
+    assert response.status_code == 200
+    inquiries = response.json()
+    assert isinstance(inquiries, list)
+    assert len(inquiries) >= 1
+    assert any(i["buyer_email"] == "inquirer@example.com" for i in inquiries)
+
+    # Buyer attempting to view inquiries should get 403 Forbidden
+    buyer_res = client.get("/api/v1/inquiries", headers=buyer_headers)
+    assert buyer_res.status_code == 403

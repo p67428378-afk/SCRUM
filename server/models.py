@@ -1,57 +1,69 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Integer, Numeric, Text, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
-from server.database import Base
+from sqlalchemy import (
+    Column,
+    String,
+    Integer,
+    Float,
+    Text,
+    DateTime,
+    ForeignKey,
+)
+from sqlalchemy.orm import relationship, DeclarativeBase
 
 
-def generate_uuid():
-    return str(uuid.uuid4())
-
-
-def get_utc_now():
-    return datetime.now(timezone.utc)
+class Base(DeclarativeBase):
+    pass
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
-    email = Column(String, unique=True, nullable=False, index=True)
-    hashed_password = Column(String, nullable=False)
-    full_name = Column(String, nullable=False)
-    role = Column(String, default="buyer", nullable=False)
-    created_at = Column(DateTime, default=get_utc_now, nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    full_name = Column(String(255), nullable=False)
+    role = Column(String(50), default="buyer", nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
     updated_at = Column(
-        DateTime, default=get_utc_now, onupdate=get_utc_now, nullable=False
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
 
-    # Relationships
     cats = relationship("Cat", back_populates="seller", cascade="all, delete-orphan")
-    inquiries = relationship("Inquiry", back_populates="buyer")
 
 
 class Cat(Base):
     __tablename__ = "cats"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
-    seller_id = Column(
-        String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
-    name = Column(String, nullable=False)
-    breed = Column(String, nullable=False, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    seller_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    breed = Column(String(255), index=True, nullable=False)
     age_months = Column(Integer, nullable=False)
-    gender = Column(String, nullable=False, index=True)
-    price = Column(Numeric, nullable=False)
+    gender = Column(String(50), nullable=False)
+    price = Column(Float, nullable=False)
     description = Column(Text, nullable=False)
-    image_url = Column(String, nullable=True)
-    status = Column(String, default="Available", nullable=False)
-    created_at = Column(DateTime, default=get_utc_now, nullable=False)
+    image_url = Column(String(500), nullable=True)
+    status = Column(String(50), default="Available", nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
     updated_at = Column(
-        DateTime, default=get_utc_now, onupdate=get_utc_now, nullable=False
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
 
-    # Relationships
     seller = relationship("User", back_populates="cats")
     inquiries = relationship(
         "Inquiry", back_populates="cat", cascade="all, delete-orphan"
@@ -61,15 +73,17 @@ class Cat(Base):
 class Inquiry(Base):
     __tablename__ = "inquiries"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
-    cat_id = Column(String, ForeignKey("cats.id", ondelete="CASCADE"), nullable=False)
-    buyer_id = Column(String, ForeignKey("users.id"), nullable=True)
-    buyer_name = Column(String, nullable=False)
-    buyer_email = Column(String, nullable=False)
-    buyer_phone = Column(String, nullable=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    cat_id = Column(String(36), ForeignKey("cats.id"), nullable=False)
+    buyer_id = Column(String(36), ForeignKey("users.id"), nullable=True)
+    buyer_name = Column(String(255), nullable=False)
+    buyer_email = Column(String(255), nullable=False)
+    buyer_phone = Column(String(255), nullable=True)
     message = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=get_utc_now, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
 
-    # Relationships
     cat = relationship("Cat", back_populates="inquiries")
-    buyer = relationship("User", back_populates="inquiries")

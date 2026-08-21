@@ -1,37 +1,43 @@
 import os
-import bcrypt
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+
 from server.database import get_db
 from server.models import User
 from server.schemas import TokenData
 
-# JWT configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-change-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/login", auto_error=False
+)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        pwd_bytes = plain_password.encode("utf-8")
-        hashed_bytes = hashed_password.encode("utf-8")
-        return bcrypt.checkpw(pwd_bytes, hashed_bytes)
+        pwd_bytes = plain_password.encode("utf-8")[:72]
+        hash_bytes = (
+            hashed_password.encode("utf-8")
+            if isinstance(hashed_password, str)
+            else hashed_password
+        )
+        return bcrypt.checkpw(pwd_bytes, hash_bytes)
     except Exception:
         return False
 
 
 def get_password_hash(password: str) -> str:
-    pwd_bytes = password.encode("utf-8")
+    pwd_bytes = password.encode("utf-8")[:72]
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(pwd_bytes, salt)
-    return hashed.decode("utf-8")
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -60,7 +66,7 @@ def get_current_user(
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-        token_data = TokenData(email=email)
+        token_data = TokenData(email=email, role=payload.get("role"))
     except JWTError:
         raise credentials_exception
 
@@ -70,17 +76,9 @@ def get_current_user(
     return user
 
 
-def get_current_seller(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.role != "seller":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only sellers are authorized to perform this action",
-        )
-    return current_user
-
-
 def get_optional_current_user(
-    token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db),
 ) -> Optional[User]:
     if not token:
         return None
@@ -92,3 +90,12 @@ def get_optional_current_user(
         return db.query(User).filter(User.email == email).first()
     except JWTError:
         return None
+
+
+def get_current_seller(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "seller":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seller role required for this action",
+        )
+    return current_user
