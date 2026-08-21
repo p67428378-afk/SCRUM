@@ -34,6 +34,7 @@ graph TD
 - server/alembic/env.py
 - server/alembic/versions/0fe7f34cf146_add_wishlist_items.py
 - server/alembic/versions/__init__.py
+- server/alembic/versions/{timestamp}_add_wishlist_items.py
 - server/conftest.py
 - server/database.py
 - server/dependencies/__init__.py
@@ -70,6 +71,7 @@ graph TD
 - client/src/components/cart/OrderSummary.jsx
 - client/src/components/catalog/FilterSidebar.jsx
 - client/src/components/catalog/ProductCard.jsx
+- client/src/components/catalog/ProductDetailCard.jsx
 - client/src/components/common/Badge.jsx
 - client/src/components/common/Button.jsx
 - client/src/components/common/Navbar.jsx
@@ -85,6 +87,8 @@ graph TD
 - client/src/pages/LoginPage.jsx
 - client/src/pages/OrderHistoryPage.jsx
 - client/src/pages/RegisterPage.jsx
+- client/src/pages/WishlistPage.jsx
+- client/src/pages/WishlistPage.test.jsx
 - client/src/services/api.js
 - client/src/services/api.test.js
 - client/src/setup.js

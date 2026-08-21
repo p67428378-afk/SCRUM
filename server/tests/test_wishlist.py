@@ -1,6 +1,3 @@
-import pytest
-
-
 def get_auth_headers(client):
     res = client.post(
         "/api/v1/users/login",

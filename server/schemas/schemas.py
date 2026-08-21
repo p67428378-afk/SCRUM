@@ -222,4 +222,3 @@ class WishlistItemResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
