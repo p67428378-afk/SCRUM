@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ShoppingBag,
@@ -8,9 +8,11 @@ import {
   X,
   LogOut,
   Package,
+  Heart,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
+import { getWishlist } from "../../services/api";
 
 export default function Navbar({ onSearch }) {
   const { user, logout } = useAuth();
@@ -18,6 +20,29 @@ export default function Navbar({ onSearch }) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchWishlistCount = async () => {
+      if (user) {
+        try {
+          const items = await getWishlist();
+          if (isMounted && Array.isArray(items)) {
+            setWishlistCount(items.length);
+          }
+        } catch (err) {
+          console.error("Failed to fetch wishlist count", err);
+        }
+      } else {
+        if (isMounted) setWishlistCount(0);
+      }
+    };
+    fetchWishlistCount();
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -76,8 +101,22 @@ export default function Navbar({ onSearch }) {
             <Search className="w-4 h-4 text-[#707a8c] absolute left-3 top-2.5" />
           </form>
 
-          {/* Right Actions: Cart & User */}
+          {/* Right Actions: Wishlist, Cart & User */}
           <div className="flex items-center gap-4">
+            {/* Wishlist Icon */}
+            <Link
+              to="/wishlist"
+              aria-label="Wishlist"
+              className="relative p-2 text-[#171c29] hover:text-[#2663eb] transition-colors"
+            >
+              <Heart className="w-6 h-6" />
+              {wishlistCount > 0 && (
+                <span className="absolute top-0 right-0 bg-[#2663eb] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
             {/* Cart Icon */}
             <Link
               to="/cart"
@@ -175,6 +214,18 @@ export default function Navbar({ onSearch }) {
               className="py-1 hover:text-[#2663eb]"
             >
               Accessories
+            </Link>
+            <Link
+              to="/wishlist"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="py-1 hover:text-[#2663eb] flex items-center justify-between"
+            >
+              <span>My Wishlist</span>
+              {wishlistCount > 0 && (
+                <span className="bg-[#2663eb] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
             {user ? (
               <>

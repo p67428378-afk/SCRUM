@@ -105,6 +105,29 @@ export const removeCartItem = async (itemId) => {
   return true;
 };
 
+// Wishlist API
+export const getWishlist = async () => {
+  const response = await api.get("/api/v1/wishlist");
+  return response.data;
+};
+
+export const addToWishlist = async (productId) => {
+  const response = await api.post("/api/v1/wishlist", {
+    product_id: productId,
+  });
+  return response.data;
+};
+
+export const removeFromWishlist = async (productId) => {
+  const response = await api.delete(`/api/v1/wishlist/${productId}`);
+  return response.data;
+};
+
+export const moveToCartFromWishlist = async (productId) => {
+  const response = await api.post(`/api/v1/wishlist/${productId}/move-to-cart`);
+  return response.data;
+};
+
 // Orders API
 export const checkout = async (checkoutData) => {
   const response = await api.post("/api/v1/orders/checkout", checkoutData);

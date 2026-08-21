@@ -3,15 +3,18 @@ import { useSearchParams } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import FilterSidebar from "../components/catalog/FilterSidebar";
 import ProductCard from "../components/catalog/ProductCard";
-import { getProducts } from "../services/api";
+import { getProducts, getWishlist } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import { Loader, AlertCircle } from "lucide-react";
 
 export default function CatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [wishlistIds, setWishlistIds] = useState(new Set());
 
   const [filters, setFilters] = useState({
     category: searchParams.get("category") || "",
@@ -31,6 +34,26 @@ export default function CatalogPage() {
     const newQ = searchParams.get("q") || "";
     setFilters((prev) => ({ ...prev, category: newCategory, q: newQ }));
   }, [searchParams]);
+
+  useEffect(() => {
+    const fetchWishlistIds = async () => {
+      if (user) {
+        try {
+          const items = await getWishlist();
+          if (Array.isArray(items)) {
+            const ids = new Set(items.map((item) => item.product_id));
+            setWishlistIds(ids);
+          }
+        } catch (err) {
+          console.error("Failed to load wishlist IDs", err);
+        }
+      } else {
+        setWishlistIds(new Set());
+      }
+    };
+
+    fetchWishlistIds();
+  }, [user]);
 
   useEffect(() => {
     const fetchCatalog = async () => {
@@ -82,6 +105,18 @@ export default function CatalogPage() {
 
   const handleSearch = (term) => {
     handleFilterChange({ ...filters, q: term });
+  };
+
+  const handleWishlistChange = (productId, isAdded) => {
+    setWishlistIds((prev) => {
+      const next = new Set(prev);
+      if (isAdded) {
+        next.add(productId);
+      } else {
+        next.delete(productId);
+      }
+      return next;
+    });
   };
 
   const totalPages = Math.ceil(total / limit);
@@ -154,7 +189,12 @@ export default function CatalogPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    isWishlisted={wishlistIds.has(product.id)}
+                    onWishlistChange={handleWishlistChange}
+                  />
                 ))}
               </div>
             )}

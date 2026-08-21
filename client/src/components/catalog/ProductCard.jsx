@@ -1,10 +1,21 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Star, ShoppingCart } from "lucide-react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Star, ShoppingCart, Heart } from "lucide-react";
 import Badge from "../common/Badge";
+import { useAuth } from "../../context/AuthContext";
+import { addToWishlist, removeFromWishlist } from "../../services/api";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({
+  product,
+  isWishlisted = false,
+  onWishlistChange,
+}) {
   const { id, title, price, image_url, category, variants } = product;
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [inWishlist, setInWishlist] = useState(isWishlisted);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
 
   // Stock status from variants
   const hasVariants = variants && variants.length > 0;
@@ -12,8 +23,35 @@ export default function ProductCard({ product }) {
     ? variants.some((v) => v.stock_quantity > 0)
     : true;
 
+  const handleWishlistToggle = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    setLoadingWishlist(true);
+    try {
+      if (inWishlist) {
+        await removeFromWishlist(id);
+        setInWishlist(false);
+        if (onWishlistChange) onWishlistChange(id, false);
+      } else {
+        await addToWishlist(id);
+        setInWishlist(true);
+        if (onWishlistChange) onWishlistChange(id, true);
+      }
+    } catch (err) {
+      console.error("Failed to toggle wishlist item", err);
+    } finally {
+      setLoadingWishlist(false);
+    }
+  };
+
   return (
-    <div className="bg-white border border-[#e3e8f0] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between group">
+    <div className="bg-white border border-[#e3e8f0] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between group relative">
       <Link
         to={`/product/${id}`}
         className="relative block aspect-square overflow-hidden bg-[#f7fafc]"
@@ -30,6 +68,22 @@ export default function ProductCard({ product }) {
           {category && <Badge variant="info">{category.name}</Badge>}
           {!inStock && <Badge variant="danger">Out of Stock</Badge>}
         </div>
+
+        {/* Wishlist Heart Toggle Button */}
+        <button
+          onClick={handleWishlistToggle}
+          disabled={loadingWishlist}
+          aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white text-[#171c29] shadow-md transition-all z-10 focus:outline-none focus:ring-2 focus:ring-[#2663eb]"
+        >
+          <Heart
+            className={`w-5 h-5 transition-colors ${
+              inWishlist
+                ? "fill-[#db2626] text-[#db2626]"
+                : "text-[#707a8c] hover:text-[#db2626]"
+            }`}
+          />
+        </button>
       </Link>
 
       <div className="p-4 flex-1 flex flex-col justify-between">
