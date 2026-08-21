@@ -7,7 +7,15 @@ from fastapi.testclient import TestClient
 import server.database
 import server.main
 from server.database import get_db, seed_data
-from server.models.models import Base
+from server.models.models import (
+    Base,
+    CartItem,
+    Order,
+    OrderItem,
+    UserActivityLog,
+    UserLoginStats,
+    WishlistItem,
+)
 from server.main import app
 
 # In-memory SQLite for test execution
@@ -33,6 +41,34 @@ def setup_test_db():
     db.close()
     yield
     Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def clean_db_between_tests():
+    """Wipe user-created table data between test functions for clean isolation."""
+    db = TestingSessionLocal()
+    try:
+        db.query(OrderItem).delete()
+        db.query(Order).delete()
+        db.query(CartItem).delete()
+        db.query(WishlistItem).delete()
+        db.query(UserActivityLog).delete()
+        db.query(UserLoginStats).delete()
+        db.commit()
+    finally:
+        db.close()
+    yield
+    db = TestingSessionLocal()
+    try:
+        db.query(OrderItem).delete()
+        db.query(Order).delete()
+        db.query(CartItem).delete()
+        db.query(WishlistItem).delete()
+        db.query(UserActivityLog).delete()
+        db.query(UserLoginStats).delete()
+        db.commit()
+    finally:
+        db.close()
 
 
 def override_get_db():
