@@ -9,6 +9,7 @@ from sqlalchemy import (
     Text,
     ForeignKey,
     DateTime,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -43,6 +44,9 @@ class User(Base):
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",
+    )
+    wishlist_items = relationship(
+        "WishlistItem", back_populates="user", cascade="all, delete-orphan"
     )
 
 
@@ -172,3 +176,19 @@ class UserLoginStats(Base):
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     user = relationship("User", back_populates="login_stats")
+
+
+class WishlistItem(Base):
+    __tablename__ = "wishlist_items"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    product_id = Column(String(36), ForeignKey("products.id"), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "product_id", name="uq_user_product_wishlist"),
+    )
+
+    user = relationship("User", back_populates="wishlist_items")
+    product = relationship("Product")

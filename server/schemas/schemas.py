@@ -190,3 +190,36 @@ class UserLoginStatsResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Wishlist Schemas
+class WishlistCreateRequest(BaseModel):
+    product_id: str
+
+
+class WishlistActionResponse(BaseModel):
+    message: str
+    product_id: str
+
+
+class WishlistProduct(BaseModel):
+    id: str
+    name: str
+    price: float
+    image_url: Optional[str] = None
+    in_stock: bool = True
+
+    class Config:
+        from_attributes = True
+
+
+class WishlistItemResponse(BaseModel):
+    id: str
+    user_id: str
+    product_id: str
+    created_at: datetime
+    product: WishlistProduct
+
+    class Config:
+        from_attributes = True
+
