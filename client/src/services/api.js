@@ -128,6 +128,12 @@ export const moveToCartFromWishlist = async (productId) => {
   return response.data;
 };
 
+// Rewards API
+export const getRewardsBalance = async () => {
+  const response = await api.get("/api/v1/rewards/balance");
+  return response.data;
+};
+
 // Orders API
 export const checkout = async (checkoutData) => {
   const response = await api.post("/api/v1/orders/checkout", checkoutData);

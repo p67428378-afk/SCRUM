@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import TrackingStepper from "../components/orders/TrackingStepper";
-import { getUserOrders, getOrderById } from "../services/api";
+import {
+  getUserOrders,
+  getOrderById,
+  getRewardsBalance,
+} from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import Badge from "../components/common/Badge";
 import {
@@ -12,6 +16,7 @@ import {
   ShoppingBag,
   Loader,
   AlertCircle,
+  Award,
 } from "lucide-react";
 
 export default function OrderHistoryPage() {
@@ -23,9 +28,10 @@ export default function OrderHistoryPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [rewards, setRewards] = useState(null);
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchOrdersAndRewards = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -49,17 +55,26 @@ export default function OrderHistoryPage() {
       } finally {
         setLoading(false);
       }
+
+      if (user) {
+        try {
+          const res = await getRewardsBalance();
+          setRewards(res);
+        } catch (err) {
+          console.error("Failed to fetch rewards balance", err);
+        }
+      }
     };
 
-    fetchOrders();
-  }, [highlightOrderId]);
+    fetchOrdersAndRewards();
+  }, [highlightOrderId, user]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f7fafc]">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* User Account Header */}
+        {/* User Account Header / Rewards Dashboard */}
         <div className="bg-white border border-[#e3e8f0] p-6 rounded-2xl mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-[#2663eb] text-white rounded-full flex items-center justify-center text-xl font-bold">
@@ -76,13 +91,18 @@ export default function OrderHistoryPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="bg-[#f7fafc] border border-[#e3e8f0] px-4 py-2 rounded-xl text-right">
-              <span className="block text-xs font-semibold text-[#707a8c]">
-                Loyalty Tier
-              </span>
-              <span className="text-sm font-bold text-[#eb9917]">
-                Gold Member (450 pts)
-              </span>
+            <div className="bg-[#fef8ec] border border-[#fcd34d] px-4 py-2 rounded-xl text-right flex items-center gap-2">
+              <Award className="w-5 h-5 text-[#eb9917]" />
+              <div>
+                <span className="block text-xs font-semibold text-[#707a8c]">
+                  Loyalty Rewards
+                </span>
+                <span className="text-sm font-bold text-[#eb9917]">
+                  {rewards
+                    ? `${rewards.points_balance || 0} Points`
+                    : "0 Points"}
+                </span>
+              </div>
             </div>
           </div>
         </div>

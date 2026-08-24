@@ -62,6 +62,7 @@ export default function WishlistPage() {
         prev.filter((item) => item.product_id !== productId),
       );
       setMessage({ type: "success", text: "Item removed from your wishlist." });
+      window.dispatchEvent(new Event("wishlist-updated"));
       setTimeout(() => setMessage(null), 4000);
     } catch (err) {
       const msg = err.response?.data?.detail || "Failed to remove item";
@@ -84,6 +85,7 @@ export default function WishlistPage() {
         type: "success",
         text: "Item moved to your shopping cart!",
       });
+      window.dispatchEvent(new Event("wishlist-updated"));
       setTimeout(() => setMessage(null), 4000);
     } catch (err) {
       const msg = err.response?.data?.detail || "Failed to move item to cart";
@@ -246,7 +248,7 @@ export default function WishlistPage() {
                       >
                         {prod.name || "Clothing Item"}
                       </Link>
-                      <p className="font-bold text-lg text-[#2663eb] mt-1">
+                      <p className="font-bold text-[#2663eb] text-lg mt-1">
                         ${Number(prod.price || 0).toFixed(2)}
                       </p>
                     </div>

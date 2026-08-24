@@ -43,6 +43,7 @@ export default function ProductCard({
         setInWishlist(true);
         if (onWishlistChange) onWishlistChange(id, true);
       }
+      window.dispatchEvent(new Event("wishlist-updated"));
     } catch (err) {
       console.error("Failed to toggle wishlist item", err);
     } finally {

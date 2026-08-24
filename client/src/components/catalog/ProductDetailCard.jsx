@@ -44,6 +44,7 @@ export default function ProductDetailCard({
           "Added product to your wishlist! View it anytime on /wishlist.",
         );
       }
+      window.dispatchEvent(new Event("wishlist-updated"));
       setTimeout(() => setWishlistToast(""), 4000);
     } catch (err) {
       const msg =

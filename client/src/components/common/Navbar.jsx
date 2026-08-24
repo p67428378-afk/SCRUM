@@ -39,8 +39,15 @@ export default function Navbar({ onSearch }) {
       }
     };
     fetchWishlistCount();
+
+    const handleWishlistUpdated = () => {
+      fetchWishlistCount();
+    };
+    window.addEventListener("wishlist-updated", handleWishlistUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("wishlist-updated", handleWishlistUpdated);
     };
   }, [user]);
 
