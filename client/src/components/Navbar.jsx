@@ -42,9 +42,9 @@ export default function Navbar({ user, onLogout }) {
   return (
     <header className="bg-white border-b border-amber-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-20 gap-2">
           {/* Temple Branding */}
-          <Link to="/poojas" className="flex items-center gap-3 group">
+          <Link to="/poojas" className="flex items-center gap-3 group shrink-0">
             <div className="w-12 h-12 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-2xl text-amber-700 shadow-inner group-hover:scale-105 transition-transform">
               🔱
             </div>
@@ -59,7 +59,7 @@ export default function Navbar({ user, onLogout }) {
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2 min-w-0">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
@@ -67,14 +67,14 @@ export default function Navbar({ user, onLogout }) {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-2 lg:px-3 py-1.5 rounded-lg text-xs lg:text-sm font-medium transition-all whitespace-nowrap ${
                     active
                       ? "bg-amber-100 text-amber-900 border border-amber-300 shadow-xs"
                       : "text-gray-700 hover:bg-amber-50 hover:text-amber-800"
                   }`}
                 >
                   <Icon
-                    className={`w-4 h-4 ${active ? "text-amber-700" : "text-gray-500"}`}
+                    className={`w-4 h-4 shrink-0 ${active ? "text-amber-700" : "text-gray-500"}`}
                   />
                   {item.label}
                 </Link>
@@ -83,7 +83,7 @@ export default function Navbar({ user, onLogout }) {
           </nav>
 
           {/* User Profile / Status */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {user ? (
               <div className="flex items-center gap-3 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
                 <div className="text-right hidden sm:block">
@@ -105,9 +105,9 @@ export default function Navbar({ user, onLogout }) {
             ) : (
               <Link
                 to="/devotee-portal"
-                className="bg-amber-700 hover:bg-amber-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow-sm flex items-center gap-2"
+                className="bg-amber-700 hover:bg-amber-800 text-white text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition shadow-sm flex items-center gap-2 whitespace-nowrap"
               >
-                <User className="w-4 h-4" />
+                <User className="w-4 h-4 shrink-0" />
                 Devotee Login
               </Link>
             )}

@@ -216,7 +216,7 @@ export default function PoojaCatalog({ onSelectPoojaSlot }) {
                         date.
                       </div>
                     ) : (
-                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                      <div className="space-y-2 max-h-80 overflow-y-auto pr-1 pb-1">
                         {slots.map((slot) => {
                           const available =
                             slot.max_capacity - slot.booked_count;
