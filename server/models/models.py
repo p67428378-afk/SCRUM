@@ -48,6 +48,9 @@ class User(Base):
     wishlist_items = relationship(
         "WishlistItem", back_populates="user", cascade="all, delete-orphan"
     )
+    reward = relationship(
+        "Reward", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
 
 
 class Category(Base):
@@ -59,6 +62,7 @@ class Category(Base):
     description = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=utc_now)
 
+    products = relationship("Category", back_populates=None)  # wait, category products
     products = relationship("Product", back_populates="category")
 
 
@@ -194,3 +198,17 @@ class WishlistItem(Base):
 
     user = relationship("User", back_populates="wishlist_items")
     product = relationship("Product")
+
+
+class Reward(Base):
+    __tablename__ = "rewards"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(
+        String(36), ForeignKey("users.id"), unique=True, index=True, nullable=False
+    )
+    points_balance = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    user = relationship("User", back_populates="reward")

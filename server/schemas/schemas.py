@@ -222,3 +222,13 @@ class WishlistItemResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Rewards Schemas
+class RewardsBalanceResponse(BaseModel):
+    user_id: str
+    points_balance: int
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

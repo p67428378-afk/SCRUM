@@ -12,6 +12,7 @@ from server.models.models import (
     CartItem,
     Order,
     OrderItem,
+    Reward,
     UserActivityLog,
     UserLoginStats,
     WishlistItem,
@@ -52,6 +53,7 @@ def clean_db_between_tests():
         db.query(Order).delete()
         db.query(CartItem).delete()
         db.query(WishlistItem).delete()
+        db.query(Reward).delete()
         db.query(UserActivityLog).delete()
         db.query(UserLoginStats).delete()
         db.commit()
@@ -64,6 +66,7 @@ def clean_db_between_tests():
         db.query(Order).delete()
         db.query(CartItem).delete()
         db.query(WishlistItem).delete()
+        db.query(Reward).delete()
         db.query(UserActivityLog).delete()
         db.query(UserLoginStats).delete()
         db.commit()

@@ -8,7 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from server.database import init_db, seed_data, SessionLocal
 from server.models.models import UserActivityLog
-from server.routers import users, products, cart, orders, activity, wishlist
+from server.routers import users, products, cart, orders, activity, wishlist, rewards
 from server.dependencies.auth import SECRET_KEY, ALGORITHM
 
 
@@ -96,6 +96,7 @@ app.include_router(cart.router)
 app.include_router(orders.router)
 app.include_router(activity.router)
 app.include_router(wishlist.router)
+app.include_router(rewards.router)
 
 
 if __name__ == "__main__":

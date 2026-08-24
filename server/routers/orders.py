@@ -3,7 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from server.database import get_db
-from server.models.models import CartItem, Order, OrderItem, ProductVariant, User
+from server.models.models import (
+    CartItem,
+    Order,
+    OrderItem,
+    ProductVariant,
+    Reward,
+    User,
+)
 from server.schemas.schemas import CheckoutRequest, OrderListResponse, OrderResponse
 from server.dependencies.auth import get_current_user
 
@@ -85,6 +92,20 @@ def checkout(
     # Clear user's cart
     for item in cart_items:
         db.delete(item)
+
+    # Automatically award 1 loyalty point per $1 spent (floored to whole dollars)
+    points_earned = int(total_amount)
+    if points_earned > 0:
+        reward = db.query(Reward).filter(Reward.user_id == current_user.id).first()
+        if not reward:
+            reward = Reward(
+                id=str(uuid.uuid4()),
+                user_id=current_user.id,
+                points_balance=points_earned,
+            )
+            db.add(reward)
+        else:
+            reward.points_balance += points_earned
 
     db.commit()
     db.refresh(order)
