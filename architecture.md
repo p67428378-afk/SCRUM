@@ -40,6 +40,7 @@ graph TD
 - server/alembic/env.py
 - server/alembic/versions/0fe7f34cf146_add_wishlist_items.py
 - server/alembic/versions/__init__.py
+- server/alembic/versions/xxxx_add_wishlist_items.py
 - server/alembic/versions/{timestamp}_add_wishlist_items.py
 - server/conftest.py
 - server/database.py
