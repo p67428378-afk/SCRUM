@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Star, ShoppingCart, Heart, Check, AlertCircle } from "lucide-react";
 import Badge from "../common/Badge";
 import VariantSelector from "../detail/VariantSelector";
 import ProductGallery from "../detail/ProductGallery";
 import { useAuth } from "../../context/AuthContext";
-import { addToWishlist, removeFromWishlist } from "../../services/api";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  getWishlist,
+} from "../../services/api";
 
 export default function ProductDetailCard({
   product,
@@ -21,6 +25,27 @@ export default function ProductDetailCard({
   const [loadingWishlist, setLoadingWishlist] = useState(false);
   const [wishlistToast, setWishlistToast] = useState("");
   const [wishlistError, setWishlistError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkWishlist = async () => {
+      if (user && id) {
+        try {
+          const items = await getWishlist();
+          if (isMounted && Array.isArray(items)) {
+            const exists = items.some((item) => item.product_id === id);
+            setInWishlist(exists);
+          }
+        } catch (err) {
+          console.error("Failed to check wishlist status", err);
+        }
+      }
+    };
+    checkWishlist();
+    return () => {
+      isMounted = false;
+    };
+  }, [user, id]);
 
   const handleWishlistToggle = async () => {
     if (!user) {

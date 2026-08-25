@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Star, ShoppingCart, Heart } from "lucide-react";
 import Badge from "../common/Badge";
@@ -16,6 +16,10 @@ export default function ProductCard({
 
   const [inWishlist, setInWishlist] = useState(isWishlisted);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
+
+  useEffect(() => {
+    setInWishlist(isWishlisted);
+  }, [isWishlisted]);
 
   // Stock status from variants
   const hasVariants = variants && variants.length > 0;
@@ -66,7 +70,9 @@ export default function ProductCard({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 left-3 flex gap-2">
-          {category && <Badge variant="info">{category.name}</Badge>}
+          {category && (
+            <Badge variant="info">{category.name || category}</Badge>
+          )}
           {!inStock && <Badge variant="danger">Out of Stock</Badge>}
         </div>
 
