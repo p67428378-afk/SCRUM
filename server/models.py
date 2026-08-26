@@ -37,9 +37,7 @@ class Category(Base):
 
 class Transaction(Base):
     __tablename__ = "transactions"
-    __table_args__ = (
-        CheckConstraint("amount > 0", name="check_positive_amount"),
-    )
+    __table_args__ = (CheckConstraint("amount > 0", name="check_positive_amount"),)
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     amount = Column(Float, nullable=False)

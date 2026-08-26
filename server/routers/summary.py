@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -14,7 +14,9 @@ router = APIRouter(prefix="/api/v1/summary", tags=["Summary"])
 def get_summary(
     start_date: Optional[date] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[date] = Query(None, description="End date (YYYY-MM-DD)"),
-    period: Optional[str] = Query(None, description="Period shortcut: daily, monthly, yearly, all"),
+    period: Optional[str] = Query(
+        None, description="Period shortcut: daily, monthly, yearly, all"
+    ),
     db: Session = Depends(get_db),
 ):
     today = date.today()
@@ -53,9 +55,9 @@ def get_summary(
             total_income += float(tx.amount)
         elif tx.type == "expense":
             total_expense += float(tx.amount)
-            expense_by_category[tx.category_id] = (
-                expense_by_category.get(tx.category_id, 0.0) + float(tx.amount)
-            )
+            expense_by_category[tx.category_id] = expense_by_category.get(
+                tx.category_id, 0.0
+            ) + float(tx.amount)
 
     total_income = round(total_income, 2)
     total_expense = round(total_expense, 2)
@@ -67,7 +69,9 @@ def get_summary(
     category_breakdown: List[CategoryBreakdownItem] = []
     for cat_id, amount in expense_by_category.items():
         cat_name = cat_map.get(cat_id, "Unknown")
-        percentage = round((amount / total_expense * 100.0), 2) if total_expense > 0 else 0.0
+        percentage = (
+            round((amount / total_expense * 100.0), 2) if total_expense > 0 else 0.0
+        )
         category_breakdown.append(
             CategoryBreakdownItem(
                 category_id=cat_id,

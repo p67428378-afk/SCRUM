@@ -18,8 +18,12 @@ router = APIRouter(prefix="/api/v1/expenses", tags=["Expenses"])
 def list_transactions(
     search: Optional[str] = Query(None, description="Search keyword in description"),
     category_id: Optional[str] = Query(None, description="Filter by category ID"),
-    transaction_type: Optional[str] = Query(None, alias="type", description="Filter by type (income or expense)"),
-    start_date: Optional[date] = Query(None, description="Start date filter (YYYY-MM-DD)"),
+    transaction_type: Optional[str] = Query(
+        None, alias="type", description="Filter by type (income or expense)"
+    ),
+    start_date: Optional[date] = Query(
+        None, description="Start date filter (YYYY-MM-DD)"
+    ),
     end_date: Optional[date] = Query(None, description="End date filter (YYYY-MM-DD)"),
     skip: int = Query(0, ge=0, description="Pagination offset"),
     limit: int = Query(100, ge=1, le=500, description="Pagination limit"),
@@ -46,7 +50,9 @@ def list_transactions(
     )
 
 
-@router.post("", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED
+)
 def create_transaction(
     payload: TransactionCreate,
     db: Session = Depends(get_db),
@@ -58,13 +64,21 @@ def create_transaction(
             detail="Category not found",
         )
 
+    if category.type != "both" and category.type != payload.type:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Category type '{category.type}' is incompatible with transaction type '{payload.type}'",
+        )
+
     transaction = Transaction(
         amount=round(float(payload.amount), 2),
         type=payload.type,
         date=payload.date,
         description=payload.description.strip(),
         category_id=payload.category_id,
-        payment_method=payload.payment_method.strip() if payload.payment_method else None,
+        payment_method=payload.payment_method.strip()
+        if payload.payment_method
+        else None,
     )
     db.add(transaction)
     db.commit()
@@ -101,13 +115,21 @@ def update_transaction(
 
     update_data = payload.model_dump(exclude_unset=True)
 
-    if "category_id" in update_data and update_data["category_id"] is not None:
-        category = db.query(Category).filter(Category.id == update_data["category_id"]).first()
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Category not found",
-            )
+    target_type = update_data.get("type", transaction.type)
+    target_category_id = update_data.get("category_id", transaction.category_id)
+
+    category = db.query(Category).filter(Category.id == target_category_id).first()
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Category not found",
+        )
+
+    if category.type != "both" and category.type != target_type:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Category type '{category.type}' is incompatible with transaction type '{target_type}'",
+        )
 
     if "amount" in update_data and update_data["amount"] is not None:
         update_data["amount"] = round(float(update_data["amount"]), 2)

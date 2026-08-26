@@ -42,7 +42,26 @@ graph TD
 - server/tests/test_summary.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/components/categories/AddCategoryForm.jsx
+- client/src/components/categories/CategoryDirectoryTable.jsx
+- client/src/components/dashboard/MetricGroup.jsx
+- client/src/components/dashboard/RecentTransactionsCard.jsx
+- client/src/components/dashboard/SpendingBreakdownCard.jsx
+- client/src/components/layout/Navbar.jsx
+- client/src/components/transactions/FilterBar.jsx
+- client/src/components/transactions/TransactionsTable.jsx
+- client/src/main.jsx
+- client/src/pages/CategoriesPage.jsx
+- client/src/pages/DashboardPage.jsx
+- client/src/pages/TransactionsPage.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/src/tests/DashboardPage.test.jsx
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - GET /api/v1/expenses

@@ -48,6 +48,21 @@ def test_add_income_transaction(client):
     assert data["type"] == "income"
 
 
+def test_add_transaction_with_incompatible_category_returns_400(client):
+    # Food is an expense category, trying to use it as income should fail with 400
+    food_id = get_first_category_id(client, "Food")
+    payload = {
+        "amount": 100.00,
+        "type": "income",
+        "date": "2026-05-18",
+        "description": "Incompatible transaction",
+        "category_id": food_id,
+    }
+    response = client.post("/api/v1/expenses", json=payload)
+    assert response.status_code == 400
+    assert "incompatible" in response.json()["detail"].lower()
+
+
 def test_add_transaction_with_nonexistent_category_returns_404(client):
     # AC: Error handling for invalid category reference
     payload = {
@@ -105,6 +120,13 @@ def test_get_and_update_and_delete_transaction(client):
     assert put_res.status_code == 200
     assert put_res.json()["amount"] == 18.50
     assert put_res.json()["description"] == "Express bus ticket"
+
+    # Update with incompatible category returns 400
+    salary_id = get_first_category_id(client, "Salary")
+    bad_update = client.put(
+        f"/api/v1/expenses/{tx_id}", json={"category_id": salary_id}
+    )
+    assert bad_update.status_code == 400
 
     # Delete
     del_res = client.delete(f"/api/v1/expenses/{tx_id}")

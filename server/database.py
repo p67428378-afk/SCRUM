@@ -42,11 +42,13 @@ PREDEFINED_CATEGORIES = [
 
 def init_db():
     from server.models import Category, Transaction  # noqa: F401
+
     Base.metadata.create_all(bind=engine)
 
 
 def seed_data(db):
     from server.models import Category
+
     for cat in PREDEFINED_CATEGORIES:
         existing = db.query(Category).filter(Category.name == cat["name"]).first()
         if not existing:

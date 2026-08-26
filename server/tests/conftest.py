@@ -31,8 +31,18 @@ def _create_schema_once():
 
 @pytest.fixture(autouse=True)
 def _clean_tables():
-    """Wipe transactions and custom categories, re-seed predefined categories."""
+    """Wipe transactions and custom categories, re-seed predefined categories before and after each test."""
+    with test_engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            conn.execute(table.delete())
+    db = TestingSessionLocal()
+    try:
+        seed_data(db)
+    finally:
+        db.close()
+
     yield
+
     with test_engine.begin() as conn:
         for table in reversed(Base.metadata.sorted_tables):
             conn.execute(table.delete())

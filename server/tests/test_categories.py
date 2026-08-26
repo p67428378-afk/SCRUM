@@ -35,6 +35,48 @@ def test_create_custom_category(client):
     assert "id" in data
 
 
+def test_get_category_by_id(client):
+    # Create custom category
+    payload = {
+        "name": "Side Hustle",
+        "type": "income",
+    }
+    res = client.post("/api/v1/categories", json=payload)
+    cat_id = res.json()["id"]
+
+    get_res = client.get(f"/api/v1/categories/{cat_id}")
+    assert get_res.status_code == 200
+    assert get_res.json()["name"] == "Side Hustle"
+
+    # Nonexistent
+    get_non = client.get("/api/v1/categories/nonexistent-id-999")
+    assert get_non.status_code == 404
+
+
+def test_delete_custom_category(client):
+    payload = {
+        "name": "Temporary",
+        "type": "expense",
+    }
+    res = client.post("/api/v1/categories", json=payload)
+    cat_id = res.json()["id"]
+
+    del_res = client.delete(f"/api/v1/categories/{cat_id}")
+    assert del_res.status_code == 204
+
+    # Verify deleted
+    get_res = client.get(f"/api/v1/categories/{cat_id}")
+    assert get_res.status_code == 404
+
+
+def test_delete_predefined_category_returns_400(client):
+    res = client.get("/api/v1/categories")
+    food_cat = next(c for c in res.json() if c["name"] == "Food")
+    del_res = client.delete(f"/api/v1/categories/{food_cat['id']}")
+    assert del_res.status_code == 400
+    assert "Predefined categories cannot be deleted" in del_res.json()["detail"]
+
+
 def test_create_duplicate_category_returns_400(client):
     # AC: Error handling for duplicate category creation
     payload = {
