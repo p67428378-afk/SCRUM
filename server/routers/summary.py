@@ -1,5 +1,5 @@
-from datetime import date, timedelta
-from typing import Dict, List, Optional
+from datetime import date
+from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
@@ -7,82 +7,91 @@ from server.database import get_db
 from server.models import Category, Transaction
 from server.schemas import CategoryBreakdownItem, SummaryResponse
 
-router = APIRouter(prefix="/api/v1/summary", tags=["Summary"])
+router = APIRouter(prefix="/api/v1/summary", tags=["Summary & Analytics"])
 
 
 @router.get("", response_model=SummaryResponse)
 def get_summary(
-    start_date: Optional[date] = Query(None, description="Start date (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="End date (YYYY-MM-DD)"),
+    start_date: Optional[date] = Query(None, description="Start date for summary"),
+    end_date: Optional[date] = Query(None, description="End date for summary"),
     period: Optional[str] = Query(
-        None, description="Period shortcut: daily, monthly, yearly, all"
+        None, description="Period filter: daily, monthly, yearly"
     ),
     db: Session = Depends(get_db),
 ):
-    today = date.today()
-
-    if period and not start_date and not end_date:
-        period_lower = period.lower()
-        if period_lower == "daily":
-            start_date = today
-            end_date = today
-        elif period_lower == "monthly":
-            start_date = date(today.year, today.month, 1)
-            # next month start minus one day
-            if today.month == 12:
-                next_month = date(today.year + 1, 1, 1)
-            else:
-                next_month = date(today.year, today.month + 1, 1)
-            end_date = next_month - timedelta(days=1)
-        elif period_lower == "yearly":
-            start_date = date(today.year, 1, 1)
-            end_date = date(today.year, 12, 31)
-
     query = db.query(Transaction)
-    if start_date:
-        query = query.filter(Transaction.date >= start_date)
-    if end_date:
-        query = query.filter(Transaction.date <= end_date)
+
+    # Handle period presets if explicit start/end dates are not provided
+    if period and not start_date and not end_date:
+        today = date.today()
+        if period == "daily":
+            query = query.filter(Transaction.date == today)
+        elif period == "monthly":
+            start_of_month = today.replace(day=1)
+            query = query.filter(
+                Transaction.date >= start_of_month, Transaction.date <= today
+            )
+        elif period == "yearly":
+            start_of_year = today.replace(month=1, day=1)
+            query = query.filter(
+                Transaction.date >= start_of_year, Transaction.date <= today
+            )
+    else:
+        if start_date:
+            query = query.filter(Transaction.date >= start_date)
+        if end_date:
+            query = query.filter(Transaction.date <= end_date)
 
     transactions = query.all()
 
     total_income = 0.0
     total_expense = 0.0
-    expense_by_category: Dict[str, float] = {}
 
+    # Calculate totals
     for tx in transactions:
         if tx.type == "income":
             total_income += float(tx.amount)
         elif tx.type == "expense":
             total_expense += float(tx.amount)
-            expense_by_category[tx.category_id] = expense_by_category.get(
-                tx.category_id, 0.0
-            ) + float(tx.amount)
 
     total_income = round(total_income, 2)
     total_expense = round(total_expense, 2)
     net_balance = round(total_income - total_expense, 2)
 
-    categories = db.query(Category).all()
-    cat_map = {c.id: c.name for c in categories}
+    # Category breakdown for expenses
+    category_totals = {}
+    for tx in transactions:
+        if tx.type == "expense":
+            cat_id = tx.category_id
+            if cat_id not in category_totals:
+                category_totals[cat_id] = 0.0
+            category_totals[cat_id] += float(tx.amount)
 
-    category_breakdown: List[CategoryBreakdownItem] = []
-    for cat_id, amount in expense_by_category.items():
-        cat_name = cat_map.get(cat_id, "Unknown")
-        percentage = (
-            round((amount / total_expense * 100.0), 2) if total_expense > 0 else 0.0
+    category_breakdown = []
+    if category_totals:
+        categories = (
+            db.query(Category).filter(Category.id.in_(category_totals.keys())).all()
         )
-        category_breakdown.append(
-            CategoryBreakdownItem(
-                category_id=cat_id,
-                category_name=cat_name,
-                amount=round(amount, 2),
-                percentage=percentage,
+        cat_map = {c.id: c.name for c in categories}
+
+        for cat_id, amt in category_totals.items():
+            amt_rounded = round(amt, 2)
+            pct = (
+                round((amt_rounded / total_expense) * 100, 2)
+                if total_expense > 0
+                else 0.0
             )
-        )
+            category_breakdown.append(
+                CategoryBreakdownItem(
+                    category_id=cat_id,
+                    category_name=cat_map.get(cat_id, "Unknown"),
+                    amount=amt_rounded,
+                    percentage=pct,
+                )
+            )
 
-    # Sort breakdown descending by amount
-    category_breakdown.sort(key=lambda x: x.amount, reverse=True)
+        # Sort breakdown by amount descending
+        category_breakdown.sort(key=lambda x: x.amount, reverse=True)
 
     return SummaryResponse(
         total_income=total_income,

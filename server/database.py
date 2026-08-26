@@ -2,19 +2,14 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./expenses.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./expense_tracker.db")
 
 connect_args = {}
-if "sqlite" in DATABASE_URL:
-    connect_args["check_same_thread"] = False
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args=connect_args,
-)
-
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
 
@@ -26,38 +21,36 @@ def get_db():
         db.close()
 
 
-PREDEFINED_CATEGORIES = [
-    {"name": "Food", "type": "expense", "is_predefined": True},
-    {"name": "Transport", "type": "expense", "is_predefined": True},
-    {"name": "Utilities", "type": "expense", "is_predefined": True},
-    {"name": "Entertainment", "type": "expense", "is_predefined": True},
-    {"name": "Housing", "type": "expense", "is_predefined": True},
-    {"name": "Healthcare", "type": "expense", "is_predefined": True},
-    {"name": "Salary", "type": "income", "is_predefined": True},
-    {"name": "Freelance", "type": "income", "is_predefined": True},
-    {"name": "Investments", "type": "income", "is_predefined": True},
-    {"name": "Other", "type": "both", "is_predefined": True},
-]
+def init_db(bind_engine=None):
+    target_engine = bind_engine or engine
+    import server.models  # noqa: F401
 
-
-def init_db():
-    from server.models import Category, Transaction  # noqa: F401
-
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=target_engine)
 
 
 def seed_data(db):
     from server.models import Category
+    import uuid
 
-    for cat in PREDEFINED_CATEGORIES:
-        existing = db.query(Category).filter(Category.name == cat["name"]).first()
+    default_categories = [
+        {"name": "Food", "type": "expense", "is_predefined": True},
+        {"name": "Transport", "type": "expense", "is_predefined": True},
+        {"name": "Utilities", "type": "expense", "is_predefined": True},
+        {"name": "Entertainment", "type": "expense", "is_predefined": True},
+        {"name": "Income", "type": "income", "is_predefined": True},
+        {"name": "Salary", "type": "income", "is_predefined": True},
+    ]
+
+    for cat_data in default_categories:
+        existing = db.query(Category).filter(Category.name == cat_data["name"]).first()
         if not existing:
-            new_cat = Category(
-                name=cat["name"],
-                type=cat["type"],
-                is_predefined=cat["is_predefined"],
+            cat = Category(
+                id=str(uuid.uuid4()),
+                name=cat_data["name"],
+                type=cat_data["type"],
+                is_predefined=cat_data["is_predefined"],
             )
-            db.add(new_cat)
+            db.add(cat)
     try:
         db.commit()
     except Exception:

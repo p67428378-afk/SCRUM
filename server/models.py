@@ -29,9 +29,7 @@ class Category(Base):
     )
 
     transactions = relationship(
-        "Transaction",
-        back_populates="category",
-        cascade="all, delete-orphan",
+        "Transaction", back_populates="category", cascade="all, delete-orphan"
     )
 
 

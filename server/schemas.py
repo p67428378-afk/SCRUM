@@ -26,7 +26,7 @@ class TransactionBase(BaseModel):
     date: date
     description: str = Field(..., min_length=1, max_length=255)
     category_id: str
-    payment_method: Optional[str] = Field(None, max_length=50)
+    payment_method: Optional[str] = None
 
 
 class TransactionCreate(TransactionBase):
@@ -39,17 +39,11 @@ class TransactionUpdate(BaseModel):
     date: Optional[date] = None
     description: Optional[str] = Field(None, min_length=1, max_length=255)
     category_id: Optional[str] = None
-    payment_method: Optional[str] = Field(None, max_length=50)
-
-
-class TransactionResponse(BaseModel):
-    id: str
-    amount: float
-    type: str
-    date: date
-    description: str
-    category_id: str
     payment_method: Optional[str] = None
+
+
+class TransactionResponse(TransactionBase):
+    id: str
     created_at: datetime
     updated_at: datetime
 

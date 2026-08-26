@@ -22,8 +22,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Expense Tracker API",
-    description="RESTful API for Expense and Income Tracking, Category Management, and Financial Analytics",
     version="1.0.0",
+    description="Backend API for personal finance and expense tracking",
     lifespan=lifespan,
 )
 
@@ -39,16 +39,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(expenses_router)
 app.include_router(categories_router)
+app.include_router(expenses_router)
 app.include_router(summary_router)
 
 
 @app.get("/health", tags=["Health"])
 def health_check():
-    return {"status": "ok"}
-
-
-@app.get("/", tags=["Root"])
-def root():
-    return {"message": "Expense Tracker API is running"}
+    return {"status": "ok", "message": "Expense Tracker API is running"}

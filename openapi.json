@@ -2,337 +2,17 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Expense Tracker API",
-    "description": "RESTful API for Expense and Income Tracking, Category Management, and Financial Analytics",
+    "description": "Backend API for personal finance and expense tracking",
     "version": "1.0.0"
   },
   "paths": {
-    "/api/v1/expenses": {
-      "get": {
-        "tags": [
-          "Expenses"
-        ],
-        "summary": "List Transactions",
-        "operationId": "list_transactions_api_v1_expenses_get",
-        "parameters": [
-          {
-            "name": "search",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Search keyword in description",
-              "title": "Search"
-            },
-            "description": "Search keyword in description"
-          },
-          {
-            "name": "category_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by category ID",
-              "title": "Category Id"
-            },
-            "description": "Filter by category ID"
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by type (income or expense)",
-              "title": "Type"
-            },
-            "description": "Filter by type (income or expense)"
-          },
-          {
-            "name": "start_date",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Start date filter (YYYY-MM-DD)",
-              "title": "Start Date"
-            },
-            "description": "Start date filter (YYYY-MM-DD)"
-          },
-          {
-            "name": "end_date",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "End date filter (YYYY-MM-DD)",
-              "title": "End Date"
-            },
-            "description": "End date filter (YYYY-MM-DD)"
-          },
-          {
-            "name": "skip",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Pagination offset",
-              "default": 0,
-              "title": "Skip"
-            },
-            "description": "Pagination offset"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 500,
-              "minimum": 1,
-              "description": "Pagination limit",
-              "default": 100,
-              "title": "Limit"
-            },
-            "description": "Pagination limit"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TransactionResponse"
-                  },
-                  "title": "Response List Transactions Api V1 Expenses Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Expenses"
-        ],
-        "summary": "Create Transaction",
-        "operationId": "create_transaction_api_v1_expenses_post",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransactionCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/expenses/{id}": {
-      "get": {
-        "tags": [
-          "Expenses"
-        ],
-        "summary": "Get Transaction",
-        "operationId": "get_transaction_api_v1_expenses__id__get",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Expenses"
-        ],
-        "summary": "Update Transaction",
-        "operationId": "update_transaction_api_v1_expenses__id__put",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TransactionUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Expenses"
-        ],
-        "summary": "Delete Transaction",
-        "operationId": "delete_transaction_api_v1_expenses__id__delete",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Id"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/categories": {
       "get": {
         "tags": [
           "Categories"
         ],
-        "summary": "List Categories",
-        "operationId": "list_categories_api_v1_categories_get",
+        "summary": "Get Categories",
+        "operationId": "get_categories_api_v1_categories_get",
         "parameters": [
           {
             "name": "type",
@@ -347,10 +27,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter by type: income, expense, or both",
+              "description": "Filter categories by type",
               "title": "Type"
             },
-            "description": "Filter by type: income, expense, or both"
+            "description": "Filter categories by type"
           }
         ],
         "responses": {
@@ -363,7 +43,7 @@
                   "items": {
                     "$ref": "#/components/schemas/CategoryResponse"
                   },
-                  "title": "Response List Categories Api V1 Categories Get"
+                  "title": "Response Get Categories Api V1 Categories Get"
                 }
               }
             }
@@ -420,21 +100,127 @@
         }
       }
     },
-    "/api/v1/categories/{id}": {
+    "/api/v1/expenses": {
       "get": {
         "tags": [
-          "Categories"
+          "Expenses & Transactions"
         ],
-        "summary": "Get Category",
-        "operationId": "get_category_api_v1_categories__id__get",
+        "summary": "Get Transactions",
+        "operationId": "get_transactions_api_v1_expenses_get",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
+            "name": "search",
+            "in": "query",
+            "required": false,
             "schema": {
-              "type": "string",
-              "title": "Id"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search term in description",
+              "title": "Search"
+            },
+            "description": "Search term in description"
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by category ID",
+              "title": "Category Id"
+            },
+            "description": "Filter by category ID"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by type (income/expense)",
+              "title": "Type"
+            },
+            "description": "Filter by type (income/expense)"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Start date filter",
+              "title": "Start Date"
+            },
+            "description": "Start date filter"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "End date filter",
+              "title": "End Date"
+            },
+            "description": "End date filter"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
             }
           }
         ],
@@ -444,7 +230,142 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CategoryResponse"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionResponse"
+                  },
+                  "title": "Response Get Transactions Api V1 Expenses Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Expenses & Transactions"
+        ],
+        "summary": "Create Transaction",
+        "operationId": "create_transaction_api_v1_expenses_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/expenses/{tx_id}": {
+      "get": {
+        "tags": [
+          "Expenses & Transactions"
+        ],
+        "summary": "Get Transaction",
+        "operationId": "get_transaction_api_v1_expenses__tx_id__get",
+        "parameters": [
+          {
+            "name": "tx_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tx Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Expenses & Transactions"
+        ],
+        "summary": "Update Transaction",
+        "operationId": "update_transaction_api_v1_expenses__tx_id__put",
+        "parameters": [
+          {
+            "name": "tx_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tx Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
                 }
               }
             }
@@ -463,18 +384,18 @@
       },
       "delete": {
         "tags": [
-          "Categories"
+          "Expenses & Transactions"
         ],
-        "summary": "Delete Category",
-        "operationId": "delete_category_api_v1_categories__id__delete",
+        "summary": "Delete Transaction",
+        "operationId": "delete_transaction_api_v1_expenses__tx_id__delete",
         "parameters": [
           {
-            "name": "id",
+            "name": "tx_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Tx Id"
             }
           }
         ],
@@ -498,7 +419,7 @@
     "/api/v1/summary": {
       "get": {
         "tags": [
-          "Summary"
+          "Summary & Analytics"
         ],
         "summary": "Get Summary",
         "operationId": "get_summary_api_v1_summary_get",
@@ -517,10 +438,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Start date (YYYY-MM-DD)",
+              "description": "Start date for summary",
               "title": "Start Date"
             },
-            "description": "Start date (YYYY-MM-DD)"
+            "description": "Start date for summary"
           },
           {
             "name": "end_date",
@@ -536,10 +457,10 @@
                   "type": "null"
                 }
               ],
-              "description": "End date (YYYY-MM-DD)",
+              "description": "End date for summary",
               "title": "End Date"
             },
-            "description": "End date (YYYY-MM-DD)"
+            "description": "End date for summary"
           },
           {
             "name": "period",
@@ -554,10 +475,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Period shortcut: daily, monthly, yearly, all",
+              "description": "Period filter: daily, monthly, yearly",
               "title": "Period"
             },
-            "description": "Period shortcut: daily, monthly, yearly, all"
+            "description": "Period filter: daily, monthly, yearly"
           }
         ],
         "responses": {
@@ -591,25 +512,6 @@
         ],
         "summary": "Health Check",
         "operationId": "health_check_health_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/": {
-      "get": {
-        "tags": [
-          "Root"
-        ],
-        "summary": "Root",
-        "operationId": "root__get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -801,8 +703,7 @@
           "payment_method": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 50
+                "type": "string"
               },
               {
                 "type": "null"
@@ -823,16 +724,17 @@
       },
       "TransactionResponse": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
           "amount": {
             "type": "number",
+            "exclusiveMinimum": 0.0,
             "title": "Amount"
           },
           "type": {
             "type": "string",
+            "enum": [
+              "income",
+              "expense"
+            ],
             "title": "Type"
           },
           "date": {
@@ -842,6 +744,8 @@
           },
           "description": {
             "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
             "title": "Description"
           },
           "category_id": {
@@ -859,6 +763,10 @@
             ],
             "title": "Payment Method"
           },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -872,12 +780,12 @@
         },
         "type": "object",
         "required": [
-          "id",
           "amount",
           "type",
           "date",
           "description",
           "category_id",
+          "id",
           "created_at",
           "updated_at"
         ],
@@ -943,8 +851,7 @@
           "payment_method": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 50
+                "type": "string"
               },
               {
                 "type": "null"
