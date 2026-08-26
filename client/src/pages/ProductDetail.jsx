@@ -15,10 +15,23 @@ import {
 import { productApi } from "../services/api";
 import { useCart } from "../context/CartContext";
 
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80";
+const SVG_FALLBACK =
+  "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Crect width='600' height='600' fill='%23F7F7F5'/%3E%3Cg transform='translate(150, 150)' fill='%232E4F3D' opacity='0.25'%3E%3Cpath d='M40 80h220v80H40zM20 160h260v40H20zM30 200h30v60H30zM240 200h30v60h-30z'/%3E%3C/g%3E%3Ctext x='50%25' y='72%25' fill='%23737A75' font-family='sans-serif' font-size='20' font-weight='600' text-anchor='middle'%3EFurniCraft%3C/text%3E%3C/svg%3E";
+
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, wishlist, toggleWishlist } = useCart();
+
+  const handleImageError = (e) => {
+    if (e.currentTarget.src !== FALLBACK_IMAGE) {
+      e.currentTarget.src = FALLBACK_IMAGE;
+    } else {
+      e.currentTarget.src = SVG_FALLBACK;
+    }
+  };
 
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -156,11 +169,9 @@ export default function ProductDetail() {
         <div className="space-y-4">
           <div className="relative aspect-square rounded-xl overflow-hidden bg-bgsoft border border-borderline">
             <img
-              src={
-                product.image_url ||
-                "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80"
-              }
+              src={product.image_url || FALLBACK_IMAGE}
               alt={product.name}
+              onError={handleImageError}
               className="w-full h-full object-cover"
             />
             {/* Wishlist Button */}
