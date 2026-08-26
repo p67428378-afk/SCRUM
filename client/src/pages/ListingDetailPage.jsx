@@ -81,10 +81,12 @@ export default function ListingDetailPage() {
 
   const defaultPhoto =
     "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=800&q=80";
-  const photos =
-    listing.photo_urls && listing.photo_urls.length > 0
-      ? listing.photo_urls
-      : [defaultPhoto];
+  const validPhotos = Array.isArray(listing.photo_urls)
+    ? listing.photo_urls.filter(
+        (url) => typeof url === "string" && url.trim().length > 0,
+      )
+    : [];
+  const photos = validPhotos.length > 0 ? validPhotos : [defaultPhoto];
 
   const formatAge = (months) => {
     if (!months && months !== 0) return "Age unknown";
@@ -119,7 +121,10 @@ export default function ListingDetailPage() {
               alt={listing.title}
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.target.src = defaultPhoto;
+                if (e.target.src !== defaultPhoto) {
+                  e.target.onerror = null;
+                  e.target.src = defaultPhoto;
+                }
               }}
             />
             <div className="absolute top-4 left-4 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
@@ -143,6 +148,12 @@ export default function ListingDetailPage() {
                     src={url}
                     alt=""
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      if (e.target.src !== defaultPhoto) {
+                        e.target.onerror = null;
+                        e.target.src = defaultPhoto;
+                      }
+                    }}
                   />
                 </button>
               ))}

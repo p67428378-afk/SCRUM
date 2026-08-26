@@ -18,8 +18,13 @@ export default function ListingCard({ listing }) {
 
   const defaultPhoto =
     "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80";
-  const imageUrl =
-    photo_urls && photo_urls.length > 0 ? photo_urls[0] : defaultPhoto;
+
+  const validPhotos = Array.isArray(photo_urls)
+    ? photo_urls.filter(
+        (url) => typeof url === "string" && url.trim().length > 0,
+      )
+    : [];
+  const imageUrl = validPhotos.length > 0 ? validPhotos[0] : defaultPhoto;
 
   const formatAge = (months) => {
     if (!months && months !== 0) return "Age unknown";
@@ -40,7 +45,10 @@ export default function ListingCard({ listing }) {
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
           onError={(e) => {
-            e.target.src = defaultPhoto;
+            if (e.target.src !== defaultPhoto) {
+              e.target.onerror = null;
+              e.target.src = defaultPhoto;
+            }
           }}
         />
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-primary shadow-sm">
