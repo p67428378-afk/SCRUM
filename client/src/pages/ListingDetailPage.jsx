@@ -15,6 +15,26 @@ import {
   User,
 } from "lucide-react";
 
+const FALLBACK_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400" fill="%23f3f4f6"><rect width="100%" height="100%" fill="%23e5e7eb"/><path d="M300 160c-16.5 0-30 13.5-30 30s13.5 30 30 30 30-13.5 30-30-13.5-30-30-30zm-70 10c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm140 0c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm-110 80c-25 0-48 12-60 30 15 20 40 32 70 32s55-12 70-32c-12-18-35-30-60-30z" fill="%239ca3af"/><text x="50%" y="82%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="bold" fill="%236b7280">Dog Photo</text></svg>`;
+
+const DEFAULT_PHOTO =
+  "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=800&q=80";
+
+const BREED_PHOTOS = {
+  "german shepherd":
+    "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?auto=format&fit=crop&w=800&q=80",
+  "golden retriever":
+    "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=800&q=80",
+  "french bulldog":
+    "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=800&q=80",
+  poodle:
+    "https://images.unsplash.com/photo-1605244863941-3a3ed921c60d?auto=format&fit=crop&w=800&q=80",
+  beagle:
+    "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&w=800&q=80",
+  labrador:
+    "https://images.unsplash.com/photo-1579202673506-ca3ce28943ef?auto=format&fit=crop&w=800&q=80",
+};
+
 export default function ListingDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -79,14 +99,35 @@ export default function ListingDetailPage() {
     );
   }
 
-  const defaultPhoto =
-    "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=800&q=80";
   const validPhotos = Array.isArray(listing.photo_urls)
     ? listing.photo_urls.filter(
         (url) => typeof url === "string" && url.trim().length > 0,
       )
-    : [];
-  const photos = validPhotos.length > 0 ? validPhotos : [defaultPhoto];
+    : typeof listing.photo_urls === "string" &&
+        listing.photo_urls.trim().length > 0
+      ? [listing.photo_urls.trim()]
+      : [];
+
+  const normalizedBreed = listing.breed
+    ? listing.breed.toLowerCase().trim()
+    : "";
+  const breedMatch = Object.keys(BREED_PHOTOS).find((b) =>
+    normalizedBreed.includes(b),
+  );
+  const breedFallback = breedMatch ? BREED_PHOTOS[breedMatch] : DEFAULT_PHOTO;
+
+  const photos = validPhotos.length > 0 ? validPhotos : [breedFallback];
+
+  const handleImageError = (e) => {
+    if (e.target.dataset.fallbackStep === "1") {
+      e.target.dataset.fallbackStep = "2";
+      e.target.src = FALLBACK_SVG;
+    } else if (!e.target.dataset.fallbackStep) {
+      e.target.dataset.fallbackStep = "1";
+      e.target.src =
+        breedFallback !== photos[activePhoto] ? breedFallback : FALLBACK_SVG;
+    }
+  };
 
   const formatAge = (months) => {
     if (!months && months !== 0) return "Age unknown";
@@ -117,15 +158,10 @@ export default function ListingDetailPage() {
         <div className="space-y-3">
           <div className="relative h-80 sm:h-96 w-full rounded-2xl overflow-hidden bg-gray-100 border border-[#e3e8f0] shadow-sm">
             <img
-              src={photos[activePhoto] || defaultPhoto}
+              src={photos[activePhoto] || breedFallback}
               alt={listing.title}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                if (e.target.src !== defaultPhoto) {
-                  e.target.onerror = null;
-                  e.target.src = defaultPhoto;
-                }
-              }}
+              onError={handleImageError}
             />
             <div className="absolute top-4 left-4 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
               {listing.status || "Available"}
@@ -148,12 +184,7 @@ export default function ListingDetailPage() {
                     src={url}
                     alt=""
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      if (e.target.src !== defaultPhoto) {
-                        e.target.onerror = null;
-                        e.target.src = defaultPhoto;
-                      }
-                    }}
+                    onError={handleImageError}
                   />
                 </button>
               ))}
