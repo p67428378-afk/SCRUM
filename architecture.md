@@ -33,6 +33,7 @@ graph TD
 - server/alembic/env.py
 - server/alembic/versions/001_initial_schema.py
 - server/alembic/versions/__init__.py
+- server/alembic/versions/xxxx_initial_schema.py
 - server/database.py
 - server/dependencies/__init__.py
 - server/dependencies/auth.py
@@ -74,9 +75,11 @@ graph TD
 - client/src/components/catalog/FilterSidebar.jsx
 - client/src/components/catalog/ProductCard.jsx
 - client/src/components/catalog/ProductDetailCard.jsx
+- client/src/components/catalog/ProductDetailCard.test.jsx
 - client/src/components/common/Badge.jsx
 - client/src/components/common/Button.jsx
 - client/src/components/common/Navbar.jsx
+- client/src/components/detail/ProductDetailCard.jsx
 - client/src/components/detail/ProductGallery.jsx
 - client/src/components/detail/VariantSelector.jsx
 - client/src/components/orders/TrackingStepper.jsx
