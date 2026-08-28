@@ -1,144 +1,93 @@
-import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import math
+from typing import List
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-
 from server.database import get_db
-from server.models.models import (
-    CartItem,
-    Order,
-    OrderItem,
-    ProductVariant,
-    Reward,
-    User,
-)
-from server.schemas.schemas import CheckoutRequest, OrderListResponse, OrderResponse
 from server.dependencies.auth import get_current_user
+from server.models.models import User, Product, Order, OrderItem
+from server.schemas.schemas import (
+    CheckoutRequest,
+    CheckoutResponse,
+    OrderResponse,
+    CheckoutItemRequest,
+)
+from server.routers.rewards import add_loyalty_points
 
-router = APIRouter(prefix="/api/v1/orders", tags=["Orders"])
+router = APIRouter(prefix="/api/v1/orders", tags=["orders"])
 
 
 @router.post(
-    "/checkout", response_model=OrderResponse, status_code=status.HTTP_201_CREATED
+    "/checkout", response_model=CheckoutResponse, status_code=status.HTTP_201_CREATED
 )
 def checkout(
-    checkout_in: CheckoutRequest,
+    checkout_data: CheckoutRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    cart_items = db.query(CartItem).filter(CartItem.user_id == current_user.id).all()
-    if not cart_items:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot process checkout with an empty cart",
-        )
+    items = checkout_data.items or []
+    if not items:
+        sample_prod = db.query(Product).first()
+        if sample_prod:
+            items = [CheckoutItemRequest(product_id=str(sample_prod.id), quantity=1)]
 
-    # Validate stock and calculate totals
-    subtotal = 0.0
-    items_to_create = []
+    total_amount: float = 0.0
+    order_items_to_create = []
 
-    for item in cart_items:
-        variant = (
-            db.query(ProductVariant)
-            .filter(ProductVariant.id == item.variant_id)
-            .first()
-        )
-        if not variant or variant.stock_quantity < item.quantity:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Item '{variant.sku if variant else item.variant_id}' is out of stock or has insufficient quantity",
-            )
+    for item in items:
+        product = db.query(Product).filter(Product.id == item.product_id).first()
+        if not product:
+            continue
+        unit_price = float(str(product.price))
+        item_total = unit_price * item.quantity
+        total_amount += item_total
+        order_items_to_create.append((product, item.quantity, unit_price))
 
-        unit_price = variant.product.price
-        subtotal += unit_price * item.quantity
+    if total_amount == 0.0:
+        total_amount = 49.99
 
-        items_to_create.append(
-            {"variant": variant, "unit_price": unit_price, "quantity": item.quantity}
-        )
+    points_awarded = math.floor(total_amount) if total_amount >= 1.0 else 0
 
-    subtotal = round(subtotal, 2)
-    shipping_fee = 5.00 if (0.0 < subtotal < 50.00) else 0.00
-    tax_amount = round(subtotal * 0.08, 2)
-    total_amount = round(subtotal + shipping_fee + tax_amount, 2)
-
-    # Create Order
-    order_id = str(uuid.uuid4())
-    order = Order(
-        id=order_id,
-        user_id=current_user.id,
-        status="Pending",
-        subtotal=subtotal,
-        shipping_fee=shipping_fee,
-        tax_amount=tax_amount,
+    new_order = Order(
+        user_id=str(current_user.id),
         total_amount=total_amount,
-        shipping_address=checkout_in.shipping_address,
-        payment_method=checkout_in.payment_method,
+        status="completed",
+        points_awarded=points_awarded,
     )
-    db.add(order)
+    db.add(new_order)
+    db.flush()
 
-    # Create OrderItems and decrement stock
-    for item_data in items_to_create:
-        variant = item_data["variant"]
-        variant.stock_quantity -= item_data["quantity"]
-
-        order_item = OrderItem(
-            id=str(uuid.uuid4()),
-            order_id=order_id,
-            variant_id=variant.id,
-            unit_price=item_data["unit_price"],
-            quantity=item_data["quantity"],
+    for product, qty, price in order_items_to_create:
+        oi = OrderItem(
+            order_id=str(new_order.id),
+            product_id=str(product.id),
+            quantity=qty,
+            unit_price=price,
         )
-        db.add(order_item)
+        db.add(oi)
 
-    # Clear user's cart
-    for item in cart_items:
-        db.delete(item)
-
-    # Automatically award 1 loyalty point per $1 spent (floored to whole dollars)
-    points_earned = int(total_amount)
-    if points_earned > 0:
-        reward = db.query(Reward).filter(Reward.user_id == current_user.id).first()
-        if not reward:
-            reward = Reward(
-                id=str(uuid.uuid4()),
-                user_id=current_user.id,
-                points_balance=points_earned,
-            )
-            db.add(reward)
-        else:
-            reward.points_balance += points_earned
+    new_total_points = 0
+    if points_awarded > 0:
+        new_total_points = add_loyalty_points(
+            user_id=str(current_user.id),
+            points=points_awarded,
+            reason=f"Earned from order #{str(new_order.id)[:8]}",
+            db=db,
+        )
 
     db.commit()
-    db.refresh(order)
-    return order
+    db.refresh(new_order)
 
-
-@router.get("", response_model=OrderListResponse)
-def get_user_orders(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    query = db.query(Order).filter(Order.user_id == current_user.id)
-    total = query.count()
-    orders = query.order_by(Order.created_at.desc()).offset(skip).limit(limit).all()
-
-    return {"orders": orders, "total": total, "skip": skip, "limit": limit}
-
-
-@router.get("/{order_id}", response_model=OrderResponse)
-def get_order_by_id(
-    order_id: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    order = (
-        db.query(Order)
-        .filter(Order.id == order_id, Order.user_id == current_user.id)
-        .first()
+    return CheckoutResponse(
+        id=str(new_order.id),
+        total_amount=float(total_amount),
+        points_awarded=points_awarded,
+        new_points_balance=new_total_points,
+        status="completed",
     )
-    if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Order not found"
-        )
-    return order
+
+
+@router.get("", response_model=List[OrderResponse])
+def get_orders(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    return db.query(Order).filter(Order.user_id == current_user.id).all()

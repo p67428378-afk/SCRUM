@@ -1,23 +1,18 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlalchemy import (
     Column,
     String,
-    Boolean,
     Float,
     Integer,
-    Text,
-    ForeignKey,
+    Boolean,
     DateTime,
-    UniqueConstraint,
+    ForeignKey,
+    Text,
+    CheckConstraint,
 )
-from sqlalchemy.orm import declarative_base, relationship
-
-Base = declarative_base()
-
-
-def utc_now():
-    return datetime.now(timezone.utc)
+from sqlalchemy.orm import relationship
+from server.database import Base
 
 
 class User(Base):
@@ -25,19 +20,21 @@ class User(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String(255), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=True)
+    hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     role = Column(String(50), default="user", nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now)
-    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    cart_items = relationship(
-        "CartItem", back_populates="user", cascade="all, delete-orphan"
+    wishlist_items = relationship(
+        "WishlistItem", back_populates="user", cascade="all, delete-orphan"
     )
-    orders = relationship("Order", back_populates="user")
-    activity_logs = relationship(
-        "UserActivityLog", back_populates="user", cascade="all, delete-orphan"
+    rewards = relationship(
+        "Reward", back_populates="user", cascade="all, delete-orphan"
+    )
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
+    reviews = relationship(
+        "ProductReview", back_populates="user", cascade="all, delete-orphan"
     )
     login_stats = relationship(
         "UserLoginStats",
@@ -45,91 +42,70 @@ class User(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    wishlist_items = relationship(
-        "WishlistItem", back_populates="user", cascade="all, delete-orphan"
-    )
-    reward = relationship(
-        "Reward", back_populates="user", uselist=False, cascade="all, delete-orphan"
-    )
-
-
-class Category(Base):
-    __tablename__ = "categories"
-
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String(100), unique=True, nullable=False)
-    slug = Column(String(100), unique=True, nullable=False)
-    description = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=utc_now)
-
-    products = relationship("Category", back_populates=None)  # wait, category products
-    products = relationship("Product", back_populates="category")
 
 
 class Product(Base):
     __tablename__ = "products"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    category_id = Column(String(36), ForeignKey("categories.id"), nullable=False)
-    title = Column(String(255), index=True, nullable=False)
+    name = Column(String(255), index=True, nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Float, nullable=False)
-    image_url = Column(String(512), nullable=True)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now)
-    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+    category = Column(String(100), index=True, nullable=True)
+    image_url = Column(String(500), nullable=True)
+    in_stock = Column(Boolean, default=True, nullable=False)
+    stock_quantity = Column(Integer, default=10, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    category = relationship("Category", back_populates="products")
-    variants = relationship(
-        "ProductVariant", back_populates="product", cascade="all, delete-orphan"
+    wishlist_items = relationship(
+        "WishlistItem", back_populates="product", cascade="all, delete-orphan"
+    )
+    reviews = relationship(
+        "ProductReview", back_populates="product", cascade="all, delete-orphan"
     )
 
 
-class ProductVariant(Base):
-    __tablename__ = "product_variants"
+class WishlistItem(Base):
+    __tablename__ = "wishlist_items"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    product_id = Column(String(36), ForeignKey("products.id"), nullable=False)
-    size = Column(String(50), nullable=True)
-    color = Column(String(50), nullable=True)
-    stock_quantity = Column(Integer, default=0, nullable=False)
-    sku = Column(String(100), unique=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now)
+    user_id = Column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    product_id = Column(
+        String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    product = relationship("Product", back_populates="variants")
-    cart_items = relationship("CartItem", back_populates="variant")
-    order_items = relationship("OrderItem", back_populates="variant")
+    user = relationship("User", back_populates="wishlist_items")
+    product = relationship("Product", back_populates="wishlist_items")
 
 
-class CartItem(Base):
-    __tablename__ = "cart_items"
+class Reward(Base):
+    __tablename__ = "rewards"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
-    session_id = Column(String(255), nullable=True, index=True)
-    variant_id = Column(String(36), ForeignKey("product_variants.id"), nullable=False)
-    quantity = Column(Integer, default=1, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now)
-    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+    user_id = Column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    points = Column(Integer, nullable=False)
+    reason = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    user = relationship("User", back_populates="cart_items")
-    variant = relationship("ProductVariant", back_populates="cart_items")
+    user = relationship("User", back_populates="rewards")
 
 
 class Order(Base):
     __tablename__ = "orders"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
-    status = Column(String(50), default="Pending", nullable=False)
-    subtotal = Column(Float, default=0.0, nullable=False)
-    shipping_fee = Column(Float, default=0.0, nullable=False)
-    tax_amount = Column(Float, default=0.0, nullable=False)
-    total_amount = Column(Float, default=0.0, nullable=False)
-    shipping_address = Column(Text, nullable=False)
-    payment_method = Column(String(100), default="Card", nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now)
-    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+    user_id = Column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    total_amount = Column(Float, nullable=False)
+    status = Column(String(50), default="completed", nullable=False)
+    points_awarded = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     user = relationship("User", back_populates="orders")
     items = relationship(
@@ -141,30 +117,59 @@ class OrderItem(Base):
     __tablename__ = "order_items"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    order_id = Column(String(36), ForeignKey("orders.id"), nullable=False)
-    variant_id = Column(String(36), ForeignKey("product_variants.id"), nullable=False)
+    order_id = Column(
+        String(36), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+    )
+    product_id = Column(
+        String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False
+    )
+    quantity = Column(Integer, default=1, nullable=False)
     unit_price = Column(Float, nullable=False)
-    quantity = Column(Integer, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now)
 
     order = relationship("Order", back_populates="items")
-    variant = relationship("ProductVariant", back_populates="order_items")
+    product = relationship("Product")
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String(100), unique=True, nullable=False)
+
+
+class ProductReview(Base):
+    __tablename__ = "product_reviews"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    product_id = Column(
+        String(36), ForeignKey("products.id", ondelete="CASCADE"), nullable=False
+    )
+    rating = Column(Integer, nullable=False)
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("rating >= 1 AND rating <= 5", name="check_rating_range"),
+    )
+
+    user = relationship("User", back_populates="reviews")
+    product = relationship("Product", back_populates="reviews")
 
 
 class UserActivityLog(Base):
     __tablename__ = "user_activity_logs"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
-    activity_type = Column(String(50), index=True, nullable=False)
-    endpoint = Column(String(255), index=True, nullable=False)
-    http_method = Column(String(10), nullable=False)
-    status_code = Column(Integer, nullable=False)
-    client_ip = Column(String(45), nullable=True)
-    execution_ms = Column(Float, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=utc_now, index=True)
-
-    user = relationship("User", back_populates="activity_logs")
+    user_id = Column(String(36), nullable=True)
+    activity_type = Column(String(100), nullable=True)
+    event_type = Column(String(100), nullable=True)
+    endpoint = Column(String(255), nullable=True)
+    ip_address = Column(String(100), nullable=True)
+    details = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class UserLoginStats(Base):
@@ -172,43 +177,9 @@ class UserLoginStats(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(
-        String(36), ForeignKey("users.id"), unique=True, index=True, nullable=False
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-    login_count = Column(Integer, default=1, nullable=False)
-    pricing_tier = Column(String(50), default="Standard", nullable=False)
-    last_login_at = Column(DateTime(timezone=True), default=utc_now)
-    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+    login_count = Column(Integer, default=0, nullable=False)
+    last_login = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     user = relationship("User", back_populates="login_stats")
-
-
-class WishlistItem(Base):
-    __tablename__ = "wishlist_items"
-
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
-    product_id = Column(
-        String(36), ForeignKey("products.id"), nullable=False, index=True
-    )
-    created_at = Column(DateTime(timezone=True), default=utc_now)
-
-    __table_args__ = (
-        UniqueConstraint("user_id", "product_id", name="uq_user_product_wishlist"),
-    )
-
-    user = relationship("User", back_populates="wishlist_items")
-    product = relationship("Product")
-
-
-class Reward(Base):
-    __tablename__ = "rewards"
-
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(
-        String(36), ForeignKey("users.id"), unique=True, index=True, nullable=False
-    )
-    points_balance = Column(Integer, default=0, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now)
-    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
-
-    user = relationship("User", back_populates="reward")

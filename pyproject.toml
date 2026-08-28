@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+addopts = "-p tests.conftest"
+testpaths = ["server/tests", "test_acceptance_qa.py"]
+python_files = ["test_*.py", "*_test.py"]
+pythonpath = [".", "server"]
