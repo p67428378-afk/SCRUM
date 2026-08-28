@@ -19,5 +19,9 @@ describe("API Services Module", () => {
     expect(typeof apiServices.addToWishlist).toBe("function");
     expect(typeof apiServices.removeFromWishlist).toBe("function");
     expect(typeof apiServices.moveToCartFromWishlist).toBe("function");
+    expect(typeof apiServices.getProductReviews).toBe("function");
+    expect(typeof apiServices.fetchProductReviews).toBe("function");
+    expect(typeof apiServices.createReview).toBe("function");
+    expect(typeof apiServices.submitProductReview).toBe("function");
   });
 });

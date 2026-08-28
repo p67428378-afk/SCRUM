@@ -134,6 +134,21 @@ export const getRewardsBalance = async () => {
   return response.data;
 };
 
+// Product Reviews API
+export const getProductReviews = async (productId) => {
+  const response = await api.get(`/api/v1/products/${productId}/reviews`);
+  return response.data;
+};
+
+export const fetchProductReviews = getProductReviews;
+
+export const createReview = async (reviewData) => {
+  const response = await api.post("/api/v1/reviews", reviewData);
+  return response.data;
+};
+
+export const submitProductReview = createReview;
+
 // Orders API
 export const checkout = async (checkoutData) => {
   const response = await api.post("/api/v1/orders/checkout", checkoutData);
