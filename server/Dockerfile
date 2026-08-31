@@ -2,12 +2,13 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install dependencies (paths are relative to repo root build context)
-COPY server/requirements.txt ./requirements.txt
+# Copy requirements file (supports both root build context and server/ subdirectory context)
+COPY requirements.txt* server/requirements.txt* ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY server/ ./server/
+COPY . ./server/
+RUN if [ -d "./server/server" ]; then cp -rn ./server/server/* ./server/ 2>/dev/null || true; fi
 
 # Cloud Run requires the container to listen on port 8080
 ENV PORT=8080
