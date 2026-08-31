@@ -2,17 +2,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system build dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY server/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir --prefer-binary -r requirements.txt
+# Copy requirements and install
+COPY server/requirements.txt ./server/requirements.txt
+RUN pip install --no-cache-dir --prefer-binary -r ./server/requirements.txt
 
-# Copy server code
-COPY server/ ./server/
+# Copy repository source code
+COPY . .
 
-# Cloud Run requires the container to listen on port 8080
+# Cloud Run environment
 ENV PORT=8080
 EXPOSE 8080
 
