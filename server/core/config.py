@@ -1,24 +1,25 @@
 import os
+from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
-    PROJECT_NAME: str = "Task Management & Team Workflow System"
+    PROJECT_NAME: str = "TeamFlow Task Management System"
     API_V1_STR: str = "/api/v1"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:////tmp/app.db")
-    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "dev-secret-change-in-production")
-    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
-        os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440")
+    SECRET_KEY: str = os.getenv(
+        "JWT_SECRET_KEY", "dev-secret-change-in-production-1234567890"
     )
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./app.db")
     ALLOWED_ORIGINS: str = os.getenv(
         "ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000"
     )
 
+    model_config = SettingsConfigDict(case_sensitive=True)
+
     @property
-    def cors_origins(self) -> list[str]:
+    def cors_origins(self) -> List[str]:
         return [
             origin.strip()
             for origin in self.ALLOWED_ORIGINS.split(",")

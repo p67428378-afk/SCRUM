@@ -3,12 +3,12 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from server.core.config import settings
 from server.db.session import init_db, seed_data, SessionLocal
-from server.api.v1 import api_v1_router
+from server.api.v1 import api_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB schema and seed data
+    # Initialize DB schema and seed initial data
     init_db()
     db = SessionLocal()
     try:
@@ -18,9 +18,12 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    lifespan=lifespan,
+)
 
-# CORS Middleware
+# Mandatory CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -29,15 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers
-app.include_router(api_v1_router)
+# Include API Router
+app.include_router(api_router)
 
 
 @app.get("/health")
 def health_check():
     return {"status": "ok", "project": settings.PROJECT_NAME}
-
-
-@app.get("/")
-def root():
-    return {"message": "Task Management & Team Workflow System API", "docs": "/docs"}

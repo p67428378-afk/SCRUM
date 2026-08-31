@@ -1,54 +1,46 @@
 from datetime import datetime
-from enum import Enum
-from typing import Optional
-from pydantic import BaseModel, ConfigDict, EmailStr
-
-
-class UserRole(str, Enum):
-    ADMIN = "Admin"
-    MEMBER = "Member"
+from typing import Optional, Literal
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
-    role: UserRole = UserRole.MEMBER
-    is_active: bool = True
+    role: Literal["Admin", "Member"] = "Member"
 
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    role: UserRole = UserRole.MEMBER
+    role: Literal["Admin", "Member"] = "Member"
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 
 class UserUpdate(BaseModel):
-    email: Optional[EmailStr] = None
     full_name: Optional[str] = None
-    role: Optional[UserRole] = None
+    role: Optional[Literal["Admin", "Member"]] = None
     is_active: Optional[bool] = None
-    password: Optional[str] = None
 
 
-class UserResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class UserResponse(UserBase):
     id: str
-    email: str
-    full_name: str
-    role: str
     is_active: bool
     created_at: datetime
     updated_at: datetime
 
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+
+class TokenData(BaseModel):
+    user_id: Optional[str] = None

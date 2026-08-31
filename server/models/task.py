@@ -1,42 +1,51 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from typing import List, Optional
+from sqlalchemy import String, Text, DateTime, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from server.db.session import Base
 
 
 class Task(Base):
     __tablename__ = "tasks"
 
-    id = Column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    project_id = Column(
+    project_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
-        index=True,
     )
-    summary = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    priority = Column(String(50), default="Medium", nullable=False)
-    status = Column(String(50), default="To Do", nullable=False)
-    assignee_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
-    due_date = Column(DateTime(timezone=True), nullable=True)
-    created_at = Column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        nullable=False,
+    summary: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    priority: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="Medium"
+    )  # "Low", "Medium", "High", "Urgent"
+    status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="To Do"
+    )  # "To Do", "In Progress", "In Review", "Done"
+    assignee_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    updated_at = Column(
-        DateTime(timezone=True),
+    due_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
-    project = relationship("Project", back_populates="tasks")
-    assignee = relationship("User", back_populates="tasks")
-    comments = relationship(
+    project: Mapped["Project"] = relationship("Project", back_populates="tasks")
+    assignee: Mapped[Optional["User"]] = relationship(
+        "User", back_populates="assigned_tasks"
+    )
+    comments: Mapped[List["Comment"]] = relationship(
         "Comment", back_populates="task", cascade="all, delete-orphan"
+    )
+    escalation_logs: Mapped[List["EscalationLog"]] = relationship(
+        "EscalationLog", back_populates="task", cascade="all, delete-orphan"
     )

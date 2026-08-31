@@ -1,57 +1,63 @@
 from server.schemas.user import (
-    UserRole,
     UserBase,
     UserCreate,
+    UserLogin,
     UserUpdate,
     UserResponse,
-    LoginRequest,
     Token,
+    TokenData,
 )
 from server.schemas.project import (
-    ProjectStatus,
     ProjectBase,
     ProjectCreate,
     ProjectUpdate,
     ProjectResponse,
 )
 from server.schemas.task import (
-    TaskPriority,
-    TaskStatus,
     TaskBase,
     TaskCreate,
     TaskUpdate,
     TaskResponse,
+    TaskBulkUpdateRequest,
+    TaskBulkUpdateResponse,
 )
 from server.schemas.comment import (
     CommentBase,
     CommentCreate,
     CommentUpdate,
-    CommentAuthor,
     CommentResponse,
 )
+from server.schemas.analytics import (
+    TaskAnalyticsResponse,
+    UserProductivityItem,
+    ProductivityAnalyticsResponse,
+)
+from server.schemas.escalation import EscalationLogResponse
 
 __all__ = [
-    "UserRole",
     "UserBase",
     "UserCreate",
+    "UserLogin",
     "UserUpdate",
     "UserResponse",
-    "LoginRequest",
     "Token",
-    "ProjectStatus",
+    "TokenData",
     "ProjectBase",
     "ProjectCreate",
     "ProjectUpdate",
     "ProjectResponse",
-    "TaskPriority",
-    "TaskStatus",
     "TaskBase",
     "TaskCreate",
     "TaskUpdate",
     "TaskResponse",
+    "TaskBulkUpdateRequest",
+    "TaskBulkUpdateResponse",
     "CommentBase",
     "CommentCreate",
     "CommentUpdate",
-    "CommentAuthor",
     "CommentResponse",
+    "TaskAnalyticsResponse",
+    "UserProductivityItem",
+    "ProductivityAnalyticsResponse",
+    "EscalationLogResponse",
 ]

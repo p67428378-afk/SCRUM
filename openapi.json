@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Task Management & Team Workflow System",
+    "title": "TeamFlow Task Management System",
     "version": "0.1.0"
   },
   "paths": {
@@ -57,7 +57,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "$ref": "#/components/schemas/UserLogin"
               }
             }
           },
@@ -118,8 +118,8 @@
         "tags": [
           "auth"
         ],
-        "summary": "Get All Users",
-        "operationId": "get_all_users_api_v1_auth_users_get",
+        "summary": "Get Users",
+        "operationId": "get_users_api_v1_auth_users_get",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -157,7 +157,7 @@
                   "items": {
                     "$ref": "#/components/schemas/UserResponse"
                   },
-                  "title": "Response Get All Users Api V1 Auth Users Get"
+                  "title": "Response Get Users Api V1 Auth Users Get"
                 }
               }
             }
@@ -210,7 +210,6 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 0,
               "default": 0,
               "title": "Skip"
             }
@@ -221,9 +220,7 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 50,
+              "default": 100,
               "title": "Limit"
             }
           }
@@ -440,6 +437,52 @@
         }
       }
     },
+    "/api/v1/tasks/bulk-update": {
+      "patch": {
+        "tags": [
+          "tasks"
+        ],
+        "summary": "Bulk Update Tasks",
+        "operationId": "bulk_update_tasks_api_v1_tasks_bulk_update_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskBulkUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskBulkUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/tasks": {
       "get": {
         "tags": [
@@ -507,7 +550,6 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "minimum": 0,
               "default": 0,
               "title": "Skip"
             }
@@ -518,9 +560,7 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 50,
+              "default": 100,
               "title": "Limit"
             }
           }
@@ -737,13 +777,13 @@
         }
       }
     },
-    "/api/v1/tasks/{task_id}/comments": {
+    "/api/v1/tasks/{id}/comments": {
       "get": {
         "tags": [
-          "comments"
+          "tasks"
         ],
-        "summary": "List Comments For Task",
-        "operationId": "list_comments_for_task_api_v1_tasks__task_id__comments_get",
+        "summary": "Get Task Comments",
+        "operationId": "get_task_comments_api_v1_tasks__id__comments_get",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -751,12 +791,12 @@
         ],
         "parameters": [
           {
-            "name": "task_id",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Task Id"
+              "title": "Id"
             }
           }
         ],
@@ -770,7 +810,7 @@
                   "items": {
                     "$ref": "#/components/schemas/CommentResponse"
                   },
-                  "title": "Response List Comments For Task Api V1 Tasks  Task Id  Comments Get"
+                  "title": "Response Get Task Comments Api V1 Tasks  Id  Comments Get"
                 }
               }
             }
@@ -789,10 +829,10 @@
       },
       "post": {
         "tags": [
-          "comments"
+          "tasks"
         ],
-        "summary": "Create Comment For Task",
-        "operationId": "create_comment_for_task_api_v1_tasks__task_id__comments_post",
+        "summary": "Create Task Comment",
+        "operationId": "create_task_comment_api_v1_tasks__id__comments_post",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -800,12 +840,12 @@
         ],
         "parameters": [
           {
-            "name": "task_id",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Task Id"
+              "title": "Id"
             }
           }
         ],
@@ -938,6 +978,242 @@
         }
       }
     },
+    "/api/v1/analytics/tasks": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Task Analytics",
+        "operationId": "task_analytics_api_v1_analytics_tasks_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskAnalyticsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/productivity": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Productivity Analytics",
+        "operationId": "productivity_analytics_api_v1_analytics_productivity_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductivityAnalyticsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/escalations": {
+      "get": {
+        "tags": [
+          "escalations"
+        ],
+        "summary": "List Escalations",
+        "operationId": "list_escalations_api_v1_escalations_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EscalationLogResponse"
+                  },
+                  "title": "Response List Escalations Api V1 Escalations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health Check",
@@ -953,54 +1229,10 @@
           }
         }
       }
-    },
-    "/": {
-      "get": {
-        "summary": "Root",
-        "operationId": "root__get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
     "schemas": {
-      "CommentAuthor": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "email": {
-            "type": "string",
-            "title": "Email"
-          },
-          "full_name": {
-            "type": "string",
-            "title": "Full Name"
-          },
-          "role": {
-            "type": "string",
-            "title": "Role"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "email",
-          "full_name",
-          "role"
-        ],
-        "title": "CommentAuthor"
-      },
       "CommentCreate": {
         "properties": {
           "body": {
@@ -1016,6 +1248,10 @@
       },
       "CommentResponse": {
         "properties": {
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
           "id": {
             "type": "string",
             "title": "Id"
@@ -1028,20 +1264,6 @@
             "type": "string",
             "title": "Author Id"
           },
-          "body": {
-            "type": "string",
-            "title": "Body"
-          },
-          "author": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CommentAuthor"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -1051,14 +1273,24 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
         "required": [
+          "body",
           "id",
           "task_id",
           "author_id",
-          "body",
           "created_at",
           "updated_at"
         ],
@@ -1077,6 +1309,66 @@
         ],
         "title": "CommentUpdate"
       },
+      "EscalationLogResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "notified_admin_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notified Admin Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "notified_admin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "task_id",
+          "project_id",
+          "priority",
+          "reason",
+          "created_at"
+        ],
+        "title": "EscalationLogResponse"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1090,24 +1382,37 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "LoginRequest": {
+      "ProductivityAnalyticsResponse": {
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email"
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
           },
-          "password": {
-            "type": "string",
-            "title": "Password"
+          "avg_cycle_time_days": {
+            "type": "number",
+            "title": "Avg Cycle Time Days"
+          },
+          "productivity_by_user": {
+            "items": {
+              "$ref": "#/components/schemas/UserProductivityItem"
+            },
+            "type": "array",
+            "title": "Productivity By User"
           }
         },
         "type": "object",
         "required": [
-          "email",
-          "password"
+          "avg_cycle_time_days",
+          "productivity_by_user"
         ],
-        "title": "LoginRequest"
+        "title": "ProductivityAnalyticsResponse"
       },
       "ProjectCreate": {
         "properties": {
@@ -1127,7 +1432,14 @@
             "title": "Description"
           },
           "status": {
-            "$ref": "#/components/schemas/ProjectStatus",
+            "type": "string",
+            "enum": [
+              "Planning",
+              "In Progress",
+              "On Hold",
+              "Completed"
+            ],
+            "title": "Status",
             "default": "Planning"
           }
         },
@@ -1139,10 +1451,6 @@
       },
       "ProjectResponse": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
           "name": {
             "type": "string",
             "title": "Name"
@@ -1160,7 +1468,18 @@
           },
           "status": {
             "type": "string",
-            "title": "Status"
+            "enum": [
+              "Planning",
+              "In Progress",
+              "On Hold",
+              "Completed"
+            ],
+            "title": "Status",
+            "default": "Planning"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
           },
           "owner_id": {
             "type": "string",
@@ -1179,24 +1498,13 @@
         },
         "type": "object",
         "required": [
-          "id",
           "name",
-          "status",
+          "id",
           "owner_id",
           "created_at",
           "updated_at"
         ],
         "title": "ProjectResponse"
-      },
-      "ProjectStatus": {
-        "type": "string",
-        "enum": [
-          "Planning",
-          "In Progress",
-          "On Hold",
-          "Completed"
-        ],
-        "title": "ProjectStatus"
       },
       "ProjectUpdate": {
         "properties": {
@@ -1225,16 +1533,119 @@
           "status": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/ProjectStatus"
+                "type": "string",
+                "enum": [
+                  "Planning",
+                  "In Progress",
+                  "On Hold",
+                  "Completed"
+                ]
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Status"
           }
         },
         "type": "object",
         "title": "ProjectUpdate"
+      },
+      "TaskAnalyticsResponse": {
+        "properties": {
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "total_tasks": {
+            "type": "integer",
+            "title": "Total Tasks"
+          },
+          "completed_tasks": {
+            "type": "integer",
+            "title": "Completed Tasks"
+          },
+          "completion_rate": {
+            "type": "number",
+            "title": "Completion Rate"
+          },
+          "overdue_tasks": {
+            "type": "integer",
+            "title": "Overdue Tasks"
+          },
+          "status_distribution": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Status Distribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_tasks",
+          "completed_tasks",
+          "completion_rate",
+          "overdue_tasks",
+          "status_distribution"
+        ],
+        "title": "TaskAnalyticsResponse"
+      },
+      "TaskBulkUpdateRequest": {
+        "properties": {
+          "task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Task Ids"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "To Do",
+              "In Progress",
+              "In Review",
+              "Done"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_ids",
+          "status"
+        ],
+        "title": "TaskBulkUpdateRequest"
+      },
+      "TaskBulkUpdateResponse": {
+        "properties": {
+          "updated_count": {
+            "type": "integer",
+            "title": "Updated Count"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskResponse"
+            },
+            "type": "array",
+            "title": "Tasks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updated_count",
+          "tasks"
+        ],
+        "title": "TaskBulkUpdateResponse"
       },
       "TaskCreate": {
         "properties": {
@@ -1254,12 +1665,37 @@
             "title": "Description"
           },
           "priority": {
-            "$ref": "#/components/schemas/TaskPriority",
+            "type": "string",
+            "enum": [
+              "Low",
+              "Medium",
+              "High",
+              "Urgent"
+            ],
+            "title": "Priority",
             "default": "Medium"
           },
           "status": {
-            "$ref": "#/components/schemas/TaskStatus",
+            "type": "string",
+            "enum": [
+              "To Do",
+              "In Progress",
+              "In Review",
+              "Done"
+            ],
+            "title": "Status",
             "default": "To Do"
+          },
+          "assignee_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignee Id"
           },
           "due_date": {
             "anyOf": [
@@ -1273,17 +1709,6 @@
             ],
             "title": "Due Date"
           },
-          "assignee_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Assignee Id"
-          },
           "project_id": {
             "type": "string",
             "title": "Project Id"
@@ -1296,26 +1721,8 @@
         ],
         "title": "TaskCreate"
       },
-      "TaskPriority": {
-        "type": "string",
-        "enum": [
-          "Low",
-          "Medium",
-          "High",
-          "Urgent"
-        ],
-        "title": "TaskPriority"
-      },
       "TaskResponse": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
           "summary": {
             "type": "string",
             "title": "Summary"
@@ -1333,11 +1740,25 @@
           },
           "priority": {
             "type": "string",
-            "title": "Priority"
+            "enum": [
+              "Low",
+              "Medium",
+              "High",
+              "Urgent"
+            ],
+            "title": "Priority",
+            "default": "Medium"
           },
           "status": {
             "type": "string",
-            "title": "Status"
+            "enum": [
+              "To Do",
+              "In Progress",
+              "In Review",
+              "Done"
+            ],
+            "title": "Status",
+            "default": "To Do"
           },
           "assignee_id": {
             "anyOf": [
@@ -1362,6 +1783,14 @@
             ],
             "title": "Due Date"
           },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -1375,25 +1804,13 @@
         },
         "type": "object",
         "required": [
+          "summary",
           "id",
           "project_id",
-          "summary",
-          "priority",
-          "status",
           "created_at",
           "updated_at"
         ],
         "title": "TaskResponse"
-      },
-      "TaskStatus": {
-        "type": "string",
-        "enum": [
-          "To Do",
-          "In Progress",
-          "In Review",
-          "Done"
-        ],
-        "title": "TaskStatus"
       },
       "TaskUpdate": {
         "properties": {
@@ -1422,22 +1839,36 @@
           "priority": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/TaskPriority"
+                "type": "string",
+                "enum": [
+                  "Low",
+                  "Medium",
+                  "High",
+                  "Urgent"
+                ]
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Priority"
           },
           "status": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/TaskStatus"
+                "type": "string",
+                "enum": [
+                  "To Do",
+                  "In Progress",
+                  "In Review",
+                  "Done"
+                ]
               },
               {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Status"
           },
           "assignee_id": {
             "anyOf": [
@@ -1504,7 +1935,12 @@
             "title": "Full Name"
           },
           "role": {
-            "$ref": "#/components/schemas/UserRole",
+            "type": "string",
+            "enum": [
+              "Admin",
+              "Member"
+            ],
+            "title": "Role",
             "default": "Member"
           }
         },
@@ -1516,14 +1952,53 @@
         ],
         "title": "UserCreate"
       },
-      "UserResponse": {
+      "UserLogin": {
         "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
           "email": {
             "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserLogin"
+      },
+      "UserProductivityItem": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "user_name": {
+            "type": "string",
+            "title": "User Name"
+          },
+          "tasks_completed": {
+            "type": "integer",
+            "title": "Tasks Completed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "user_name",
+          "tasks_completed"
+        ],
+        "title": "UserProductivityItem"
+      },
+      "UserResponse": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
             "title": "Email"
           },
           "full_name": {
@@ -1532,7 +2007,16 @@
           },
           "role": {
             "type": "string",
-            "title": "Role"
+            "enum": [
+              "Admin",
+              "Member"
+            ],
+            "title": "Role",
+            "default": "Member"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
           },
           "is_active": {
             "type": "boolean",
@@ -1551,23 +2035,14 @@
         },
         "type": "object",
         "required": [
-          "id",
           "email",
           "full_name",
-          "role",
+          "id",
           "is_active",
           "created_at",
           "updated_at"
         ],
         "title": "UserResponse"
-      },
-      "UserRole": {
-        "type": "string",
-        "enum": [
-          "Admin",
-          "Member"
-        ],
-        "title": "UserRole"
       },
       "ValidationError": {
         "properties": {

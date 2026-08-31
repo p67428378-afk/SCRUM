@@ -1,20 +1,12 @@
 from datetime import datetime
-from enum import Enum
-from typing import Optional
+from typing import Optional, Literal
 from pydantic import BaseModel, ConfigDict
-
-
-class ProjectStatus(str, Enum):
-    PLANNING = "Planning"
-    IN_PROGRESS = "In Progress"
-    ON_HOLD = "On Hold"
-    COMPLETED = "Completed"
 
 
 class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
-    status: ProjectStatus = ProjectStatus.PLANNING
+    status: Literal["Planning", "In Progress", "On Hold", "Completed"] = "Planning"
 
 
 class ProjectCreate(ProjectBase):
@@ -24,16 +16,13 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    status: Optional[ProjectStatus] = None
+    status: Optional[Literal["Planning", "In Progress", "On Hold", "Completed"]] = None
 
 
-class ProjectResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class ProjectResponse(ProjectBase):
     id: str
-    name: str
-    description: Optional[str] = None
-    status: str
     owner_id: str
     created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

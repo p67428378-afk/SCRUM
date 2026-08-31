@@ -1,35 +1,38 @@
 import pytest
+from datetime import datetime, timezone
+import uuid
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from fastapi.testclient import TestClient
 
-from server.db.session import Base, get_db, seed_data
-from server.models import User, Project, Task, Comment  # noqa: F401
 from server.main import app
+from server.db.session import Base, get_db, seed_data
+import server.models.user  # noqa: F401
+import server.models.project  # noqa: F401
+import server.models.task  # noqa: F401
+import server.models.comment  # noqa: F401
+import server.models.escalation  # noqa: F401
+from server.core.security import create_access_token
 
-# Create in-memory SQLite engine for tests with StaticPool
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
-test_engine = create_engine(
+engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
-    Base.metadata.create_all(bind=test_engine)
+@pytest.fixture(autouse=True)
+def clean_db():
+    Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
-    try:
-        seed_data(db)
-    finally:
-        db.close()
+    seed_data(db)
+    db.close()
     yield
-    Base.metadata.drop_all(bind=test_engine)
+    Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture
@@ -38,17 +41,17 @@ def db_session():
     try:
         yield db
     finally:
-        db.rollback()
         db.close()
 
 
 @pytest.fixture
-def client(db_session):
+def client():
     def override_get_db():
+        db = TestingSessionLocal()
         try:
-            yield db_session
+            yield db
         finally:
-            pass
+            db.close()
 
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
@@ -57,30 +60,58 @@ def client(db_session):
 
 
 @pytest.fixture
-def member_token(client):
-    response = client.post(
-        "/api/v1/auth/login",
-        json={"email": "test@example.com", "password": "testpassword"},
-    )
-    assert response.status_code == 200
-    return response.json()["access_token"]
+def admin_user(db_session):
+    from server.models.user import User
+    from server.core.security import get_password_hash
+
+    admin = db_session.query(User).filter(User.email == "admin@example.com").first()
+    if not admin:
+        admin = User(
+            id=str(uuid.uuid4()),
+            email="admin@example.com",
+            full_name="Admin Test",
+            hashed_password=get_password_hash("adminpassword"),
+            role="Admin",
+            is_active=True,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(admin)
+        db_session.commit()
+        db_session.refresh(admin)
+    return admin
 
 
 @pytest.fixture
-def admin_token(client):
-    response = client.post(
-        "/api/v1/auth/login",
-        json={"email": "admin@example.com", "password": "adminpassword"},
-    )
-    assert response.status_code == 200
-    return response.json()["access_token"]
+def member_user(db_session):
+    from server.models.user import User
+    from server.core.security import get_password_hash
+
+    member = db_session.query(User).filter(User.email == "test@example.com").first()
+    if not member:
+        member = User(
+            id=str(uuid.uuid4()),
+            email="test@example.com",
+            full_name="Member Test",
+            hashed_password=get_password_hash("testpassword"),
+            role="Member",
+            is_active=True,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        db_session.add(member)
+        db_session.commit()
+        db_session.refresh(member)
+    return member
 
 
 @pytest.fixture
-def member_headers(member_token):
-    return {"Authorization": f"Bearer {member_token}"}
+def member_auth_headers(member_user):
+    token = create_access_token(subject=member_user.id)
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
-def admin_headers(admin_token):
-    return {"Authorization": f"Bearer {admin_token}"}
+def admin_auth_headers(admin_user):
+    token = create_access_token(subject=admin_user.id)
+    return {"Authorization": f"Bearer {token}"}

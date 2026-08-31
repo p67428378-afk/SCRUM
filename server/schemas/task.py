@@ -1,30 +1,19 @@
 from datetime import datetime
-from enum import Enum
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from typing import Optional, List, Literal
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class TaskPriority(str, Enum):
-    LOW = "Low"
-    MEDIUM = "Medium"
-    HIGH = "High"
-    URGENT = "Urgent"
-
-
-class TaskStatus(str, Enum):
-    TO_DO = "To Do"
-    IN_PROGRESS = "In Progress"
-    IN_REVIEW = "In Review"
-    DONE = "Done"
+TaskPriority = Literal["Low", "Medium", "High", "Urgent"]
+TaskStatus = Literal["To Do", "In Progress", "In Review", "Done"]
 
 
 class TaskBase(BaseModel):
     summary: str
     description: Optional[str] = None
-    priority: TaskPriority = TaskPriority.MEDIUM
-    status: TaskStatus = TaskStatus.TO_DO
-    due_date: Optional[datetime] = None
+    priority: TaskPriority = "Medium"
+    status: TaskStatus = "To Do"
     assignee_id: Optional[str] = None
+    due_date: Optional[datetime] = None
 
 
 class TaskCreate(TaskBase):
@@ -40,16 +29,20 @@ class TaskUpdate(BaseModel):
     due_date: Optional[datetime] = None
 
 
-class TaskResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class TaskResponse(TaskBase):
     id: str
     project_id: str
-    summary: str
-    description: Optional[str] = None
-    priority: str
-    status: str
-    assignee_id: Optional[str] = None
-    due_date: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TaskBulkUpdateRequest(BaseModel):
+    task_ids: List[str] = Field(..., min_length=1)
+    status: TaskStatus
+
+
+class TaskBulkUpdateResponse(BaseModel):
+    updated_count: int
+    tasks: List[TaskResponse]
