@@ -263,7 +263,7 @@ export default function CmaAnalyticsDashboard({
                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   Analyzed Region
                 </span>
-                <div className="text-2xl font-bold text-slate-900 truncate max-w-[180px]">
+                <div className="text-2xl font-bold text-slate-900">
                   {locationText}
                 </div>
                 <p className="text-[11px] text-slate-500 flex items-center space-x-1">
