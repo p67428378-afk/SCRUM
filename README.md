@@ -1,4 +1,49 @@
-# Project
+# Real Estate Market Analytics & Valuation Tools
+
+A modern real estate market analytics and valuation application providing Comparative Market Analysis (CMA), price history tracking, interactive mortgage affordability calculations, and property search.
+
+### Prerequisites
+- Python 3.11+
+- Virtual environment (`venv`)
+
+### Installation & Execution
+
+1. Navigate to `server/`:
+   ```bash
+   cd server
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Run tests:
+   ```bash
+   pytest
+   ```
+
+5. Start the FastAPI development server:
+   ```bash
+   uvicorn server.main:app --reload --port 8000
+   ```
+
+## Full-Stack Local Development
+
+Run the backend on `http://localhost:8000` and the frontend on `http://localhost:5173`.
+
+- **Backend Base API**: `http://localhost:8000/api/v1`
+- **Frontend Dev Server**: `http://localhost:5173`
+
+### Test Credentials
+- **User**: `test@example.com` / `testpassword`
+- **Admin**: `admin@example.com` / `adminpassword`
 
 ## Server
 

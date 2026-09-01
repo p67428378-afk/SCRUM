@@ -1,1 +1,1 @@
-# server package init
+# Top-level server package

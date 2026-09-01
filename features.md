@@ -1,13 +1,17 @@
 # Project Features
 
-## SCRUM-208 - House Finding System - Search, Filter, and Property Details
+## SCRUM-208 - Real Estate Market Analytics, Valuation Tools & House Finding System
 
 ### Feature Summary
-A web application that allows users to search and filter house listings by location, price, and amenities, view detailed property pages, save favorite houses, and manage property listings.
+Allows users to search and filter real estate listings, analyze local market trends via CMA statistics, view historical price trajectory charts for properties, and interactively calculate mortgage affordability directly on listing pages.
 
 ### Key Features
 - Property Search & Location Filtering
-- Advanced Attribute Filtering (price, bedrooms/bathrooms, property type, amenities)
-- Detailed Property View with photo galleries, maps, and agent contact details
-- Property Listing Management (CRUD) for authorized sellers/agents
+- Advanced Attribute Filtering
+- Detailed Property View
+- Property Listing Management (CRUD)
 - Saved Searches & Favorite Properties
+- Comparative Market Analysis (CMA) Aggregator Endpoint
+- Property Price History Tracker & Database Schema
+- Property Price Trajectory Chart
+- Interactive Mortgage & Affordability Calculator

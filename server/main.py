@@ -1,18 +1,15 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
 
 from server.app.config import settings
-from server.app.database import init_db, seed_data, SessionLocal
-from server.app.auth.router import router as auth_router
-from server.app.properties.router import router as properties_router
-from server.app.favorites.router import router as favorites_router
-from server.app.saved_searches.router import router as saved_searches_router
+from server.app.database import init_db, SessionLocal, seed_data
+from server.app.api.v1.endpoints import properties, analytics
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB and seed initial data
+    # Startup DB initialization & seeding
     init_db()
     db = SessionLocal()
     try:
@@ -23,34 +20,27 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="House Finding System API",
-    description="RESTful API for real estate search, filtering, detailed property view, and listing management",
-    version="1.0.0",
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan,
 )
 
-# CORS Middleware setup
-ALLOWED_ORIGINS = settings.ALLOWED_ORIGINS.split(",")
+# CORS Middleware for full-stack integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include Routers
-app.include_router(auth_router)
-app.include_router(properties_router)
-app.include_router(favorites_router)
-app.include_router(saved_searches_router)
+api_router = APIRouter()
+api_router.include_router(properties.router, prefix="/properties", tags=["properties"])
+api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
-@app.get("/health", tags=["health"])
+@app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": "house-finding-backend"}
-
-
-@app.get("/", tags=["health"])
-def root():
-    return {"message": "Welcome to House Finding System API", "docs": "/docs"}
+    return {"status": "ok", "project": settings.PROJECT_NAME}
