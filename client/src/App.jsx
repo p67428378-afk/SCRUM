@@ -4,6 +4,7 @@ import SearchDashboardPage from "./pages/SearchDashboardPage";
 import PropertyDetailPage from "./pages/PropertyDetailPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import ListingManagementPage from "./pages/ListingManagementPage";
+import CmaAnalyticsPage from "./pages/CmaAnalyticsPage";
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
       <Route path="/" element={<Navigate to="/search" replace />} />
       <Route path="/search" element={<SearchDashboardPage />} />
       <Route path="/properties/:id" element={<PropertyDetailPage />} />
+      <Route path="/analytics" element={<CmaAnalyticsPage />} />
       <Route path="/favorites" element={<FavoritesPage />} />
       <Route path="/manage-listings" element={<ListingManagementPage />} />
       <Route path="*" element={<Navigate to="/search" replace />} />

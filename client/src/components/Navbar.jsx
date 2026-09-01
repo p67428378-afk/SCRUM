@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Heart, List, LogIn, LogOut, User } from "lucide-react";
+import { Home, Heart, List, LogIn, LogOut, BarChart3 } from "lucide-react";
 import { authApi } from "../services/api";
 
 export default function Navbar({ favoritesCount = 0 }) {
@@ -84,6 +84,17 @@ export default function Navbar({ favoritesCount = 0 }) {
             }`}
           >
             <span>Search</span>
+          </Link>
+          <Link
+            to="/analytics"
+            className={`flex items-center space-x-1 py-1 transition ${
+              isActive("/analytics")
+                ? "text-white border-b-2 border-blue-500 font-semibold"
+                : "hover:text-white"
+            }`}
+          >
+            <BarChart3 className="w-4 h-4 text-blue-400" />
+            <span>CMA Analytics</span>
           </Link>
           <Link
             to="/favorites"

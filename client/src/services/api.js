@@ -67,6 +67,10 @@ export const propertiesApi = {
     const response = await api.get(`/properties/${id}`);
     return response.data;
   },
+  getPriceHistory: async (id) => {
+    const response = await api.get(`/properties/${id}/price-history`);
+    return response.data;
+  },
   createProperty: async (propertyData) => {
     const response = await api.post("/properties", propertyData);
     return response.data;
@@ -81,6 +85,16 @@ export const propertiesApi = {
   },
   addImage: async (id, imageData) => {
     const response = await api.post(`/properties/${id}/images`, imageData);
+    return response.data;
+  },
+};
+
+export const analyticsApi = {
+  getCmaAnalytics: async (params = {}) => {
+    const cleanParams = {};
+    if (params.city) cleanParams.city = params.city;
+    if (params.zip_code) cleanParams.zip_code = params.zip_code;
+    const response = await api.get("/analytics/cma", { params: cleanParams });
     return response.data;
   },
 };

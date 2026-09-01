@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import AgentContactCard from "../components/AgentContactCard";
+import PriceHistoryChart from "../components/PriceHistoryChart";
+import MortgageCalculator from "../components/MortgageCalculator";
 import { propertiesApi, favoritesApi } from "../services/api";
 import {
   ArrowLeft,
@@ -12,9 +14,10 @@ import {
   MapPin,
   Check,
   Building2,
-  Calendar,
   ShieldCheck,
   Map,
+  TrendingUp,
+  Calculator,
 } from "lucide-react";
 
 export default function PropertyDetailPage() {
@@ -49,13 +52,13 @@ export default function PropertyDetailPage() {
           price: 450000,
           bedrooms: 3,
           bathrooms: 2.5,
+          sqft: 2200,
           square_feet: 2200,
+          address: "123 Maple St",
           address_street: "123 Maple St",
           city: "Austin",
           state: "TX",
           zip_code: "78701",
-          latitude: 30.2672,
-          longitude: -97.7431,
           created_at: "2026-01-15T00:00:00Z",
           images: [
             {
@@ -66,18 +69,12 @@ export default function PropertyDetailPage() {
               image_url:
                 "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
             },
-            {
-              image_url:
-                "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
-            },
           ],
           amenities: [
             { name: "Swimming Pool" },
             { name: "2-Car Garage" },
             { name: "Pet Friendly" },
             { name: "Air Conditioning" },
-            { name: "Hardwood Floors" },
-            { name: "Solar Panels" },
           ],
           owner_agent: {
             full_name: "Sarah Jenkins",
@@ -145,13 +142,13 @@ export default function PropertyDetailPage() {
           "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1200&q=80",
         ];
 
-  const estMortgage = Math.round((property.price * 0.8 * 0.06) / 12 + 250);
+  const sqftVal = property.sqft || property.square_feet || 2000;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
       <Navbar />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-1 w-full">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-1 w-full">
         <div className="flex justify-between items-center">
           <Link
             to="/search"
@@ -222,9 +219,10 @@ export default function PropertyDetailPage() {
           )}
         </div>
 
-        {/* Header & Specs Section */}
+        {/* Main Content Layout: Left 2 Cols (Details + Price Trajectory Chart), Right 1 Col (Mortgage Calculator + Agent Contact) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2 space-y-8">
+            {/* Listing Summary Hero */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                 <div>
@@ -237,8 +235,9 @@ export default function PropertyDetailPage() {
                   <p className="text-slate-500 text-sm flex items-center space-x-1.5 mt-1">
                     <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
                     <span>
-                      {property.address_street}, {property.city},{" "}
-                      {property.state} {property.zip_code}
+                      {property.address || property.address_street || ""},{" "}
+                      {property.city}, {property.state || ""}{" "}
+                      {property.zip_code}
                     </span>
                   </p>
                 </div>
@@ -248,12 +247,12 @@ export default function PropertyDetailPage() {
                     ${Number(property.price || 0).toLocaleString()}
                   </span>
                   <p className="text-slate-500 text-xs font-medium mt-0.5">
-                    Est. Mortgage: ~${estMortgage.toLocaleString()}/mo
+                    ${Math.round((property.price || 0) / (sqftVal || 1))}/sqft
                   </p>
                 </div>
               </div>
 
-              {/* Key Specs Bar */}
+              {/* Specs Bar */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-slate-100 text-center text-sm font-semibold text-slate-800">
                 <div className="p-2 bg-slate-50 rounded-xl">
                   <span className="block text-slate-400 text-xs font-normal">
@@ -281,7 +280,7 @@ export default function PropertyDetailPage() {
                   </span>
                   <div className="flex items-center justify-center space-x-1 mt-1">
                     <Square className="w-4 h-4 text-blue-600" />
-                    <span>{property.square_feet?.toLocaleString()} sqft</span>
+                    <span>{sqftVal?.toLocaleString()} sqft</span>
                   </div>
                 </div>
 
@@ -306,7 +305,7 @@ export default function PropertyDetailPage() {
                 </p>
               </div>
 
-              {/* Amenities List */}
+              {/* Amenities */}
               {property.amenities && property.amenities.length > 0 && (
                 <div className="space-y-3 pt-4 border-t border-slate-100">
                   <h3 className="text-lg font-bold text-slate-900">
@@ -331,7 +330,25 @@ export default function PropertyDetailPage() {
               )}
             </div>
 
-            {/* Interactive Map Location View */}
+            {/* Property Price Trajectory Chart Component */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-bold text-slate-900">
+                  Property Price Trajectory
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500">
+                Historical price modifications logged automatically by the
+                system.
+              </p>
+              <PriceHistoryChart
+                propertyId={property.id}
+                initialHistory={property.price_history}
+              />
+            </div>
+
+            {/* Map Location */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <div className="flex items-center space-x-2">
                 <Map className="w-5 h-5 text-blue-600" />
@@ -345,19 +362,17 @@ export default function PropertyDetailPage() {
                   width="100%"
                   height="100%"
                   frameBorder="0"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(`${property.address_street}, ${property.city}, ${property.state}`)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(`${property.address || property.address_street || ""}, ${property.city}, ${property.state || ""}`)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
                   className="w-full h-full border-0"
                 />
               </div>
-              <p className="text-xs text-slate-500 text-center">
-                Interactive map location for {property.address_street},{" "}
-                {property.city}, {property.state} {property.zip_code}
-              </p>
             </div>
           </div>
 
-          {/* Right Column: Agent Contact Card */}
-          <div className="space-y-6">
+          {/* Right Column: Mortgage Calculator & Agent Contact */}
+          <div className="space-y-6 lg:sticky lg:top-6">
+            <MortgageCalculator listingPrice={property.price || 450000} />
+
             <AgentContactCard
               agent={
                 property.owner_agent || {
