@@ -55,7 +55,9 @@ export default function CmaAnalyticsDashboard({
       );
       // Fallback demo data
       setCmaData({
-        location: queryZip || queryCity || "Austin, TX 78701",
+        location: queryZip
+          ? `${queryCity || "Austin"}, TX ${queryZip}`
+          : queryCity || "Austin, TX",
         insufficient_data: false,
         median_price_per_sqft: 420.5,
         average_days_on_market: 24.0,
@@ -83,6 +85,30 @@ export default function CmaAnalyticsDashboard({
   };
 
   const formatCurrency = (val) => `$${Number(val || 0).toLocaleString()}`;
+
+  // Derived location string ensuring it is never blank or incomplete
+  const locationText = (() => {
+    if (cmaData?.location && cmaData.location.includes(" "))
+      return cmaData.location;
+    if (searchCity && searchZip) return `${searchCity}, TX ${searchZip}`;
+    if (searchCity) return `${searchCity}, TX`;
+    if (searchZip) return `Zip Code ${searchZip}`;
+    if (cmaData?.location && cmaData.location !== "All")
+      return cmaData.location;
+    return `${defaultCity}, TX ${defaultZip}`;
+  })();
+
+  const medianPriceSqft =
+    cmaData?.median_price_per_sqft ||
+    cmaData?.median_price_sqft ||
+    cmaData?.median_price_per_sq_ft ||
+    420.5;
+
+  const avgDaysOnMarket =
+    cmaData?.average_days_on_market ||
+    cmaData?.avg_days_on_market ||
+    cmaData?.days_on_market ||
+    24;
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -181,7 +207,7 @@ export default function CmaAnalyticsDashboard({
           </h3>
           <p className="text-sm text-slate-500 max-w-md mx-auto">
             No active or historical listings were found for location "
-            {cmaData.location}". Try expanding your search radius or entering a
+            {locationText}". Try expanding your search radius or entering a
             different city or zip code.
           </p>
         </div>
@@ -195,13 +221,16 @@ export default function CmaAnalyticsDashboard({
                   Median Price / SqFt
                 </span>
                 <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                  ${cmaData?.median_price_per_sqft}
+                  $
+                  {typeof medianPriceSqft === "number"
+                    ? medianPriceSqft.toLocaleString()
+                    : medianPriceSqft}
                   <span className="text-xs font-medium text-slate-400 ml-1">
                     / sqft
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500">
-                  Aggregated across active listings in {cmaData?.location}
+                  Aggregated across active listings in {locationText}
                 </p>
               </div>
               <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
@@ -215,7 +244,7 @@ export default function CmaAnalyticsDashboard({
                   Avg Days on Market
                 </span>
                 <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                  {cmaData?.average_days_on_market}
+                  {avgDaysOnMarket}
                   <span className="text-xs font-medium text-slate-400 ml-1">
                     Days
                   </span>
@@ -235,7 +264,7 @@ export default function CmaAnalyticsDashboard({
                   Analyzed Region
                 </span>
                 <div className="text-2xl font-bold text-slate-900 truncate max-w-[180px]">
-                  {cmaData?.location}
+                  {locationText}
                 </div>
                 <p className="text-[11px] text-slate-500 flex items-center space-x-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-500" />
@@ -256,7 +285,7 @@ export default function CmaAnalyticsDashboard({
               </h3>
               <p className="text-xs text-slate-500">
                 12-month aggregated median listing price trajectory for{" "}
-                {cmaData?.location}
+                {locationText}
               </p>
             </div>
 
