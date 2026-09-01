@@ -49,7 +49,24 @@ graph TD
 - server/tests/test_patients.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/App.test.jsx
+- client/src/components/MedicalHistoryTimeline.jsx
+- client/src/components/Navbar.jsx
+- client/src/components/PatientDirectoryTable.jsx
+- client/src/components/PatientProfileBanner.jsx
+- client/src/components/PatientRegistrationModal.jsx
+- client/src/components/PatientSearchFilterBar.jsx
+- client/src/components/QuickStatsGrid.jsx
+- client/src/main.jsx
+- client/src/pages/PatientDirectoryPage.jsx
+- client/src/pages/PatientProfilePage.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - POST /api/v1/patients

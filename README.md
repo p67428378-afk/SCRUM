@@ -1,4 +1,43 @@
-# Project
+# Patients Management System
+
+Central platform for healthcare providers to register, view, search, update, and manage patient records efficiently and securely.
+
+### Setup & Installation
+```bash
+cd server
+python -m venv venv
+source venv/bin/activate  # Or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+```
+
+### Running Tests
+```bash
+pytest server/tests
+```
+
+### Running Development Server
+```bash
+python -m uvicorn server.main:app --reload --port 8000
+```
+
+### OpenAPI Documentation
+- Interactive Swagger UI: `http://localhost:8000/docs`
+- OpenAPI JSON specification: `openapi.json` or `http://localhost:8000/openapi.json`
+
+## Client (Frontend)
+
+### Setup & Running
+```bash
+cd client
+npm install
+npm run dev
+```
+Frontend runs at `http://localhost:5173`.
+
+## Test Credentials
+- Regular User (Doctor): `test@example.com` / `testpassword`
+- Admin User: `admin@example.com` / `adminpassword`
+- Receptionist: `receptionist@example.com` / `recpassword`
 
 ## Server
 

@@ -4,39 +4,97 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
-from server.database import Base, get_db, seed_data
+from server.database import Base, get_db
 from server.main import app
+from server import models
+from server.core.auth import get_password_hash
 
-TEST_DATABASE_URL = "sqlite:///:memory:"
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
-    TEST_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
+def seed_users(db):
+    if (
+        not db.query(models.User)
+        .filter(models.User.email == "test@example.com")
+        .first()
+    ):
+        t_user = models.User(
+            email="test@example.com",
+            hashed_password=get_password_hash("testpassword"),
+            full_name="Test Doctor",
+            role="Doctor",
+            is_active=True,
+            is_verified=True,
+        )
+        db.add(t_user)
+
+    if (
+        not db.query(models.User)
+        .filter(models.User.email == "admin@example.com")
+        .first()
+    ):
+        a_user = models.User(
+            email="admin@example.com",
+            hashed_password=get_password_hash("adminpassword"),
+            full_name="System Admin",
+            role="Admin",
+            is_active=True,
+            is_verified=True,
+        )
+        db.add(a_user)
+
+    if (
+        not db.query(models.User)
+        .filter(models.User.email == "receptionist@example.com")
+        .first()
+    ):
+        r_user = models.User(
+            email="receptionist@example.com",
+            hashed_password=get_password_hash("recpassword"),
+            full_name="Clinic Receptionist",
+            role="Receptionist",
+            is_active=True,
+            is_verified=True,
+        )
+        db.add(r_user)
+
+    db.commit()
+
+
 @pytest.fixture(scope="session", autouse=True)
-def setup_database():
+def setup_db():
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
-        seed_data(db)
+        seed_users(db)
     finally:
         db.close()
     yield
     Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def db_session():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    connection = engine.connect()
+    transaction = connection.begin()
+    session = TestingSessionLocal(bind=connection)
+    seed_users(session)
+
+    yield session
+
+    session.close()
+    transaction.rollback()
+    connection.close()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def client(db_session):
     def override_get_db():
         try:
@@ -48,47 +106,3 @@ def client(db_session):
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def doctor_headers(client):
-    response = client.post(
-        "/api/v1/auth/login",
-        json={"email": "test@example.com", "password": "testpassword"},
-    )
-    data = response.json()
-    token = data["access_token"]
-    return {"Authorization": f"Bearer {token}"}
-
-
-@pytest.fixture
-def admin_headers(client):
-    response = client.post(
-        "/api/v1/auth/login",
-        json={"email": "admin@example.com", "password": "adminpassword"},
-    )
-    data = response.json()
-    token = data["access_token"]
-    return {"Authorization": f"Bearer {token}"}
-
-
-@pytest.fixture
-def nurse_headers(client):
-    response = client.post(
-        "/api/v1/auth/login",
-        json={"email": "nurse@example.com", "password": "nursepassword"},
-    )
-    data = response.json()
-    token = data["access_token"]
-    return {"Authorization": f"Bearer {token}"}
-
-
-@pytest.fixture
-def receptionist_headers(client):
-    response = client.post(
-        "/api/v1/auth/login",
-        json={"email": "receptionist@example.com", "password": "receptionistpassword"},
-    )
-    data = response.json()
-    token = data["access_token"]
-    return {"Authorization": f"Bearer {token}"}

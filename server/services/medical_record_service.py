@@ -1,68 +1,57 @@
 import uuid
-from datetime import datetime
 from typing import Optional
 from sqlalchemy.orm import Session
-
-from server.models import MedicalRecord, Patient
-from server.schemas import MedicalRecordUpdate
+from server import models, schemas
 from server.services.audit_service import log_phi_access
-
-
-def get_medical_record_by_patient_id(
-    db: Session, patient_id: str
-) -> Optional[MedicalRecord]:
-    return (
-        db.query(MedicalRecord).filter(MedicalRecord.patient_id == patient_id).first()
-    )
 
 
 def update_medical_record(
     db: Session,
     patient_id: str,
-    record_in: MedicalRecordUpdate,
-    updated_by_id: str = "system",
-    current_user_role: str = "Doctor",
-) -> Optional[MedicalRecord]:
-    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    record_in: schemas.MedicalHistoryUpdate,
+    current_user: models.User,
+) -> Optional[models.MedicalRecord]:
+    patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
     if not patient:
         return None
 
     record = (
-        db.query(MedicalRecord).filter(MedicalRecord.patient_id == patient_id).first()
+        db.query(models.MedicalRecord)
+        .filter(models.MedicalRecord.patient_id == patient_id)
+        .first()
     )
+    editor = current_user.email if current_user else "System"
     if not record:
-        record = MedicalRecord(
+        record = models.MedicalRecord(
             id=str(uuid.uuid4()),
             patient_id=patient_id,
-            allergies=[],
-            chronic_conditions=[],
-            current_medications=[],
-            visit_notes="",
-            updated_by=updated_by_id,
-            version=1,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            allergies=record_in.allergies or [],
+            chronic_conditions=record_in.chronic_conditions or [],
+            current_medications=record_in.current_medications or [],
+            visit_notes=record_in.visit_notes,
+            updated_by=editor,
         )
         db.add(record)
-
-    update_data = record_in.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        if value is not None:
-            setattr(record, field, value)
-
-    record.updated_by = updated_by_id
-    record.version += 1
-    record.updated_at = datetime.utcnow()
+    else:
+        if record_in.allergies is not None:
+            record.allergies = record_in.allergies
+        if record_in.chronic_conditions is not None:
+            record.chronic_conditions = record_in.chronic_conditions
+        if record_in.current_medications is not None:
+            record.current_medications = record_in.current_medications
+        if record_in.visit_notes is not None:
+            record.visit_notes = record_in.visit_notes
+        record.updated_by = editor
 
     db.commit()
     db.refresh(record)
 
-    log_phi_access(
-        db=db,
-        user_id=updated_by_id,
-        user_role=current_user_role,
-        action="UPDATE_MEDICAL_RECORD",
-        patient_id=patient_id,
-    )
-
+    if current_user:
+        log_phi_access(
+            db,
+            user_id=current_user.email,
+            user_role=current_user.role,
+            action="UPDATE",
+            patient_id=patient_id,
+        )
     return record

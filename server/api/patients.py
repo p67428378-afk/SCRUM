@@ -3,241 +3,115 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from server.database import get_db
-from server.models import User
-from server.schemas import (
-    PatientCreate,
-    PatientUpdate,
-    PatientResponse,
-    PatientSearchResponse,
-    PatientListItem,
-    MedicalRecordUpdate,
-    MedicalRecordResponse,
-)
-from server.core.auth import get_current_user, require_roles, get_current_user_optional
-from server.services.patient_service import (
-    create_patient,
-    get_patient_by_id,
-    update_patient,
-    mask_patient_dict_for_role,
-)
-from server.services.search_service import search_patients
-from server.services.medical_record_service import (
-    get_medical_record_by_patient_id,
-    update_medical_record,
-)
-from server.services.audit_service import log_phi_access
+from server.core.auth import get_current_user, check_role
+from server import models, schemas
+from server.services import patient_service, search_service, medical_record_service
 
-router = APIRouter(prefix="/patients", tags=["Patients Management"])
+router = APIRouter(prefix="/patients", tags=["patients"])
 
 
-@router.post("", response_model=PatientResponse, status_code=status.HTTP_201_CREATED)
-def register_patient(
-    patient_in: PatientCreate,
-    override_duplicate: bool = Query(
-        False, description="Override duplicate check if warning previously ignored"
-    ),
+def format_patient_response(patient: models.Patient, role: str = "Doctor") -> dict:
+    data = {
+        "id": patient.id,
+        "patient_code": patient.patient_code,
+        "full_name": patient.full_name,
+        "date_of_birth": patient.date_of_birth,
+        "gender": patient.gender,
+        "contact_number": patient.contact_number,
+        "email": patient.email,
+        "address": patient.address,
+        "emergency_contact": patient.emergency_contact,
+        "insurance_info": patient.insurance_info,
+        "ssn_masked": patient_service.mask_ssn(patient.ssn),
+        "created_at": patient.created_at,
+        "updated_at": patient.updated_at,
+    }
+
+    if patient.medical_record:
+        rec = patient.medical_record
+        notes = rec.visit_notes
+        if role == "Receptionist" and notes:
+            notes = "[MASKED - Medical Doctor Access Required]"
+        data["medical_record"] = {
+            "id": rec.id,
+            "patient_id": rec.patient_id,
+            "allergies": rec.allergies or [],
+            "chronic_conditions": rec.chronic_conditions or [],
+            "current_medications": rec.current_medications or [],
+            "visit_notes": notes,
+            "updated_by": rec.updated_by,
+            "created_at": rec.created_at,
+            "updated_at": rec.updated_at,
+        }
+    return data
+
+
+@router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
+def create_patient(
+    patient_in: schemas.PatientCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_roles("Admin", "Doctor", "Nurse", "Receptionist")
+    current_user: models.User = Depends(
+        check_role(["Admin", "Doctor", "Nurse", "Receptionist"])
     ),
 ):
-    patient, duplicate = create_patient(
-        db=db,
-        patient_in=patient_in,
-        override_duplicate=override_duplicate,
-        current_user_id=current_user.email,
-        current_user_role=current_user.role,
-    )
-
-    if duplicate and not override_duplicate:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail={
-                "message": "Potential duplicate record detected by matching SSN or Name + DOB.",
-                "duplicate_found": True,
-                "existing_patient": {
-                    "id": duplicate.id,
-                    "patient_code": duplicate.patient_code,
-                    "full_name": duplicate.full_name,
-                    "date_of_birth": str(duplicate.date_of_birth),
-                },
-            },
-        )
-
-    return patient
+    patient, is_duplicate = patient_service.create_patient(db, patient_in, current_user)
+    role = current_user.role if current_user else "Doctor"
+    resp = format_patient_response(patient, role)
+    resp["is_duplicate_warning"] = is_duplicate
+    return resp
 
 
-@router.get("/search", response_model=PatientSearchResponse)
-def search_patient_records(
-    query: Optional[str] = Query(
-        None, description="Search term matching Name, ID, Phone, Email, SSN"
-    ),
+@router.get("/search", response_model=dict)
+def search_patients(
+    query: Optional[str] = Query(None, description="Search by name, code, DOB, phone"),
+    gender: Optional[str] = Query(None, description="Filter by gender"),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
-    gender: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: models.User = Depends(get_current_user),
 ):
-    total, items = search_patients(
-        db, query=query, skip=skip, limit=limit, gender=gender
-    )
-
-    user_id = current_user.email if current_user else "anonymous"
-    user_role = current_user.role if current_user else "Public"
-
-    log_phi_access(
-        db=db, user_id=user_id, user_role=user_role, action="SEARCH", patient_id=None
-    )
-
-    list_items = []
-    for p in items:
-        mr = p.medical_record
-        last_visit = mr.updated_at if mr else p.updated_at
-        list_items.append(
-            PatientListItem(
-                id=p.id,
-                patient_code=p.patient_code,
-                full_name=p.full_name,
-                date_of_birth=p.date_of_birth,
-                gender=p.gender,
-                contact_number=p.contact_number,
-                email=p.email,
-                insurance_info=p.insurance_info,
-                created_at=p.created_at,
-                last_visit=last_visit,
-            )
-        )
-
-    return PatientSearchResponse(total=total, skip=skip, limit=limit, items=list_items)
-
-
-@router.get("", response_model=PatientSearchResponse)
-def list_patients(
-    query: Optional[str] = Query(None),
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
-    gender: Optional[str] = Query(None),
-    db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
-):
-    return search_patient_records(
-        query=query,
+    role = current_user.role if current_user else "Doctor"
+    items, total = search_service.search_patients(
+        db,
+        query=query or "",
+        gender=gender,
         skip=skip,
         limit=limit,
-        gender=gender,
-        db=db,
         current_user=current_user,
     )
+    formatted_items = [format_patient_response(p, role) for p in items]
+    return {"total": total, "skip": skip, "limit": limit, "items": formatted_items}
 
 
-@router.get("/{id}", response_model=PatientResponse)
-def get_patient_profile(
+@router.get("/{id}", response_model=dict)
+def get_patient(
     id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
-    patient = get_patient_by_id(db, id)
+    patient = patient_service.get_patient_by_id(db, id, current_user)
     if not patient:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Patient with ID or code '{id}' not found.",
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found"
         )
+    role = current_user.role if current_user else "Doctor"
+    return format_patient_response(patient, role)
 
-    log_phi_access(
-        db=db,
-        user_id=current_user.email,
-        user_role=current_user.role,
-        action="READ",
-        patient_id=patient.id,
+
+@router.put("/{id}/medical-history", response_model=dict)
+def update_medical_history(
+    id: str,
+    record_in: schemas.MedicalHistoryUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(check_role(["Admin", "Doctor", "Nurse"])),
+):
+    record = medical_record_service.update_medical_record(
+        db, id, record_in, current_user
     )
-
-    # Convert to dict and apply role masking if Receptionist
-    p_resp = PatientResponse.model_validate(patient)
-    p_dict = p_resp.model_dump()
-    masked_dict = mask_patient_dict_for_role(p_dict, current_user.role)
-
-    return PatientResponse.model_validate(masked_dict)
-
-
-@router.put("/{id}", response_model=PatientResponse)
-def update_patient_profile(
-    id: str,
-    patient_in: PatientUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("Admin", "Doctor", "Nurse")),
-):
-    patient = get_patient_by_id(db, id)
-    if not patient:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Patient with ID '{id}' not found.",
-        )
-
-    updated = update_patient(
-        db=db,
-        patient_id=patient.id,
-        patient_in=patient_in,
-        current_user_id=current_user.email,
-        current_user_role=current_user.role,
-    )
-    return updated
-
-
-@router.put("/{id}/medical-history", response_model=MedicalRecordResponse)
-def update_patient_medical_history(
-    id: str,
-    record_in: MedicalRecordUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("Admin", "Doctor", "Nurse")),
-):
-    patient = get_patient_by_id(db, id)
-    if not patient:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Patient with ID '{id}' not found.",
-        )
-
-    record = update_medical_record(
-        db=db,
-        patient_id=patient.id,
-        record_in=record_in,
-        updated_by_id=current_user.email,
-        current_user_role=current_user.role,
-    )
-    return record
-
-
-@router.get("/{id}/medical-history", response_model=MedicalRecordResponse)
-def get_patient_medical_history(
-    id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    patient = get_patient_by_id(db, id)
-    if not patient:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Patient with ID '{id}' not found.",
-        )
-
-    record = get_medical_record_by_patient_id(db, patient.id)
     if not record:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Medical record for patient ID '{id}' not found.",
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found"
         )
-
-    log_phi_access(
-        db=db,
-        user_id=current_user.email,
-        user_role=current_user.role,
-        action="READ_MEDICAL_RECORD",
-        patient_id=patient.id,
-    )
-
-    mr_resp = MedicalRecordResponse.model_validate(record)
-    mr_dict = mr_resp.model_dump()
-    if current_user.role == "Receptionist":
-        mr_dict["visit_notes"] = "[RESTRICTED - DOCTOR/NURSE ACCESS ONLY]"
-
-    return MedicalRecordResponse.model_validate(mr_dict)
+    patient = patient_service.get_patient_by_id(db, id, current_user)
+    role = current_user.role if current_user else "Doctor"
+    return format_patient_response(patient, role)

@@ -1,36 +1,49 @@
-from typing import Optional, List, Tuple
+from typing import Tuple, List
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, desc, cast, String
-from server.models import Patient
+from sqlalchemy import or_
+from server import models
+from server.services.audit_service import log_phi_access
 
 
 def search_patients(
     db: Session,
-    query: Optional[str] = None,
+    query: str = "",
+    gender: str = None,
     skip: int = 0,
     limit: int = 20,
-    gender: Optional[str] = None,
-) -> Tuple[int, List[Patient]]:
-    q = db.query(Patient)
+    current_user: models.User = None,
+) -> Tuple[List[models.Patient], int]:
+    db_query = db.query(models.Patient)
 
-    if gender and gender.strip():
-        q = q.filter(Patient.gender.ilike(gender.strip()))
-
-    if query and query.strip():
-        search_str = f"%{query.strip()}%"
-        q = q.filter(
+    if query:
+        q = f"%{query.strip()}%"
+        db_query = db_query.filter(
             or_(
-                Patient.full_name.ilike(search_str),
-                Patient.patient_code.ilike(search_str),
-                Patient.contact_number.ilike(search_str),
-                Patient.email.ilike(search_str),
-                Patient.ssn.ilike(search_str),
-                Patient.id.ilike(search_str),
-                cast(Patient.date_of_birth, String).ilike(search_str),
+                models.Patient.full_name.ilike(q),
+                models.Patient.patient_code.ilike(q),
+                models.Patient.contact_number.ilike(q),
+                models.Patient.date_of_birth.ilike(q),
             )
         )
 
-    total = q.count()
-    items = q.order_by(desc(Patient.created_at)).offset(skip).limit(limit).all()
+    if gender:
+        db_query = db_query.filter(models.Patient.gender == gender)
 
-    return total, items
+    total = db_query.count()
+    items = (
+        db_query.order_by(models.Patient.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+    if current_user:
+        log_phi_access(
+            db,
+            user_id=current_user.email,
+            user_role=current_user.role,
+            action="SEARCH",
+            patient_id=None,
+        )
+
+    return items, total
