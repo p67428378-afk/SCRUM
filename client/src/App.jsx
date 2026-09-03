@@ -1,3 +1,4 @@
+// SCRUM-214 Cafe Management System Portal - Verified
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
