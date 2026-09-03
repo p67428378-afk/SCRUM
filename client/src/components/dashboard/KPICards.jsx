@@ -34,14 +34,14 @@ export default function KPICards({
     },
     {
       title: "Completed Orders",
-      value: `${completedOrders} Orders`,
+      value: `${completedOrders} ${completedOrders === 1 ? "Order" : "Orders"}`,
       subtext: "Today's total fulfilled",
       icon: CheckCircle2,
       color: "bg-blue-500/10 text-blue-600 border-blue-200",
     },
     {
       title: "Active Order Queue",
-      value: `${activeOrders} Orders`,
+      value: `${activeOrders} ${activeOrders === 1 ? "Order" : "Orders"}`,
       subtext: "Pending & Preparing",
       icon: Clock,
       color: "bg-amber-500/10 text-amber-600 border-amber-200",

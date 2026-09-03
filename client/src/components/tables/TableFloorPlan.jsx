@@ -67,7 +67,7 @@ export default function TableFloorPlan({ tables = [], onReserveTableClick }) {
       </div>
 
       {/* Grid of Tables */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3">
         {filteredTables.map((table) => {
           const config = statusConfig[table.status] || statusConfig.Available;
           const Icon = config.icon;
@@ -75,14 +75,14 @@ export default function TableFloorPlan({ tables = [], onReserveTableClick }) {
           return (
             <div
               key={table.id}
-              className={`p-4 rounded-2xl border ${config.bg} flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow`}
+              className={`p-3.5 rounded-2xl border ${config.bg} flex flex-col justify-between space-y-3 hover:shadow-md transition-shadow`}
             >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-extrabold text-slate-900">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <span className="text-sm font-extrabold text-slate-900 whitespace-nowrap">
                   Table {table.table_number}
                 </span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${config.badge}`}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 whitespace-nowrap ${config.badge}`}
                 >
                   {table.status}
                 </span>
