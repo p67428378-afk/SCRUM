@@ -12,10 +12,21 @@ export default function KPICards({
   onNewOrderClick,
   onReserveTableClick,
 }) {
+  const rawSales = summary?.today_revenue ?? summary?.daily_sales ?? 0;
+  const dailySalesVal = `$${Number(rawSales).toFixed(2)}`;
+
+  const completedOrders =
+    summary?.completed_orders ?? summary?.completed_orders_count ?? 0;
+  const activeOrders =
+    summary?.active_orders ?? summary?.active_orders_count ?? 0;
+  const occupancyRate = summary?.occupancy_rate ?? 0;
+  const occupiedTables = summary?.occupied_tables ?? 0;
+  const totalTables = summary?.total_tables ?? 0;
+
   const cards = [
     {
       title: "Daily Sales",
-      value: summary ? `$${summary.daily_sales.toFixed(2)}` : "$1,250.00",
+      value: dailySalesVal,
       subtext: "+14.2% from yesterday",
       trend: true,
       icon: DollarSign,
@@ -23,23 +34,21 @@ export default function KPICards({
     },
     {
       title: "Completed Orders",
-      value: summary ? `${summary.completed_orders_count} Orders` : "85 Orders",
+      value: `${completedOrders} Orders`,
       subtext: "Today's total fulfilled",
       icon: CheckCircle2,
       color: "bg-blue-500/10 text-blue-600 border-blue-200",
     },
     {
       title: "Active Order Queue",
-      value: summary ? `${summary.active_orders_count} Orders` : "12 Orders",
+      value: `${activeOrders} Orders`,
       subtext: "Pending & Preparing",
       icon: Clock,
       color: "bg-amber-500/10 text-amber-600 border-amber-200",
     },
     {
       title: "Table Occupancy",
-      value: summary
-        ? `${summary.occupancy_rate}% (${summary.occupied_tables}/${summary.total_tables})`
-        : "75% (6/8)",
+      value: `${occupancyRate}% (${occupiedTables}/${totalTables})`,
       subtext: "Tables currently in use",
       icon: Users,
       color: "bg-purple-500/10 text-purple-600 border-purple-200",

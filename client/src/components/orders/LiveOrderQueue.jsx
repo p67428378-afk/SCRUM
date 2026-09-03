@@ -9,6 +9,8 @@ import {
 
 export default function LiveOrderQueue({
   orders = [],
+  tables = [],
+  menuItems = [],
   onUpdateStatus,
   onNewOrderClick,
 }) {
@@ -35,6 +37,42 @@ export default function LiveOrderQueue({
     if (currentStatus === "Preparing") return "Ready";
     if (currentStatus === "Ready") return "Completed";
     return null;
+  };
+
+  const getTableLabel = (order) => {
+    if (order.table_number != null) return `Table ${order.table_number}`;
+    if (order.table?.table_number != null)
+      return `Table ${order.table.table_number}`;
+    if (order.table_id) {
+      const match = tables.find(
+        (t) =>
+          t.id === order.table_id ||
+          String(t.table_number) === String(order.table_id),
+      );
+      if (match && match.table_number != null)
+        return `Table ${match.table_number}`;
+      if (!isNaN(Number(order.table_id))) return `Table ${order.table_id}`;
+      if (String(order.table_id).toLowerCase().startsWith("table"))
+        return order.table_id;
+      // If table_id is a UUID, try finding index in tables array
+      const index = tables.findIndex((t) => t.id === order.table_id);
+      if (index !== -1) return `Table ${index + 1}`;
+      return "Table (Assigned)";
+    }
+    return "Takeout";
+  };
+
+  const getItemName = (item) => {
+    if (item.menu_item && item.menu_item.name) return item.menu_item.name;
+    if (item.name && !item.name.match(/^[0-9a-f]{8}-[0-9a-f]{4}-/i))
+      return item.name;
+    if (item.menu_item_id) {
+      const match = menuItems.find((m) => m.id === item.menu_item_id);
+      if (match && match.name) return match.name;
+    }
+    return item.name && !item.name.match(/^[0-9a-f]{8}-[0-9a-f]{4}-/i)
+      ? item.name
+      : "Menu Item";
   };
 
   return (
@@ -106,7 +144,7 @@ export default function LiveOrderQueue({
 
                   <div className="flex items-center justify-between text-xs text-slate-500 font-medium mb-3">
                     <span className="bg-slate-200/60 px-2 py-0.5 rounded text-slate-700 font-bold">
-                      Table {order.table_number || order.table_id || "Takeout"}
+                      {getTableLabel(order)}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
@@ -130,10 +168,13 @@ export default function LiveOrderQueue({
                           <span className="text-amber-600 font-bold mr-1">
                             {item.quantity}x
                           </span>
-                          {item.name || item.menu_item_id}
+                          {getItemName(item)}
                         </span>
                         <span className="text-slate-500">
-                          ${(item.unit_price * item.quantity).toFixed(2)}
+                          $
+                          {(
+                            (item.unit_price || 0) * (item.quantity || 1)
+                          ).toFixed(2)}
                         </span>
                       </div>
                     ))}

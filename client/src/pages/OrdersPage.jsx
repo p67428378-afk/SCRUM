@@ -48,6 +48,8 @@ export default function OrdersPage() {
     <div className="space-y-6">
       <LiveOrderQueue
         orders={orders}
+        tables={tables}
+        menuItems={menuItems}
         onUpdateStatus={handleUpdateStatus}
         onNewOrderClick={() => setIsOrderDrawerOpen(true)}
       />

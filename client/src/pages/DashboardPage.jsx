@@ -60,6 +60,8 @@ export default function DashboardPage() {
     fetchData();
   };
 
+  const topItems = summary?.top_selling_items || summary?.top_items || [];
+
   return (
     <div className="space-y-8">
       {/* KPI Cards Header */}
@@ -74,6 +76,8 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
           <LiveOrderQueue
             orders={orders}
+            tables={tables}
+            menuItems={menuItems}
             onUpdateStatus={handleUpdateStatus}
             onNewOrderClick={() => setIsOrderDrawerOpen(true)}
           />
@@ -94,22 +98,37 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3">
-              {(summary?.top_items || []).map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between text-xs"
-                >
-                  <div>
-                    <div className="font-bold text-slate-900">{item.name}</div>
-                    <div className="text-[10px] text-slate-400">
-                      {item.sales_count} orders today
+              {topItems.length > 0 ? (
+                topItems.map((item, idx) => {
+                  const salesCount =
+                    item.total_quantity_sold ?? item.sales_count ?? 0;
+                  const revVal = Number(
+                    item.total_revenue ?? item.revenue ?? 0,
+                  );
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      <div>
+                        <div className="font-bold text-slate-900">
+                          {item.name}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {salesCount} orders today
+                        </div>
+                      </div>
+                      <div className="font-extrabold text-amber-600">
+                        ${revVal.toFixed(2)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="font-extrabold text-amber-600">
-                    ${item.revenue.toFixed(2)}
-                  </div>
+                  );
+                })
+              ) : (
+                <div className="text-xs text-slate-400 py-2 text-center">
+                  No sales data available yet
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
