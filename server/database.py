@@ -19,6 +19,7 @@ Base = declarative_base()
 def get_db():
     db = SessionLocal()
     try:
+        seed_data(db)
         yield db
     finally:
         db.close()
@@ -28,10 +29,23 @@ def init_db():
     import server.models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        seed_data(db)
+    finally:
+        db.close()
 
 
 def seed_data(db):
+    import server.models  # noqa: F401
     from server.models import MenuItem, Table, Order, OrderItem
+
+    # Ensure tables exist on whatever engine this session is bound to
+    try:
+        bind_engine = db.get_bind()
+        Base.metadata.create_all(bind=bind_engine)
+    except Exception:
+        pass
 
     # Seed Menu Items if empty
     if db.query(MenuItem).count() == 0:
@@ -95,7 +109,10 @@ def seed_data(db):
         ]
         for item in menu_items:
             db.add(item)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
 
     # Seed Tables if empty
     if db.query(Table).count() == 0:
@@ -111,11 +128,14 @@ def seed_data(db):
         ]
         for table in tables:
             db.add(table)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
 
     # Seed initial order if empty
     if db.query(Order).count() == 0:
-        first_item = db.query(MenuItem).filter(MenuItem.is_available == True).first()
+        first_item = db.query(MenuItem).filter(MenuItem.is_available.is_(True)).first()
         first_table = db.query(Table).first()
         if first_item:
             order_id = str(uuid.uuid4())
@@ -143,4 +163,7 @@ def seed_data(db):
                 subtotal=subtotal,
             )
             db.add(order_item)
-            db.commit()
+            try:
+                db.commit()
+            except Exception:
+                db.rollback()

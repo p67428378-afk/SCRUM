@@ -2,7 +2,7 @@ import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
-from server.database import get_db
+from server.database import get_db, seed_data
 from server.models import MenuItem, Order, OrderItem, Table
 from server.schemas import OrderCreate, OrderResponse, OrderStatusUpdate
 
@@ -16,6 +16,15 @@ def generate_order_number(db: Session) -> str:
     return f"ORD-{101 + count}"
 
 
+def find_table(table_identifier: str, db: Session) -> Optional[Table]:
+    table = db.query(Table).filter(Table.id == table_identifier).first()
+    if not table and table_identifier.isdigit():
+        table = (
+            db.query(Table).filter(Table.table_number == int(table_identifier)).first()
+        )
+    return table
+
+
 @router.get("", response_model=List[OrderResponse])
 def get_orders(
     status_filter: Optional[str] = Query(
@@ -26,31 +35,37 @@ def get_orders(
     table_id: Optional[str] = Query(None, description="Filter by table ID"),
     db: Session = Depends(get_db),
 ):
+    seed_data(db)
     query = db.query(Order).options(
         joinedload(Order.items).joinedload(OrderItem.menu_item)
     )
-    if status_filter:
+    if status_filter and status_filter.lower() != "all":
         query = query.filter(Order.status.ilike(status_filter))
-    if table_id:
-        query = query.filter(Order.table_id == table_id)
+    if table_id and table_id.lower() != "all":
+        table = find_table(table_id, db)
+        target_id = table.id if table else table_id
+        query = query.filter(Order.table_id == target_id)
     return query.order_by(Order.created_at.desc()).all()
 
 
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
+    seed_data(db)
     if not order_in.items:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Order must contain at least one item.",
         )
 
+    resolved_table_id = None
     if order_in.table_id:
-        table = db.query(Table).filter(Table.id == order_in.table_id).first()
+        table = find_table(order_in.table_id, db)
         if not table:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Table with id '{order_in.table_id}' not found.",
+                detail=f"Table '{order_in.table_id}' not found.",
             )
+        resolved_table_id = table.id
 
     subtotal = 0.0
     order_items_to_create = []
@@ -91,7 +106,7 @@ def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
     db_order = Order(
         id=order_id,
         order_number=order_number,
-        table_id=order_in.table_id,
+        table_id=resolved_table_id,
         subtotal=subtotal,
         tax=tax,
         total_price=total_price,
@@ -111,10 +126,10 @@ def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
         )
         db.add(db_item)
 
-    if order_in.table_id:
-        table = db.query(Table).filter(Table.id == order_in.table_id).first()
+    if resolved_table_id:
+        table = db.query(Table).filter(Table.id == resolved_table_id).first()
         if table and table.status == "Available":
-            table.status = "Occupied"
+            table.status = "Occupied"  # type: ignore[assignment]
 
     db.commit()
 
@@ -130,6 +145,7 @@ def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
 
 @router.get("/{order_id}", response_model=OrderResponse)
 def get_order(order_id: str, db: Session = Depends(get_db)):
+    seed_data(db)
     db_order = (
         db.query(Order)
         .options(joinedload(Order.items).joinedload(OrderItem.menu_item))
@@ -148,6 +164,7 @@ def get_order(order_id: str, db: Session = Depends(get_db)):
 def update_order_status(
     order_id: str, status_in: OrderStatusUpdate, db: Session = Depends(get_db)
 ):
+    seed_data(db)
     db_order = (
         db.query(Order)
         .options(joinedload(Order.items).joinedload(OrderItem.menu_item))
@@ -161,19 +178,22 @@ def update_order_status(
         )
 
     valid_statuses = ["Pending", "Preparing", "Ready", "Completed", "Cancelled"]
-    if status_in.status not in valid_statuses:
+    matched_status = next(
+        (s for s in valid_statuses if s.lower() == status_in.status.lower()), None
+    )
+    if not matched_status:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid status '{status_in.status}'. Valid statuses: {valid_statuses}",
         )
 
-    db_order.status = status_in.status
+    db_order.status = matched_status  # type: ignore[assignment]
 
     # Update associated table status if completed or cancelled
-    if status_in.status in ["Completed", "Cancelled"] and db_order.table_id:
+    if matched_status in ["Completed", "Cancelled"] and db_order.table_id:
         table = db.query(Table).filter(Table.id == db_order.table_id).first()
         if table and table.status == "Occupied":
-            table.status = "Available"
+            table.status = "Available"  # type: ignore[assignment]
 
     db.commit()
     db.refresh(db_order)

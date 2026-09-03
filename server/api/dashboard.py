@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from server.database import get_db
+from server.database import get_db, seed_data
 from server.models import MenuItem, Order, OrderItem, Table
 from server.schemas import DashboardAnalytics, TopSellingItem
 
@@ -10,6 +10,7 @@ router = APIRouter(prefix="/api/v1/dashboard", tags=["Dashboard"])
 
 @router.get("", response_model=DashboardAnalytics)
 def get_dashboard_analytics(db: Session = Depends(get_db)):
+    seed_data(db)
     # Calculate revenue from completed orders (or all non-cancelled orders if testing)
     revenue_res = (
         db.query(func.sum(Order.total_price))

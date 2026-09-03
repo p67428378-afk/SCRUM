@@ -1,7 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from server.database import get_db
+from server.database import get_db, seed_data
 from server.models import MenuItem
 from server.schemas import MenuItemCreate, MenuItemResponse, MenuItemUpdate
 
@@ -19,6 +19,7 @@ def get_menu_items(
     search: Optional[str] = Query(None, description="Search item by name"),
     db: Session = Depends(get_db),
 ):
+    seed_data(db)
     query = db.query(MenuItem)
     if category and category.lower() != "all":
         query = query.filter(MenuItem.category.ilike(category))
@@ -31,6 +32,7 @@ def get_menu_items(
 
 @router.post("", response_model=MenuItemResponse, status_code=status.HTTP_201_CREATED)
 def create_menu_item(item_in: MenuItemCreate, db: Session = Depends(get_db)):
+    seed_data(db)
     existing = db.query(MenuItem).filter(MenuItem.name.ilike(item_in.name)).first()
     if existing:
         raise HTTPException(
@@ -46,6 +48,7 @@ def create_menu_item(item_in: MenuItemCreate, db: Session = Depends(get_db)):
 
 @router.get("/{item_id}", response_model=MenuItemResponse)
 def get_menu_item(item_id: str, db: Session = Depends(get_db)):
+    seed_data(db)
     db_item = db.query(MenuItem).filter(MenuItem.id == item_id).first()
     if not db_item:
         raise HTTPException(
@@ -59,6 +62,7 @@ def get_menu_item(item_id: str, db: Session = Depends(get_db)):
 def update_menu_item(
     item_id: str, item_in: MenuItemUpdate, db: Session = Depends(get_db)
 ):
+    seed_data(db)
     db_item = db.query(MenuItem).filter(MenuItem.id == item_id).first()
     if not db_item:
         raise HTTPException(
@@ -90,6 +94,7 @@ def toggle_menu_item_availability(
     is_available: Optional[bool] = Query(None),
     db: Session = Depends(get_db),
 ):
+    seed_data(db)
     db_item = db.query(MenuItem).filter(MenuItem.id == item_id).first()
     if not db_item:
         raise HTTPException(
@@ -98,9 +103,9 @@ def toggle_menu_item_availability(
         )
 
     if is_available is not None:
-        db_item.is_available = is_available
+        db_item.is_available = is_available  # type: ignore[assignment]
     else:
-        db_item.is_available = not db_item.is_available
+        db_item.is_available = not db_item.is_available  # type: ignore[assignment]
 
     db.commit()
     db.refresh(db_item)

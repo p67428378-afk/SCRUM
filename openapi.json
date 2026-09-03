@@ -802,6 +802,59 @@
       }
     },
     "/api/v1/tables/reservations": {
+      "get": {
+        "tags": [
+          "Tables & Reservations"
+        ],
+        "summary": "Get Reservations",
+        "operationId": "get_reservations_api_v1_tables_reservations_get",
+        "parameters": [
+          {
+            "name": "table_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by table ID",
+              "title": "Table Id"
+            },
+            "description": "Filter by table ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationResponse"
+                  },
+                  "title": "Response Get Reservations Api V1 Tables Reservations Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Tables & Reservations"
@@ -809,14 +862,14 @@
         "summary": "Create Reservation",
         "operationId": "create_reservation_api_v1_tables_reservations_post",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ReservationCreate"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
