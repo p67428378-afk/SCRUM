@@ -1,61 +1,63 @@
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any
 from sqlalchemy.orm import Session
-from server.models import Genre
-from server.services.movie import get_movies
-from server.services.series import get_series_list
+from sqlalchemy import or_, func
+from server.models import Movie, Series, Genre
 
 
-def get_all_genres(db: Session) -> List[Genre]:
-    return db.query(Genre).order_by(Genre.name.asc()).all()
-
-
-def create_genre_if_not_exists(db: Session, name: str) -> Genre:
-    existing = db.query(Genre).filter(Genre.name.ilike(name)).first()
-    if existing:
-        return existing
-    import uuid
-
-    g = Genre(id=str(uuid.uuid4()), name=name)
-    db.add(g)
-    db.commit()
-    db.refresh(g)
-    return g
-
-
-def search_combined_catalog(
-    db: Session,
-    skip: int = 0,
-    limit: int = 20,
-    genre: Optional[str] = None,
-    age_rating: Optional[str] = None,
-    release_year: Optional[int] = None,
-    search: Optional[str] = None,
+def search_catalog(
+    db: Session, query_str: str, skip: int = 0, limit: int = 20, user_role: str = "user"
 ) -> Dict[str, Any]:
-    movies, total_movies = get_movies(
-        db,
-        skip=skip,
-        limit=limit,
-        genre=genre,
-        age_rating=age_rating,
-        release_year=release_year,
-        search=search,
-        status="Available",
+    movie_q = db.query(Movie)
+    series_q = db.query(Series)
+
+    if user_role != "admin":
+        movie_q = movie_q.filter(Movie.status == "Available")
+        series_q = series_q.filter(Series.status == "Available")
+
+    search_filter = f"%{query_str}%"
+    movies = (
+        movie_q.filter(
+            or_(
+                Movie.title.ilike(search_filter),
+                Movie.description.ilike(search_filter),
+                Movie.cast_members.ilike(search_filter),
+            )
+        )
+        .offset(skip)
+        .limit(limit)
+        .all()
     )
-    series_items, total_series = get_series_list(
-        db,
-        skip=skip,
-        limit=limit,
-        genre=genre,
-        age_rating=age_rating,
-        release_year=release_year,
-        search=search,
-        status="Available",
+
+    series = (
+        series_q.filter(
+            or_(
+                Series.title.ilike(search_filter),
+                Series.description.ilike(search_filter),
+                Series.cast_members.ilike(search_filter),
+            )
+        )
+        .offset(skip)
+        .limit(limit)
+        .all()
     )
+
+    return {"movies": movies, "series": series}
+
+
+def get_catalog_stats(db: Session) -> Dict[str, int]:
+    total_movies = (
+        db.query(func.count(Movie.id)).filter(Movie.status != "SoftDeleted").scalar()
+        or 0
+    )
+    total_series = (
+        db.query(func.count(Series.id)).filter(Series.status != "SoftDeleted").scalar()
+        or 0
+    )
+    total_genres = db.query(func.count(Genre.id)).scalar() or 0
+
     return {
-        "movies": movies,
-        "series": series_items,
+        "total_titles": total_movies + total_series,
         "total_movies": total_movies,
         "total_series": total_series,
-        "skip": skip,
-        "limit": limit,
+        "total_genres": total_genres,
     }

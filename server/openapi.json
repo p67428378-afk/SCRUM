@@ -1,32 +1,10 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Movies and Series Management API",
-    "description": "Prime Video Clone backend service for managing and discovering movies, TV series, seasons, and episodes.",
+    "title": "Movies and Series Management System (Prime Video Clone)",
     "version": "1.0.0"
   },
   "paths": {
-    "/api/v1/auth/login": {
-      "post": {
-        "tags": [
-          "auth"
-        ],
-        "summary": "Login",
-        "operationId": "login_api_v1_auth_login_post",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Token"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -38,7 +16,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserRegister"
+                "$ref": "#/components/schemas/UserCreate"
               }
             }
           },
@@ -61,6 +39,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
                 }
               }
             }
@@ -92,6 +91,195 @@
             "OAuth2PasswordBearer": []
           }
         ]
+      }
+    },
+    "/api/v1/movies/": {
+      "get": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "List Movies",
+        "operationId": "list_movies_api_v1_movies__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "genre",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Genre"
+            }
+          },
+          {
+            "name": "release_year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Release Year"
+            }
+          },
+          {
+            "name": "age_rating",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Age Rating"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovieResponse"
+                  },
+                  "title": "Response List Movies Api V1 Movies  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "movies"
+        ],
+        "summary": "Create Movie",
+        "operationId": "create_movie_api_v1_movies__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MovieCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovieResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/movies": {
@@ -147,22 +335,6 @@
             }
           },
           {
-            "name": "age_rating",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Age Rating"
-            }
-          },
-          {
             "name": "release_year",
             "in": "query",
             "required": false,
@@ -176,6 +348,22 @@
                 }
               ],
               "title": "Release Year"
+            }
+          },
+          {
+            "name": "age_rating",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Age Rating"
             }
           },
           {
@@ -217,7 +405,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginatedResponse_MovieResponse_"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MovieResponse"
+                  },
+                  "title": "Response List Movies Api V1 Movies Get"
                 }
               }
             }
@@ -279,13 +471,13 @@
         }
       }
     },
-    "/api/v1/movies/{id}": {
+    "/api/v1/movies/{movie_id}": {
       "get": {
         "tags": [
           "movies"
         ],
         "summary": "Get Movie",
-        "operationId": "get_movie_api_v1_movies__id__get",
+        "operationId": "get_movie_api_v1_movies__movie_id__get",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -293,12 +485,12 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "movie_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Movie Id"
             }
           }
         ],
@@ -330,7 +522,7 @@
           "movies"
         ],
         "summary": "Update Movie",
-        "operationId": "update_movie_api_v1_movies__id__put",
+        "operationId": "update_movie_api_v1_movies__movie_id__put",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -338,12 +530,12 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "movie_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Movie Id"
             }
           }
         ],
@@ -385,7 +577,7 @@
           "movies"
         ],
         "summary": "Delete Movie",
-        "operationId": "delete_movie_api_v1_movies__id__delete",
+        "operationId": "delete_movie_api_v1_movies__movie_id__delete",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -393,12 +585,12 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "movie_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Movie Id"
             }
           }
         ],
@@ -409,6 +601,195 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MovieResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/series/": {
+      "get": {
+        "tags": [
+          "series"
+        ],
+        "summary": "List Series",
+        "operationId": "list_series_api_v1_series__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "genre",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Genre"
+            }
+          },
+          {
+            "name": "release_year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Release Year"
+            }
+          },
+          {
+            "name": "age_rating",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Age Rating"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeriesResponse"
+                  },
+                  "title": "Response List Series Api V1 Series  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "series"
+        ],
+        "summary": "Create Series",
+        "operationId": "create_series_api_v1_series__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeriesCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeriesResponse"
                 }
               }
             }
@@ -479,22 +860,6 @@
             }
           },
           {
-            "name": "age_rating",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Age Rating"
-            }
-          },
-          {
             "name": "release_year",
             "in": "query",
             "required": false,
@@ -508,6 +873,22 @@
                 }
               ],
               "title": "Release Year"
+            }
+          },
+          {
+            "name": "age_rating",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Age Rating"
             }
           },
           {
@@ -549,7 +930,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginatedResponse_SeriesResponse_"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeriesResponse"
+                  },
+                  "title": "Response List Series Api V1 Series Get"
                 }
               }
             }
@@ -611,13 +996,13 @@
         }
       }
     },
-    "/api/v1/series/{id}": {
+    "/api/v1/series/{series_id}": {
       "get": {
         "tags": [
           "series"
         ],
         "summary": "Get Series",
-        "operationId": "get_series_api_v1_series__id__get",
+        "operationId": "get_series_api_v1_series__series_id__get",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -625,12 +1010,12 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "series_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Series Id"
             }
           }
         ],
@@ -662,7 +1047,7 @@
           "series"
         ],
         "summary": "Update Series",
-        "operationId": "update_series_api_v1_series__id__put",
+        "operationId": "update_series_api_v1_series__series_id__put",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -670,12 +1055,12 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "series_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Series Id"
             }
           }
         ],
@@ -717,7 +1102,7 @@
           "series"
         ],
         "summary": "Delete Series",
-        "operationId": "delete_series_api_v1_series__id__delete",
+        "operationId": "delete_series_api_v1_series__series_id__delete",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -725,12 +1110,12 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "series_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Series Id"
             }
           }
         ],
@@ -758,13 +1143,13 @@
         }
       }
     },
-    "/api/v1/series/{id}/seasons": {
+    "/api/v1/series/{series_id}/seasons": {
       "post": {
         "tags": [
           "series"
         ],
-        "summary": "Add Season",
-        "operationId": "add_season_api_v1_series__id__seasons_post",
+        "summary": "Create Season",
+        "operationId": "create_season_api_v1_series__series_id__seasons_post",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -772,12 +1157,12 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "series_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Series Id"
             }
           }
         ],
@@ -815,13 +1200,13 @@
         }
       }
     },
-    "/api/v1/seasons/{id}/episodes": {
+    "/api/v1/series/seasons/{season_id}/episodes": {
       "post": {
         "tags": [
           "series"
         ],
-        "summary": "Add Episode",
-        "operationId": "add_episode_api_v1_seasons__id__episodes_post",
+        "summary": "Create Episode",
+        "operationId": "create_episode_api_v1_series_seasons__season_id__episodes_post",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -829,12 +1214,12 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "season_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Id"
+              "title": "Season Id"
             }
           }
         ],
@@ -870,6 +1255,132 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/seasons/{season_id}/episodes": {
+      "post": {
+        "tags": [
+          "series"
+        ],
+        "summary": "Create Episode",
+        "operationId": "create_episode_api_v1_seasons__season_id__episodes_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "season_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Season Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EpisodeCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EpisodeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/genres/": {
+      "get": {
+        "tags": [
+          "genres"
+        ],
+        "summary": "List Genres",
+        "operationId": "list_genres_api_v1_genres__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GenreResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Genres Api V1 Genres  Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "genres"
+        ],
+        "summary": "Create Genre",
+        "operationId": "create_genre_api_v1_genres__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenreCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/api/v1/genres": {
@@ -961,6 +1472,22 @@
       "get": {
         "summary": "Health Check",
         "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/stats": {
+      "get": {
+        "summary": "Catalog Stats",
+        "operationId": "catalog_stats_api_v1_catalog_stats_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1252,21 +1779,6 @@
             ],
             "title": "Genre Ids",
             "default": []
-          },
-          "genre_names": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Genre Names",
-            "default": []
           }
         },
         "type": "object",
@@ -1385,6 +1897,30 @@
             "type": "string",
             "title": "Id"
           },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
           "genres": {
             "items": {
               "$ref": "#/components/schemas/GenreResponse"
@@ -1392,24 +1928,12 @@
             "type": "array",
             "title": "Genres",
             "default": []
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
           }
         },
         "type": "object",
         "required": [
           "title",
-          "id",
-          "created_at",
-          "updated_at"
+          "id"
         ],
         "title": "MovieResponse"
       },
@@ -1538,86 +2062,10 @@
               }
             ],
             "title": "Genre Ids"
-          },
-          "genre_names": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Genre Names"
           }
         },
         "type": "object",
         "title": "MovieUpdate"
-      },
-      "PaginatedResponse_MovieResponse_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/MovieResponse"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "skip": {
-            "type": "integer",
-            "title": "Skip"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "skip",
-          "limit"
-        ],
-        "title": "PaginatedResponse[MovieResponse]"
-      },
-      "PaginatedResponse_SeriesResponse_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/SeriesResponse"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "skip": {
-            "type": "integer",
-            "title": "Skip"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total",
-          "skip",
-          "limit"
-        ],
-        "title": "PaginatedResponse[SeriesResponse]"
       },
       "SeasonCreate": {
         "properties": {
@@ -1783,21 +2231,6 @@
             ],
             "title": "Genre Ids",
             "default": []
-          },
-          "genre_names": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Genre Names",
-            "default": []
           }
         },
         "type": "object",
@@ -1894,6 +2327,30 @@
             "type": "string",
             "title": "Id"
           },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
           "genres": {
             "items": {
               "$ref": "#/components/schemas/GenreResponse"
@@ -1909,24 +2366,12 @@
             "type": "array",
             "title": "Seasons",
             "default": []
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
           }
         },
         "type": "object",
         "required": [
           "title",
-          "id",
-          "created_at",
-          "updated_at"
+          "id"
         ],
         "title": "SeriesResponse"
       },
@@ -2033,20 +2478,6 @@
               }
             ],
             "title": "Genre Ids"
-          },
-          "genre_names": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Genre Names"
           }
         },
         "type": "object",
@@ -2074,7 +2505,7 @@
         ],
         "title": "Token"
       },
-      "UserRegister": {
+      "UserCreate": {
         "properties": {
           "email": {
             "type": "string",
@@ -2103,34 +2534,46 @@
           "email",
           "password"
         ],
-        "title": "UserRegister"
+        "title": "UserCreate"
       },
       "UserResponse": {
         "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
           "id": {
             "type": "string",
             "title": "Id"
-          },
-          "email": {
-            "type": "string",
-            "title": "Email"
           },
           "role": {
             "type": "string",
             "title": "Role"
           },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
           "created_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Created At"
           }
         },
         "type": "object",
         "required": [
-          "id",
           "email",
+          "id",
           "role",
-          "created_at"
+          "is_active"
         ],
         "title": "UserResponse"
       },

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlalchemy import (
     Column,
     String,
@@ -12,11 +12,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from server.database import Base
-
-
-def utc_now():
-    return datetime.now(timezone.utc)
-
 
 movie_genres = Table(
     "movie_genres",
@@ -58,10 +53,10 @@ class User(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String(255), unique=True, index=True, nullable=False)
-    password = Column(String(255), nullable=False)
+    hashed_password = Column(String(255), nullable=False)
     role = Column(String(50), default="user", nullable=False)  # "user" or "admin"
     is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
 class Genre(Base):
@@ -78,18 +73,18 @@ class Movie(Base):
     title = Column(String(255), index=True, nullable=False)
     description = Column(Text, nullable=True)
     duration = Column(Integer, nullable=True)
-    release_year = Column(Integer, index=True, nullable=True)
-    age_rating = Column(String(50), index=True, nullable=True)
-    poster_url = Column(Text, nullable=True)
-    trailer_url = Column(Text, nullable=True)
-    stream_url = Column(Text, nullable=True)
+    release_year = Column(Integer, nullable=True)
+    age_rating = Column(String(50), nullable=True)
+    poster_url = Column(String(500), nullable=True)
+    trailer_url = Column(String(500), nullable=True)
+    stream_url = Column(String(500), nullable=True)
     cast_members = Column(Text, nullable=True)
     status = Column(
-        String(50), default="Available", index=True, nullable=False
-    )  # Available, Draft, SoftDeleted
-    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+        String(50), default="Available", nullable=False
+    )  # "Available", "Draft", "SoftDeleted"
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(
-        DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
     genres = relationship("Genre", secondary=movie_genres, backref="movies")
@@ -101,20 +96,20 @@ class Series(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     title = Column(String(255), index=True, nullable=False)
     description = Column(Text, nullable=True)
-    release_year = Column(Integer, index=True, nullable=True)
-    age_rating = Column(String(50), index=True, nullable=True)
-    poster_url = Column(Text, nullable=True)
-    trailer_url = Column(Text, nullable=True)
+    release_year = Column(Integer, nullable=True)
+    age_rating = Column(String(50), nullable=True)
+    poster_url = Column(String(500), nullable=True)
+    trailer_url = Column(String(500), nullable=True)
     cast_members = Column(Text, nullable=True)
     status = Column(
-        String(50), default="Available", index=True, nullable=False
-    )  # Available, Draft, SoftDeleted
-    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+        String(50), default="Available", nullable=False
+    )  # "Available", "Draft", "SoftDeleted"
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(
-        DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    genres = relationship("Genre", secondary=series_genres, backref="series")
+    genres = relationship("Genre", secondary=series_genres, backref="series_list")
     seasons = relationship(
         "Season",
         back_populates="series",
@@ -128,10 +123,7 @@ class Season(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     series_id = Column(
-        String(36),
-        ForeignKey("series.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        String(36), ForeignKey("series.id", ondelete="CASCADE"), nullable=False
     )
     season_number = Column(Integer, nullable=False)
     title = Column(String(255), nullable=True)
@@ -150,15 +142,12 @@ class Episode(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     season_id = Column(
-        String(36),
-        ForeignKey("seasons.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        String(36), ForeignKey("seasons.id", ondelete="CASCADE"), nullable=False
     )
     episode_number = Column(Integer, nullable=False)
     title = Column(String(255), nullable=False)
     runtime = Column(Integer, nullable=True)
-    thumbnail_url = Column(Text, nullable=True)
-    stream_url = Column(Text, nullable=True)
+    thumbnail_url = Column(String(500), nullable=True)
+    stream_url = Column(String(500), nullable=True)
 
     season = relationship("Season", back_populates="episodes")

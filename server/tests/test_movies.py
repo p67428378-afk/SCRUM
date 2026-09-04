@@ -1,80 +1,107 @@
-def test_list_movies_public(client):
-    response = client.get("/api/v1/movies")
-    assert response.status_code == 200
-    data = response.json()
-    assert "items" in data
-    assert "total" in data
-    assert data["total"] >= 1
+def get_admin_headers(client):
+    resp = client.post(
+        "/api/v1/auth/login",
+        json={"email": "admin@example.com", "password": "adminpassword"},
+    )
+    token = resp.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
 
 
-def test_search_and_filter_movies(client):
-    response = client.get("/api/v1/movies?search=Inception")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["total"] >= 1
-    assert data["items"][0]["title"] == "Inception"
+def get_user_headers(client):
+    resp = client.post(
+        "/api/v1/auth/login",
+        json={"email": "test@example.com", "password": "testpassword"},
+    )
+    token = resp.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
 
 
-def test_get_movie_detail(client):
-    response = client.get("/api/v1/movies")
-    movie_id = response.json()["items"][0]["id"]
+def test_movie_crud_admin(client):
+    admin_headers = get_admin_headers(client)
 
-    detail_res = client.get(f"/api/v1/movies/{movie_id}")
-    assert detail_res.status_code == 200
-    assert detail_res.json()["id"] == movie_id
-
-
-def test_create_movie_forbidden_for_regular_user(client, user_token_headers):
-    payload = {
-        "title": "Interstellar",
-        "description": "A team of explorers travel through a wormhole in space.",
-        "release_year": 2014,
+    # 1. Create Movie
+    movie_payload = {
+        "title": "Inception",
+        "description": "A thief who steals corporate secrets through dream-sharing technology.",
+        "duration": 148,
+        "release_year": 2010,
         "age_rating": "PG-13",
-        "duration": 169,
+        "poster_url": "https://example.com/inception.jpg",
+        "trailer_url": "https://example.com/inception_trailer.mp4",
+        "stream_url": "https://example.com/inception_stream.mp4",
+        "cast_members": "Leonardo DiCaprio, Joseph Gordon-Levitt, Elliot Page",
+        "status": "Available",
     }
-    response = client.post("/api/v1/movies", json=payload, headers=user_token_headers)
-    assert response.status_code == 403
+    create_resp = client.post(
+        "/api/v1/movies", json=movie_payload, headers=admin_headers
+    )
+    assert create_resp.status_code == 201
+    movie_data = create_resp.json()
+    movie_id = movie_data["id"]
+    assert movie_data["title"] == "Inception"
+
+    # 2. Get Movie
+    get_resp = client.get(f"/api/v1/movies/{movie_id}")
+    assert get_resp.status_code == 200
+    assert get_resp.json()["title"] == "Inception"
+
+    # 3. Update Movie
+    update_payload = {"title": "Inception (Updated)", "duration": 150}
+    put_resp = client.put(
+        f"/api/v1/movies/{movie_id}", json=update_payload, headers=admin_headers
+    )
+    assert put_resp.status_code == 200
+    assert put_resp.json()["title"] == "Inception (Updated)"
+
+    # 4. Delete Movie (Soft Delete)
+    del_resp = client.delete(f"/api/v1/movies/{movie_id}", headers=admin_headers)
+    assert del_resp.status_code == 200
+    assert del_resp.json()["status"] == "SoftDeleted"
+
+    # 5. Non-admin get should return 404 for soft deleted item
+    get_after_del = client.get(f"/api/v1/movies/{movie_id}")
+    assert get_after_del.status_code == 404
 
 
-def test_create_movie_as_admin(client, admin_token_headers):
-    payload = {
-        "title": "The Matrix",
-        "description": "A computer hacker learns from mysterious rebels about the true nature of his reality.",
-        "release_year": 1999,
-        "age_rating": "R",
-        "duration": 136,
-        "genre_names": ["Sci-Fi", "Action"],
+def test_movie_user_access_restrictions(client):
+    user_headers = get_user_headers(client)
+    movie_payload = {"title": "Unauthorized Movie"}
+
+    # Create should fail (403)
+    resp = client.post("/api/v1/movies", json=movie_payload, headers=user_headers)
+    assert resp.status_code == 403
+
+
+def test_list_and_search_movies(client):
+    admin_headers = get_admin_headers(client)
+
+    # Add movies
+    m1 = {
+        "title": "The Dark Knight",
+        "description": "Batman fights Joker",
+        "cast_members": "Christian Bale, Heath Ledger",
+        "release_year": 2008,
+        "status": "Available",
     }
-    response = client.post("/api/v1/movies", json=payload, headers=admin_token_headers)
-    assert response.status_code == 201
-    data = response.json()
-    assert data["title"] == "The Matrix"
-    assert len(data["genres"]) >= 1
+    m2 = {
+        "title": "Interstellar",
+        "description": "Space exploration to save humanity",
+        "cast_members": "Matthew McConaughey",
+        "release_year": 2014,
+        "status": "Available",
+    }
+    client.post("/api/v1/movies", json=m1, headers=admin_headers)
+    client.post("/api/v1/movies", json=m2, headers=admin_headers)
 
+    # Search for "Joker"
+    search_resp = client.get("/api/v1/movies?search=Joker")
+    assert search_resp.status_code == 200
+    results = search_resp.json()
+    assert len(results) >= 1
+    assert any(m["title"] == "The Dark Knight" for m in results)
 
-def test_update_and_soft_delete_movie(client, admin_token_headers):
-    # Create
-    payload = {"title": "Movie to Delete", "release_year": 2020}
-    create_res = client.post(
-        "/api/v1/movies", json=payload, headers=admin_token_headers
-    )
-    movie_id = create_res.json()["id"]
-
-    # Update
-    update_res = client.put(
-        f"/api/v1/movies/{movie_id}",
-        json={"title": "Updated Title"},
-        headers=admin_token_headers,
-    )
-    assert update_res.status_code == 200
-    assert update_res.json()["title"] == "Updated Title"
-
-    # Soft Delete
-    del_res = client.delete(f"/api/v1/movies/{movie_id}", headers=admin_token_headers)
-    assert del_res.status_code == 200
-    assert del_res.json()["status"] == "SoftDeleted"
-
-    # Verify public listing excludes soft-deleted movie
-    list_res = client.get("/api/v1/movies")
-    movie_ids = [m["id"] for m in list_res.json()["items"]]
-    assert movie_id not in movie_ids
+    # Filter by release_year=2014
+    year_resp = client.get("/api/v1/movies?release_year=2014")
+    assert year_resp.status_code == 200
+    results = year_resp.json()
+    assert any(m["title"] == "Interstellar" for m in results)

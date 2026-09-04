@@ -1,8 +1,6 @@
-import uuid
-from typing import List, Tuple, Optional
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from fastapi import HTTPException
 from server.models import Movie, Genre
 from server.schemas import MovieCreate, MovieUpdate
 
@@ -12,67 +10,57 @@ def get_movies(
     skip: int = 0,
     limit: int = 20,
     genre: Optional[str] = None,
-    age_rating: Optional[str] = None,
     release_year: Optional[int] = None,
+    age_rating: Optional[str] = None,
     search: Optional[str] = None,
     status: Optional[str] = None,
-    include_soft_deleted: bool = False,
-) -> Tuple[List[Movie], int]:
+    user_role: str = "user",
+) -> List[Movie]:
     query = db.query(Movie)
 
-    if not include_soft_deleted:
-        if status:
-            query = query.filter(Movie.status == status)
-        else:
-            query = query.filter(Movie.status != "SoftDeleted")
+    if user_role != "admin":
+        query = query.filter(Movie.status == "Available")
     elif status:
         query = query.filter(Movie.status == status)
 
     if genre:
-        query = query.join(Movie.genres).filter(Genre.name.ilike(f"%{genre}%"))
-
-    if age_rating:
-        query = query.filter(Movie.age_rating.ilike(f"%{age_rating}%"))
+        query = query.join(Movie.genres).filter(
+            or_(Genre.name.ilike(f"%{genre}%"), Genre.id == genre)
+        )
 
     if release_year:
         query = query.filter(Movie.release_year == release_year)
 
+    if age_rating:
+        query = query.filter(Movie.age_rating.ilike(f"%{age_rating}%"))
+
     if search:
-        search_pattern = f"%{search}%"
+        search_filter = f"%{search}%"
         query = query.filter(
             or_(
-                Movie.title.ilike(search_pattern),
-                Movie.description.ilike(search_pattern),
-                Movie.cast_members.ilike(search_pattern),
+                Movie.title.ilike(search_filter),
+                Movie.description.ilike(search_filter),
+                Movie.cast_members.ilike(search_filter),
             )
         )
 
-    total = query.distinct().count()
-    items = (
-        query.distinct()
-        .order_by(Movie.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-    return items, total
+    return query.offset(skip).limit(limit).all()
 
 
 def get_movie_by_id(
-    db: Session, movie_id: str, include_soft_deleted: bool = False
-) -> Movie:
+    db: Session, movie_id: str, user_role: str = "user"
+) -> Optional[Movie]:
     query = db.query(Movie).filter(Movie.id == movie_id)
-    if not include_soft_deleted:
-        query = query.filter(Movie.status != "SoftDeleted")
     movie = query.first()
     if not movie:
-        raise HTTPException(status_code=404, detail="Movie not found")
+        return None
+    if user_role != "admin" and movie.status != "Available":
+        return None
     return movie
 
 
 def create_movie(db: Session, movie_in: MovieCreate) -> Movie:
-    movie = Movie(
-        id=str(uuid.uuid4()),
+    db_movie = Movie(
         title=movie_in.title,
         description=movie_in.description,
         duration=movie_in.duration,
@@ -84,59 +72,43 @@ def create_movie(db: Session, movie_in: MovieCreate) -> Movie:
         cast_members=movie_in.cast_members,
         status=movie_in.status or "Available",
     )
-    db.add(movie)
-    db.flush()
 
     if movie_in.genre_ids:
         genres = db.query(Genre).filter(Genre.id.in_(movie_in.genre_ids)).all()
-        movie.genres.extend(genres)
-    if movie_in.genre_names:
-        for name in movie_in.genre_names:
-            g = db.query(Genre).filter(Genre.name.ilike(name)).first()
-            if not g:
-                g = Genre(id=str(uuid.uuid4()), name=name)
-                db.add(g)
-                db.flush()
-            if g not in movie.genres:
-                movie.genres.append(g)
+        db_movie.genres = genres
 
+    db.add(db_movie)
     db.commit()
-    db.refresh(movie)
-    return movie
+    db.refresh(db_movie)
+    return db_movie
 
 
-def update_movie(db: Session, movie_id: str, movie_in: MovieUpdate) -> Movie:
-    movie = get_movie_by_id(db, movie_id, include_soft_deleted=True)
+def update_movie(db: Session, movie_id: str, movie_in: MovieUpdate) -> Optional[Movie]:
+    db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
+    if not db_movie:
+        return None
 
     update_data = movie_in.model_dump(exclude_unset=True)
-    genre_ids = update_data.pop("genre_ids", None)
-    genre_names = update_data.pop("genre_names", None)
+    if "genre_ids" in update_data:
+        genre_ids = update_data.pop("genre_ids")
+        if genre_ids is not None:
+            genres = db.query(Genre).filter(Genre.id.in_(genre_ids)).all()
+            db_movie.genres = genres
 
     for field, value in update_data.items():
-        setattr(movie, field, value)
-
-    if genre_ids is not None:
-        genres = db.query(Genre).filter(Genre.id.in_(genre_ids)).all()
-        movie.genres = genres
-    if genre_names is not None:
-        new_genres = []
-        for name in genre_names:
-            g = db.query(Genre).filter(Genre.name.ilike(name)).first()
-            if not g:
-                g = Genre(id=str(uuid.uuid4()), name=name)
-                db.add(g)
-                db.flush()
-            new_genres.append(g)
-        movie.genres = new_genres
+        setattr(db_movie, field, value)
 
     db.commit()
-    db.refresh(movie)
-    return movie
+    db.refresh(db_movie)
+    return db_movie
 
 
-def soft_delete_movie(db: Session, movie_id: str) -> Movie:
-    movie = get_movie_by_id(db, movie_id, include_soft_deleted=True)
-    movie.status = "SoftDeleted"
+def soft_delete_movie(db: Session, movie_id: str) -> Optional[Movie]:
+    db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
+    if not db_movie:
+        return None
+
+    setattr(db_movie, "status", "SoftDeleted")
     db.commit()
-    db.refresh(movie)
-    return movie
+    db.refresh(db_movie)
+    return db_movie

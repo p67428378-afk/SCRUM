@@ -1,73 +1,93 @@
-from typing import Optional
-from fastapi import APIRouter, Depends, Query, status
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+
 from server.database import get_db
-from server.schemas import MovieCreate, MovieUpdate, MovieResponse, PaginatedResponse
-from server.services import movie as movie_service
-from server.api.deps import require_admin, get_optional_current_user
 from server.models import User
+from server.schemas import MovieCreate, MovieUpdate, MovieResponse
+from server.services import movie as movie_service
+from server.api.deps import get_current_active_admin, get_optional_current_user
 
 router = APIRouter(prefix="/movies", tags=["movies"])
 
 
-@router.get("", response_model=PaginatedResponse[MovieResponse])
+@router.get("", response_model=List[MovieResponse])
+@router.get("/", response_model=List[MovieResponse])
 def list_movies(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
-    genre: Optional[str] = Query(None),
-    age_rating: Optional[str] = Query(None),
-    release_year: Optional[int] = Query(None),
-    search: Optional[str] = Query(None),
-    status_filter: Optional[str] = Query(None, alias="status"),
+    genre: Optional[str] = None,
+    release_year: Optional[int] = None,
+    age_rating: Optional[str] = None,
+    search: Optional[str] = None,
+    status: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
-    is_admin = current_user and current_user.role == "admin"
-    items, total = movie_service.get_movies(
+    user_role = str(current_user.role) if current_user else "user"
+    movies = movie_service.get_movies(
         db,
         skip=skip,
         limit=limit,
         genre=genre,
-        age_rating=age_rating,
         release_year=release_year,
+        age_rating=age_rating,
         search=search,
-        status=status_filter,
-        include_soft_deleted=is_admin,
+        status=status,
+        user_role=user_role,
     )
-    return {"items": items, "total": total, "skip": skip, "limit": limit}
+    return movies
 
 
-@router.get("/{id}", response_model=MovieResponse)
+@router.get("/{movie_id}", response_model=MovieResponse)
 def get_movie(
-    id: str,
+    movie_id: str,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
-    is_admin = current_user and current_user.role == "admin"
-    return movie_service.get_movie_by_id(db, movie_id=id, include_soft_deleted=is_admin)
+    user_role = str(current_user.role) if current_user else "user"
+    movie = movie_service.get_movie_by_id(db, movie_id=movie_id, user_role=user_role)
+    if not movie:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
+    return movie
 
 
 @router.post("", response_model=MovieResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=MovieResponse, status_code=status.HTTP_201_CREATED)
 def create_movie(
     movie_in: MovieCreate,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(get_current_active_admin),
 ):
-    return movie_service.create_movie(db, movie_in)
+    return movie_service.create_movie(db, movie_in=movie_in)
 
 
-@router.put("/{id}", response_model=MovieResponse)
+@router.put("/{movie_id}", response_model=MovieResponse)
 def update_movie(
-    id: str,
+    movie_id: str,
     movie_in: MovieUpdate,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(get_current_active_admin),
 ):
-    return movie_service.update_movie(db, movie_id=id, movie_in=movie_in)
+    updated = movie_service.update_movie(db, movie_id=movie_id, movie_in=movie_in)
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
+    return updated
 
 
-@router.delete("/{id}", response_model=MovieResponse)
+@router.delete("/{movie_id}", response_model=MovieResponse)
 def delete_movie(
-    id: str, db: Session = Depends(get_db), admin: User = Depends(require_admin)
+    movie_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_active_admin),
 ):
-    return movie_service.soft_delete_movie(db, movie_id=id)
+    deleted = movie_service.soft_delete_movie(db, movie_id=movie_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found"
+        )
+    return deleted

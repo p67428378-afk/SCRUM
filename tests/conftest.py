@@ -5,6 +5,7 @@ from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
 from server.database import Base, get_db, seed_data
+from server.models import User, Genre, Movie, Series, Season, Episode, movie_genres, series_genres
 from server.main import app
 
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -16,7 +17,6 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
     Base.metadata.create_all(bind=engine)
@@ -25,7 +25,6 @@ def setup_database():
     db.close()
     yield
     Base.metadata.drop_all(bind=engine)
-
 
 @pytest.fixture
 def db_session():
@@ -36,7 +35,6 @@ def db_session():
     session.close()
     transaction.rollback()
     connection.close()
-
 
 @pytest.fixture
 def client(db_session):

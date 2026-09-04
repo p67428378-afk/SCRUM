@@ -1,7 +1,9 @@
-from typing import Optional
-from fastapi import APIRouter, Depends, Query, status
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+
 from server.database import get_db
+from server.models import User
 from server.schemas import (
     SeriesCreate,
     SeriesUpdate,
@@ -10,105 +12,138 @@ from server.schemas import (
     SeasonResponse,
     EpisodeCreate,
     EpisodeResponse,
-    PaginatedResponse,
 )
 from server.services import series as series_service
-from server.api.deps import require_admin, get_optional_current_user
-from server.models import User
+from server.api.deps import get_current_active_admin, get_optional_current_user
 
 router = APIRouter(tags=["series"])
 
 
-@router.get("/series", response_model=PaginatedResponse[SeriesResponse])
+@router.get("/series", response_model=List[SeriesResponse])
+@router.get("/series/", response_model=List[SeriesResponse])
 def list_series(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
-    genre: Optional[str] = Query(None),
-    age_rating: Optional[str] = Query(None),
-    release_year: Optional[int] = Query(None),
-    search: Optional[str] = Query(None),
-    status_filter: Optional[str] = Query(None, alias="status"),
+    genre: Optional[str] = None,
+    release_year: Optional[int] = None,
+    age_rating: Optional[str] = None,
+    search: Optional[str] = None,
+    status_param: Optional[str] = Query(None, alias="status"),
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
-    is_admin = current_user and current_user.role == "admin"
-    items, total = series_service.get_series_list(
+    user_role = str(current_user.role) if current_user else "user"
+    return series_service.get_series_list(
         db,
         skip=skip,
         limit=limit,
         genre=genre,
-        age_rating=age_rating,
         release_year=release_year,
+        age_rating=age_rating,
         search=search,
-        status=status_filter,
-        include_soft_deleted=is_admin,
+        status=status_param,
+        user_role=user_role,
     )
-    return {"items": items, "total": total, "skip": skip, "limit": limit}
 
 
-@router.get("/series/{id}", response_model=SeriesResponse)
+@router.get("/series/{series_id}", response_model=SeriesResponse)
 def get_series(
-    id: str,
+    series_id: str,
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
-    is_admin = current_user and current_user.role == "admin"
-    return series_service.get_series_by_id(
-        db, series_id=id, include_soft_deleted=is_admin
+    user_role = str(current_user.role) if current_user else "user"
+    series = series_service.get_series_by_id(
+        db, series_id=series_id, user_role=user_role
     )
+    if not series:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="TV Series not found"
+        )
+    return series
 
 
 @router.post(
     "/series", response_model=SeriesResponse, status_code=status.HTTP_201_CREATED
 )
+@router.post(
+    "/series/", response_model=SeriesResponse, status_code=status.HTTP_201_CREATED
+)
 def create_series(
     series_in: SeriesCreate,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(get_current_active_admin),
 ):
-    return series_service.create_series(db, series_in)
+    return series_service.create_series(db, series_in=series_in)
 
 
-@router.put("/series/{id}", response_model=SeriesResponse)
+@router.put("/series/{series_id}", response_model=SeriesResponse)
 def update_series(
-    id: str,
+    series_id: str,
     series_in: SeriesUpdate,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(get_current_active_admin),
 ):
-    return series_service.update_series(db, series_id=id, series_in=series_in)
+    updated = series_service.update_series(db, series_id=series_id, series_in=series_in)
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="TV Series not found"
+        )
+    return updated
 
 
-@router.delete("/series/{id}", response_model=SeriesResponse)
+@router.delete("/series/{series_id}", response_model=SeriesResponse)
 def delete_series(
-    id: str, db: Session = Depends(get_db), admin: User = Depends(require_admin)
+    series_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_active_admin),
 ):
-    return series_service.soft_delete_series(db, series_id=id)
+    deleted = series_service.soft_delete_series(db, series_id=series_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="TV Series not found"
+        )
+    return deleted
 
 
 @router.post(
-    "/series/{id}/seasons",
+    "/series/{series_id}/seasons",
     response_model=SeasonResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def add_season(
-    id: str,
+def create_season(
+    series_id: str,
     season_in: SeasonCreate,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(get_current_active_admin),
 ):
-    return series_service.add_season_to_series(db, series_id=id, season_in=season_in)
+    season = series_service.add_season(db, series_id=series_id, season_in=season_in)
+    if not season:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="TV Series not found"
+        )
+    return season
 
 
 @router.post(
-    "/seasons/{id}/episodes",
+    "/seasons/{season_id}/episodes",
     response_model=EpisodeResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def add_episode(
-    id: str,
+@router.post(
+    "/series/seasons/{season_id}/episodes",
+    response_model=EpisodeResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_episode(
+    season_id: str,
     episode_in: EpisodeCreate,
     db: Session = Depends(get_db),
-    admin: User = Depends(require_admin),
+    admin: User = Depends(get_current_active_admin),
 ):
-    return series_service.add_episode_to_season(db, season_id=id, episode_in=episode_in)
+    episode = series_service.add_episode(db, season_id=season_id, episode_in=episode_in)
+    if not episode:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
+        )
+    return episode

@@ -1,49 +1,45 @@
 # Movies and Series Management System (Prime Video Clone)
 
-A comprehensive Movies and Series Management System backend built with FastAPI, SQLAlchemy 2.x, and PostgreSQL/SQLite.
+A comprehensive Movies and Series Management System API built with FastAPI, SQLAlchemy 2.x, Pydantic, and SQLite/PostgreSQL.
 
 ### Prerequisites
 - Python 3.11+
-- Virtual environment (`venv`)
+- virtualenv / venv
 
-### Installation & Local Setup
-
-1. Navigate to the project root directory and create a Python virtual environment:
+### Backend Setup
+1. Navigate to the root or `server` directory:
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r server/requirements.txt
    ```
 
-2. Install backend dependencies:
+2. Environment Variables:
+   Copy `.env.example` to `.env`:
    ```bash
-   pip install -r requirements.txt
+   cp .env.example .env
    ```
 
-3. Set Environment Variables:
-   Create a `.env` file at the repository root or set environment variables:
-   ```env
-   DATABASE_URL=sqlite:///./app.db
-   JWT_SECRET_KEY=dev-secret-key-change-in-production
-   ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
-   ```
-
-4. Run Development Server:
+3. Running the Server:
    ```bash
-   uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
+   uvicorn server.main:app --reload --port 8000
    ```
+   The API will be available at `http://localhost:8000`
+   Interactive API docs at `http://localhost:8000/docs`
 
-5. Run Tests:
+4. Running Tests:
    ```bash
-   pytest server/tests
+   pytest server/tests -v
    ```
 
-## Default Test Credentials
-- Regular User: `test@example.com` / `testpassword`
-- Admin User: `admin@example.com` / `adminpassword`
+### Default Credentials
+Upon startup, the database is seeded automatically with default test users:
+- **Regular User**: `test@example.com` / `testpassword` (Role: `user`)
+- **Admin User**: `admin@example.com` / `adminpassword` (Role: `admin`)
 
 ## Full-Stack Local Development
-1. Start Backend: `uvicorn server.main:app --port 8000`
-2. Start Frontend (Vite): `cd client && npm run dev` (Port 5173)
+- **Backend API**: `http://localhost:8000` (FastAPI)
+- **Frontend App**: `http://localhost:5173` (React / Vite)
 
 ## Server
 
