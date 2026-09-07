@@ -20,34 +20,34 @@ export default function TelemetryStatCard({
   const selectedColor = colorMap[color] || colorMap.primary;
 
   return (
-    <div className="bg-[#171F33] rounded-xl border border-[#3C494E] p-5 shadow-lg relative overflow-hidden transition hover:border-[#00D1FF]/50">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#BBC9CF] mb-1">
+    <div className="bg-[#171F33] rounded-xl border border-[#3C494E] p-4 shadow-lg relative overflow-hidden transition hover:border-[#00D1FF]/50 flex flex-col justify-between">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#BBC9CF] mb-1 truncate">
             {title}
           </p>
-          <div className="flex items-baseline space-x-2">
-            <span className="text-3xl font-bold font-mono text-[#DAE2FD]">
+          <div className="flex items-baseline space-x-1.5 flex-wrap">
+            <span className="text-2xl sm:text-3xl font-bold font-mono text-[#DAE2FD]">
               {value !== undefined && value !== null ? value : "--"}
             </span>
-            <span className="text-sm font-medium text-[#BBC9CF] font-mono">
+            <span className="text-xs sm:text-sm font-medium text-[#BBC9CF] font-mono">
               {unit}
             </span>
           </div>
           {subtitle && (
-            <p className="text-xs text-[#BBC9CF] mt-2 flex items-center gap-1 font-mono">
+            <p className="text-xs text-[#BBC9CF] mt-2 flex items-center gap-1 font-mono truncate">
               {subtitle}
             </p>
           )}
           {trend && (
-            <p className="text-xs text-[#10B981] mt-2 font-mono flex items-center gap-1">
+            <p className="text-xs text-[#10B981] mt-2 font-mono flex items-center gap-1 truncate">
               <span>↑</span> {trend}
             </p>
           )}
         </div>
         {Icon && (
-          <div className={`p-3 rounded-lg border ${selectedColor}`}>
-            <Icon className="w-6 h-6" />
+          <div className={`p-2.5 rounded-lg border shrink-0 ${selectedColor}`}>
+            <Icon className="w-5 h-5" />
           </div>
         )}
       </div>
