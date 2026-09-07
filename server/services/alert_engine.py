@@ -26,44 +26,43 @@ def evaluate_alerts_for_reading(
     now_utc = datetime.now(timezone.utc)
 
     for cfg in configs:
-        # Extract corresponding value from reading
         value = None
         m_type = cfg.metric_type.upper()
-        if m_type == "TEMPERATURE":
+        if "TEMP" in m_type:
             value = reading.temperature_celsius
-        elif m_type == "WIND_SPEED":
+        elif "WIND" in m_type:
             value = reading.wind_speed_mph
-        elif m_type == "PRECIPITATION":
+        elif "PRECIP" in m_type or "RAIN" in m_type:
             value = reading.precipitation_inches
-        elif m_type == "UV_INDEX":
+        elif "UV" in m_type:
             value = reading.uv_index
+        elif "HUMID" in m_type:
+            value = reading.humidity_percent
+        elif "PRESS" in m_type:
+            value = reading.pressure_hpa
 
         if value is None:
             continue
 
-        # Evaluate condition
         triggered = False
         op = cfg.operator.upper()
-        if op == "GREATER_THAN" and value > cfg.threshold_value:
+        if op in ("GREATER_THAN", ">", "GTE", ">=") and value > cfg.threshold_value:
             triggered = True
-        elif op == "LESS_THAN" and value < cfg.threshold_value:
+        elif op in ("LESS_THAN", "<", "LTE", "<=") and value < cfg.threshold_value:
             triggered = True
-        elif op == "EQUALS" and value == cfg.threshold_value:
+        elif op in ("EQUALS", "==", "=") and value == cfg.threshold_value:
             triggered = True
 
         if triggered:
             # Check throttling (60 seconds)
             if cfg.last_triggered_at is not None:
-                # Ensure last_triggered_at is offset-aware or comparable
                 last_trig = cfg.last_triggered_at
                 if last_trig.tzinfo is None:
                     last_trig = last_trig.replace(tzinfo=timezone.utc)
                 seconds_since = (now_utc - last_trig).total_seconds()
                 if seconds_since < 60:
-                    # Throttled, skip dispatching duplicate notification
                     continue
 
-            # Dispatch alert notification
             msg = f"Alert triggered for {m_type}: {value} {cfg.operator} threshold {cfg.threshold_value}"
             log_entry = NotificationLog(
                 id=str(uuid.uuid4()),

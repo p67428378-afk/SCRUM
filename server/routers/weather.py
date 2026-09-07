@@ -28,16 +28,30 @@ def ingest_weather_record(
     now_utc = datetime.now(timezone.utc)
     rec_time = record_in.recorded_at or now_utc
 
+    humidity = (
+        record_in.humidity_percent if record_in.humidity_percent is not None else 0.0
+    )
+    wind_speed = (
+        record_in.wind_speed_mph if record_in.wind_speed_mph is not None else 0.0
+    )
+    precip = (
+        record_in.precipitation_inches
+        if record_in.precipitation_inches is not None
+        else 0.0
+    )
+    pressure = record_in.pressure_hpa if record_in.pressure_hpa is not None else 1013.25
+    uv = record_in.uv_index if record_in.uv_index is not None else 0.0
+
     new_rec = WeatherRecord(
         id=str(uuid.uuid4()),
         location_id=record_in.location_id,
         temperature_celsius=record_in.temperature_celsius,
-        humidity_percent=record_in.humidity_percent,
-        wind_speed_mph=record_in.wind_speed_mph,
-        wind_direction=record_in.wind_direction,
-        precipitation_inches=record_in.precipitation_inches,
-        pressure_hpa=record_in.pressure_hpa,
-        uv_index=record_in.uv_index,
+        humidity_percent=humidity,
+        wind_speed_mph=wind_speed,
+        wind_direction=record_in.wind_direction or "N",
+        precipitation_inches=precip,
+        pressure_hpa=pressure,
+        uv_index=uv,
         recorded_at=rec_time,
         created_at=now_utc,
     )
@@ -54,26 +68,24 @@ def ingest_weather_record(
 
 @router.get("/current", response_model=WeatherRecordResponse)
 def get_current_weather(
-    location_id: str = Query(..., description="UUID of location"),
+    location_id: Optional[str] = Query(None, description="UUID of location"),
     db: Session = Depends(get_db),
 ):
-    loc = db.query(Location).filter(Location.id == location_id).first()
-    if not loc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Location not found"
-        )
+    q = db.query(WeatherRecord)
+    if location_id:
+        loc = db.query(Location).filter(Location.id == location_id).first()
+        if not loc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Location not found"
+            )
+        q = q.filter(WeatherRecord.location_id == location_id)
 
-    rec = (
-        db.query(WeatherRecord)
-        .filter(WeatherRecord.location_id == location_id)
-        .order_by(WeatherRecord.recorded_at.desc())
-        .first()
-    )
+    rec = q.order_by(WeatherRecord.recorded_at.desc()).first()
 
     if not rec:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No weather readings available for this location.",
+            detail="No weather readings available.",
         )
 
     return rec
@@ -81,7 +93,7 @@ def get_current_weather(
 
 @router.get("/history", response_model=List[WeatherRecordResponse])
 def get_weather_history(
-    location_id: str = Query(..., description="UUID of location"),
+    location_id: Optional[str] = Query(None, description="UUID of location"),
     start_date: Optional[datetime] = Query(
         None, description="Start timestamp ISO format"
     ),
@@ -90,19 +102,19 @@ def get_weather_history(
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    loc = db.query(Location).filter(Location.id == location_id).first()
-    if not loc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Location not found"
-        )
-
-    q = db.query(WeatherRecord).filter(WeatherRecord.location_id == location_id)
+    q = db.query(WeatherRecord)
+    if location_id:
+        loc = db.query(Location).filter(Location.id == location_id).first()
+        if not loc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Location not found"
+            )
+        q = q.filter(WeatherRecord.location_id == location_id)
 
     if start_date and end_date:
-        # Enforce date range check for > 30 days
         diff = (end_date - start_date).days
         if diff > 30 and limit > 100:
-            limit = 100  # Enforce pagination limit
+            limit = 100
 
     if start_date:
         q = q.filter(WeatherRecord.recorded_at >= start_date)

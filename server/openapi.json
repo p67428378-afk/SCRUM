@@ -267,9 +267,16 @@
           {
             "name": "location_id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "UUID of location",
               "title": "Location Id"
             },
@@ -311,9 +318,16 @@
           {
             "name": "location_id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "string",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "UUID of location",
               "title": "Location Id"
             },
@@ -935,21 +949,49 @@
               "$ref": "#/components/schemas/ForecastDay"
             },
             "type": "array",
-            "title": "Daily"
+            "title": "Daily",
+            "default": []
           },
           "hourly": {
             "items": {
               "$ref": "#/components/schemas/ForecastHour"
             },
             "type": "array",
-            "title": "Hourly"
+            "title": "Hourly",
+            "default": []
+          },
+          "daily_forecasts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ForecastDay"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Daily Forecasts"
+          },
+          "hourly_forecasts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ForecastHour"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hourly Forecasts"
           }
         },
         "type": "object",
         "required": [
-          "location_id",
-          "daily",
-          "hourly"
+          "location_id"
         ],
         "title": "ForecastResponse"
       },
@@ -1282,18 +1324,35 @@
           },
           "temperature_celsius": {
             "type": "number",
-            "title": "Temperature Celsius"
+            "title": "Temperature Celsius",
+            "default": 0.0
           },
           "humidity_percent": {
-            "type": "number",
-            "maximum": 100.0,
-            "minimum": 0.0,
-            "title": "Humidity Percent"
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Humidity Percent",
+            "default": 0.0
           },
           "wind_speed_mph": {
-            "type": "number",
-            "minimum": 0.0,
-            "title": "Wind Speed Mph"
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wind Speed Mph",
+            "default": 0.0
           },
           "wind_direction": {
             "anyOf": [
@@ -1304,21 +1363,44 @@
                 "type": "null"
               }
             ],
-            "title": "Wind Direction"
+            "title": "Wind Direction",
+            "default": "N"
           },
           "precipitation_inches": {
-            "type": "number",
-            "minimum": 0.0,
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Precipitation Inches",
             "default": 0.0
           },
           "pressure_hpa": {
-            "type": "number",
-            "title": "Pressure Hpa"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pressure Hpa",
+            "default": 1013.25
           },
           "uv_index": {
-            "type": "number",
-            "minimum": 0.0,
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Uv Index",
             "default": 0.0
           },
@@ -1337,11 +1419,7 @@
         },
         "type": "object",
         "required": [
-          "location_id",
-          "temperature_celsius",
-          "humidity_percent",
-          "wind_speed_mph",
-          "pressure_hpa"
+          "location_id"
         ],
         "title": "WeatherRecordCreate"
       },

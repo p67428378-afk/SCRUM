@@ -76,5 +76,9 @@ def get_or_generate_forecasts(db: Session, location_id: str) -> ForecastResponse
     daily_list = list(daily_map.values())
 
     return ForecastResponse(
-        location_id=location_id, daily=daily_list, hourly=hourly_list
+        location_id=location_id,
+        daily=daily_list,
+        hourly=hourly_list,
+        daily_forecasts=daily_list,
+        hourly_forecasts=hourly_list,
     )

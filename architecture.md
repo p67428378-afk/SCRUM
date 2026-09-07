@@ -58,7 +58,28 @@ graph TD
 - server/tests/test_weather.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/components/alerts/AlertConfigTable.jsx
+- client/src/components/alerts/NotificationLogTable.jsx
+- client/src/components/dashboard/StationFocusPanel.jsx
+- client/src/components/dashboard/TelemetryStatCard.jsx
+- client/src/components/forecasts/ForecastGrid.jsx
+- client/src/components/forecasts/TrendAnalyticsChart.jsx
+- client/src/components/layout/Navbar.jsx
+- client/src/components/locations/StationFormModal.jsx
+- client/src/components/locations/StationTable.jsx
+- client/src/main.jsx
+- client/src/pages/AlertsPage.jsx
+- client/src/pages/DashboardPage.jsx
+- client/src/pages/ForecastsPage.jsx
+- client/src/pages/LocationsPage.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/src/tests/App.test.jsx
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - GET /api/v1/locations
