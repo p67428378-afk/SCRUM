@@ -23,7 +23,7 @@ export default function TelemetryStatCard({
     <div className="bg-[#171F33] rounded-xl border border-[#3C494E] p-4 shadow-lg relative overflow-hidden transition hover:border-[#00D1FF]/50 flex flex-col justify-between">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#BBC9CF] mb-1 truncate">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#BBC9CF] mb-1">
             {title}
           </p>
           <div className="flex items-baseline space-x-1.5 flex-wrap">
@@ -51,9 +51,11 @@ export default function TelemetryStatCard({
           </div>
         )}
       </div>
-      <div className="mt-4 pt-3 border-t border-[#3C494E]/50 flex justify-between items-center text-[10px] text-[#BBC9CF] font-mono">
-        <span>UPDATED REAL-TIME</span>
-        <span className="text-emerald-400 font-semibold">• SENSOR ACTIVE</span>
+      <div className="mt-4 pt-3 border-t border-[#3C494E]/50 flex justify-between items-center text-[10px] text-[#BBC9CF] font-mono gap-1">
+        <span className="whitespace-nowrap shrink-0">UPDATED REAL-TIME</span>
+        <span className="text-emerald-400 font-semibold whitespace-nowrap shrink-0">
+          • SENSOR ACTIVE
+        </span>
       </div>
     </div>
   );

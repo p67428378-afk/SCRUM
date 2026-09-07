@@ -110,7 +110,7 @@ export default function DashboardPage() {
             color="accent"
           />
           <TelemetryStatCard
-            title="Barometric Press."
+            title="Barometric Pressure"
             value={currentWeather?.pressure_hpa ?? 1013.2}
             unit="hPa"
             icon={Compass}
