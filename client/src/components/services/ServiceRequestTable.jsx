@@ -89,7 +89,7 @@ export default function ServiceRequestTable({
               <th className="p-3 whitespace-nowrap">Category</th>
               <th className="p-3 whitespace-nowrap">Status</th>
               <th className="p-3 whitespace-nowrap">Assigned Staff</th>
-              <th className="p-3 text-right whitespace-nowrap">
+              <th className="p-3 pr-6 text-right whitespace-nowrap">
                 Update Workflow
               </th>
             </tr>
@@ -148,7 +148,7 @@ export default function ServiceRequestTable({
                       </span>
                     )}
                   </td>
-                  <td className="p-3 text-right whitespace-nowrap">
+                  <td className="p-3 pr-6 text-right whitespace-nowrap">
                     {onUpdateStatus && (
                       <div className="flex justify-end gap-1">
                         {req.status !== "In Progress" &&
