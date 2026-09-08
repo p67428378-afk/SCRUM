@@ -142,7 +142,7 @@ export default function FacilitiesPage() {
           className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" />
-          <span>+ Reserve Facility</span>
+          <span>Reserve Facility</span>
         </button>
       </div>
 

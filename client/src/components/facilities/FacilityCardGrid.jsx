@@ -56,7 +56,7 @@ export default function FacilityCardGrid({ facilities = [], onBookFacility }) {
               <h3 className="text-lg font-bold text-slate-900">{fac.name}</h3>
               <span className="bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-200 flex items-center gap-1">
                 <DollarSign className="w-3 h-3" />
-                {fac.hourly_rate ? `$${fac.hourly_rate}/hr` : "Free"}
+                {fac.hourly_rate ? `${fac.hourly_rate}/hr` : "Free"}
               </span>
             </div>
 
