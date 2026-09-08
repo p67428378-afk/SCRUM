@@ -24,20 +24,20 @@ export default function ServiceRequestTable({
     switch ((status || "").toUpperCase()) {
       case "RESOLVED":
         return (
-          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 whitespace-nowrap">
             <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Resolved
           </span>
         );
       case "IN PROGRESS":
       case "IN_PROGRESS":
         return (
-          <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-blue-300">
+          <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-blue-300 whitespace-nowrap">
             <Clock className="w-3 h-3 text-blue-600 animate-spin" /> In Progress
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300">
+          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300 whitespace-nowrap">
             <AlertCircle className="w-3 h-3 text-amber-600" /> Open
           </span>
         );
@@ -81,15 +81,17 @@ export default function ServiceRequestTable({
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full min-w-[680px] text-left border-collapse">
           <thead className="bg-slate-50 border-b border-slate-200 text-[11px] text-slate-500 uppercase font-semibold">
             <tr>
-              <th className="p-3">Ticket ID</th>
+              <th className="p-3 whitespace-nowrap">Ticket ID</th>
               <th className="p-3">Title & Details</th>
-              <th className="p-3">Category</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Assigned Staff</th>
-              <th className="p-3 text-right">Update Workflow</th>
+              <th className="p-3 whitespace-nowrap">Category</th>
+              <th className="p-3 whitespace-nowrap">Status</th>
+              <th className="p-3 whitespace-nowrap">Assigned Staff</th>
+              <th className="p-3 text-right whitespace-nowrap">
+                Update Workflow
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 text-xs">
@@ -105,24 +107,26 @@ export default function ServiceRequestTable({
                   key={req.id}
                   className="hover:bg-slate-50 transition-colors"
                 >
-                  <td className="p-3 font-mono text-[11px] text-slate-500 font-semibold">
+                  <td className="p-3 font-mono text-[11px] text-slate-500 font-semibold whitespace-nowrap">
                     #{req.id?.slice(0, 8) || "TCK-101"}
                   </td>
                   <td className="p-3">
                     <div className="font-bold text-slate-900">{req.title}</div>
-                    <div className="text-[11px] text-slate-500 truncate max-w-xs">
+                    <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                       {req.description}
                     </div>
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap">
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${getCategoryColor(req.category)}`}
                     >
                       {req.category}
                     </span>
                   </td>
-                  <td className="p-3">{getStatusBadge(req.status)}</td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap">
+                    {getStatusBadge(req.status)}
+                  </td>
+                  <td className="p-3 whitespace-nowrap">
                     {onAssignStaff ? (
                       <select
                         value={req.assigned_staff_id || ""}
@@ -144,7 +148,7 @@ export default function ServiceRequestTable({
                       </span>
                     )}
                   </td>
-                  <td className="p-3 text-right">
+                  <td className="p-3 text-right whitespace-nowrap">
                     {onUpdateStatus && (
                       <div className="flex justify-end gap-1">
                         {req.status !== "In Progress" &&
@@ -153,7 +157,7 @@ export default function ServiceRequestTable({
                               onClick={() =>
                                 onUpdateStatus(req.id, "In Progress")
                               }
-                              className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-2 py-1 rounded text-[10px] font-semibold"
+                              className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-2.5 py-1 rounded text-[10px] font-semibold whitespace-nowrap"
                             >
                               Start
                             </button>
@@ -161,7 +165,7 @@ export default function ServiceRequestTable({
                         {req.status !== "Resolved" && (
                           <button
                             onClick={() => onUpdateStatus(req.id, "Resolved")}
-                            className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded text-[10px] font-semibold"
+                            className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded text-[10px] font-semibold whitespace-nowrap"
                           >
                             Resolve
                           </button>
