@@ -12,7 +12,11 @@ class Account(Base):
     account_number = Column(String(64), unique=True, nullable=False, index=True)
     balance = Column(Numeric(12, 2), nullable=False, default=0.00)
     currency = Column(String(3), nullable=False, default="USD")
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
     updated_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

@@ -1,7 +1,3 @@
-import pytest
-from decimal import Decimal
-
-
 def test_successful_transfer(client):
     # AC: Successful Money Transfer - Process POST /api/v1/transfers with sender_id, receiver_id, amount and record transaction
     payload = {
@@ -144,7 +140,9 @@ def test_same_sender_receiver(client):
     }
     response = client.post("/api/v1/transfers", json=payload)
     assert response.status_code == 400
-    assert response.json()["detail"] == "Sender and receiver accounts cannot be identical"
+    assert (
+        response.json()["detail"] == "Sender and receiver accounts cannot be identical"
+    )
 
 
 def test_list_transfers_and_accounts(client):

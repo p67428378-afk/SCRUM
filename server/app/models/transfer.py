@@ -9,11 +9,25 @@ class Transfer(Base):
     __tablename__ = "transfers"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    sender_id = Column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True)
-    receiver_id = Column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    sender_id = Column(
+        String(36),
+        ForeignKey("accounts.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    receiver_id = Column(
+        String(36),
+        ForeignKey("accounts.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     amount = Column(Numeric(12, 2), nullable=False)
     status = Column(String(32), nullable=False, default="COMPLETED")
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
     updated_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -25,5 +39,9 @@ class Transfer(Base):
         CheckConstraint("amount > 0", name="check_transfer_amount_positive"),
     )
 
-    sender = relationship("Account", foreign_keys=[sender_id], back_populates="sent_transfers")
-    receiver = relationship("Account", foreign_keys=[receiver_id], back_populates="received_transfers")
+    sender = relationship(
+        "Account", foreign_keys=[sender_id], back_populates="sent_transfers"
+    )
+    receiver = relationship(
+        "Account", foreign_keys=[receiver_id], back_populates="received_transfers"
+    )

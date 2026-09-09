@@ -7,7 +7,12 @@ from pydantic import BaseModel, Field, ConfigDict
 class TransferCreate(BaseModel):
     sender_id: UUID = Field(..., description="UUID of the sender account")
     receiver_id: UUID = Field(..., description="UUID of the receiver account")
-    amount: Decimal = Field(..., gt=0, decimal_places=2, description="Transfer amount, must be greater than 0")
+    amount: Decimal = Field(
+        ...,
+        gt=0,
+        decimal_places=2,
+        description="Transfer amount, must be greater than 0",
+    )
 
     model_config = ConfigDict(
         json_schema_extra={

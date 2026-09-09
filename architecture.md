@@ -51,7 +51,19 @@ graph TD
 - server/tests/test_transfers.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/components/StatCard.jsx
+- client/src/components/StatusBanner.jsx
+- client/src/components/TransferPortal.jsx
+- client/src/components/TransferPortal.test.jsx
+- client/src/components/TransferReceipt.jsx
+- client/src/main.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - POST /api/v1/transfers

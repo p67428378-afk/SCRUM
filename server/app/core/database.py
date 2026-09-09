@@ -28,6 +28,7 @@ def get_db():
 def init_db():
     from server.app.models.account import Account  # noqa: F401
     from server.app.models.transfer import Transfer  # noqa: F401
+
     Base.metadata.create_all(bind=engine)
 
 

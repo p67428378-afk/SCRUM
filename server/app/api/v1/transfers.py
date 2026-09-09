@@ -3,7 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from server.app.core.database import get_db
-from server.app.schemas.transfer import TransferCreate, TransferResponse, AccountResponse
+from server.app.schemas.transfer import (
+    TransferCreate,
+    TransferResponse,
+    AccountResponse,
+)
 from server.app.models.account import Account
 from server.app.models.transfer import Transfer
 from server.app.services.transfer_service import TransferService
@@ -38,26 +42,46 @@ def list_transfers(
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
-    transfers = db.query(Transfer).order_by(Transfer.created_at.desc()).offset(skip).limit(limit).all()
+    transfers = (
+        db.query(Transfer)
+        .order_by(Transfer.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return transfers
 
 
-@router.get("/accounts", response_model=List[AccountResponse], status_code=status.HTTP_200_OK)
+@router.get(
+    "/accounts", response_model=List[AccountResponse], status_code=status.HTTP_200_OK
+)
 def list_accounts(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
-    accounts = db.query(Account).order_by(Account.created_at.asc()).offset(skip).limit(limit).all()
+    accounts = (
+        db.query(Account)
+        .order_by(Account.created_at.asc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return accounts
 
 
-@router.get("/accounts/{account_id}", response_model=AccountResponse, status_code=status.HTTP_200_OK)
+@router.get(
+    "/accounts/{account_id}",
+    response_model=AccountResponse,
+    status_code=status.HTTP_200_OK,
+)
 def get_account(
     account_id: UUID,
     db: Session = Depends(get_db),
 ):
     account = db.query(Account).filter(Account.id == str(account_id)).first()
     if not account:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
+        )
     return account
