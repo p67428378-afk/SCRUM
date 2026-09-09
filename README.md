@@ -1,48 +1,75 @@
 # Drugs Management System
 
-A comprehensive Drugs Management System backend built with Python 3.11, FastAPI, SQLAlchemy 2.x, and PostgreSQL / SQLite.
-
-## Features
-- **Drug Inventory Management**: Full CRUD endpoints (`/api/v1/drugs`) for drug records including name, generic name, dosage, manufacturer, batch number, stock quantity, expiration date, category, and unit price.
-- **Alert System**: Automatic calculation of `is_low_stock` (< 50 units) and `is_near_expiry` (< 30 days) flags, along with overview metrics (`low_stock_count`, `near_expiry_count`).
-- **RESTful API**: Validated JSON request/response schemas with proper status codes (200, 201, 204, 400, 404, 422).
-- **CORS Configured**: Ready for React / Vite frontend integration.
-
-## Setup & Local Development
+A full-stack Drugs Management System built with Python 3.11, FastAPI, SQLAlchemy 2.x, PostgreSQL, and React 18 (Vite + Tailwind CSS).
 
 ### Prerequisites
 - Python 3.11+
-- pip / uv
+- Virtual environment (`venv`)
 
-### Environment Setup
-1. Create and activate a virtual environment:
+### Setup and Running Locally
+
+1. Navigate to the server directory:
+   ```bash
+   cd server
+   ```
+
+2. Create and activate virtual environment:
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-2. Install dependencies:
+
+3. Install dependencies:
    ```bash
-   pip install -r server/requirements.txt
+   pip install -r requirements.txt
    ```
 
-### Running the Server
-Start the development server on port 8000:
-```bash
-uvicorn server.app.main:app --reload --port 8000
-```
-Interactive API documentation will be available at [http://localhost:8000/docs](http://localhost:8000/docs).
+4. Run the development server:
+   ```bash
+   uvicorn app.main:app --reload --port 8000
+   ```
 
-### Running Tests
-Execute the pytest test suite:
+5. Access API documentation:
+   - Swagger UI: `http://localhost:8000/docs`
+   - ReDoc: `http://localhost:8000/redoc`
+
+### Running Backend Tests
 ```bash
-pytest server/tests -v
+pytest
 ```
 
-## Full-Stack Local Development
-When developing full-stack with the frontend:
-- **Backend API**: http://localhost:8000
-- **Frontend App**: http://localhost:5173
-- Frontend requests are routed to `http://localhost:8000/api/v1/drugs`.
+## Client (Frontend) Setup
+
+### Setup and Running Locally
+
+1. Navigate to the client directory:
+   ```bash
+   cd client
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Access application at `http://localhost:5173`.
+
+### Running Frontend Tests
+```bash
+npm run test
+```
+
+## Environment Variables
+
+Copy `.env.example` at the repository root to `.env` for local configuration:
+
+- `DATABASE_URL`: Connection string for PostgreSQL or SQLite (default: `sqlite:////tmp/drugs.db`)
+- `ALLOWED_ORIGINS`: Comma-separated list of CORS origins (default: `http://localhost:5173,http://localhost:3000`)
 
 ## Server
 

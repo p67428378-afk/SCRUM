@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date, datetime
 
@@ -9,16 +9,10 @@ class DrugBase(BaseModel):
     dosage: str = Field(..., min_length=1, max_length=100)
     manufacturer: str = Field(..., min_length=1, max_length=255)
     batch_number: str = Field(..., min_length=1, max_length=100)
-    stock_quantity: int = Field(..., ge=0)
+    stock_quantity: int = Field(..., ge=0, description="Available unit inventory count")
     expiration_date: date
     category: str = Field(..., min_length=1, max_length=100)
-    unit_price: float = Field(..., gt=0)
-
-    @field_validator("unit_price")
-    def validate_unit_price(cls, v):
-        if v <= 0:
-            raise ValueError("unit_price must be positive")
-        return round(float(v), 2)
+    unit_price: float = Field(..., gt=0, description="Price per unit in USD")
 
 
 class DrugCreate(DrugBase):
@@ -35,14 +29,6 @@ class DrugUpdate(BaseModel):
     expiration_date: Optional[date] = None
     category: Optional[str] = Field(None, min_length=1, max_length=100)
     unit_price: Optional[float] = Field(None, gt=0)
-
-    @field_validator("unit_price")
-    def validate_unit_price(cls, v):
-        if v is not None:
-            if v <= 0:
-                raise ValueError("unit_price must be positive")
-            return round(float(v), 2)
-        return v
 
 
 class DrugResponse(DrugBase):

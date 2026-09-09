@@ -1,1 +1,3 @@
-"""Drugs Management System App Package."""
+"""Drugs Management System Package."""
+
+__version__ = "1.0.0"

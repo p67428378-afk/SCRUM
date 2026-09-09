@@ -44,7 +44,26 @@ graph TD
 - server/tests/test_drugs.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/App.test.jsx
+- client/src/components/drugs/AlertsTable.jsx
+- client/src/components/drugs/DrugInventoryTable.jsx
+- client/src/components/drugs/DrugInventoryTable.test.jsx
+- client/src/components/drugs/DrugModalForm.jsx
+- client/src/components/drugs/FilterBar.jsx
+- client/src/components/drugs/MetricCards.jsx
+- client/src/components/layout/AppLayout.jsx
+- client/src/components/layout/Navbar.jsx
+- client/src/main.jsx
+- client/src/pages/AlertsPage.jsx
+- client/src/pages/DashboardPage.jsx
+- client/src/services/api.js
+- client/src/services/api.test.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - GET /api/v1/drugs
