@@ -4,6 +4,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
+  timeout: 8000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -12,9 +13,14 @@ export const apiClient = axios.create({
 // Request interceptor to attach JWT token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = localStorage.getItem("token");
+      if (token && token !== "null" && token !== "undefined") {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // ignore storage access errors
     }
     return config;
   },
@@ -25,16 +31,29 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Clear token if unauthorized, except for login attempts
-      if (!error.config.url.includes("/auth/login")) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+    if (error?.response && error.response.status === 401) {
+      const url = error.config?.url || "";
+      if (!url.includes("/auth/login")) {
+        try {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        } catch {
+          // ignore
+        }
       }
     }
     return Promise.reject(error);
   },
 );
+
+const unwrapArray = (data) => {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.items)) return data.items;
+  if (data && Array.isArray(data.books)) return data.books;
+  if (data && Array.isArray(data.loans)) return data.loans;
+  if (data && Array.isArray(data.patrons)) return data.patrons;
+  return [];
+};
 
 // Auth Services
 export const authApi = {
@@ -55,10 +74,14 @@ export const authApi = {
     return response.data;
   },
   getPatrons: async (skip = 0, limit = 100) => {
-    const response = await apiClient.get("/api/v1/patrons", {
-      params: { skip, limit },
-    });
-    return response.data;
+    try {
+      const response = await apiClient.get("/api/v1/patrons", {
+        params: { skip, limit },
+      });
+      return unwrapArray(response.data);
+    } catch {
+      return [];
+    }
   },
   getPatron: async (id) => {
     const response = await apiClient.get(`/api/v1/patrons/${id}`);
@@ -73,8 +96,12 @@ export const authApi = {
 // Books Services
 export const booksApi = {
   getBooks: async (params = {}) => {
-    const response = await apiClient.get("/api/v1/books", { params });
-    return response.data;
+    try {
+      const response = await apiClient.get("/api/v1/books", { params });
+      return unwrapArray(response.data);
+    } catch {
+      return [];
+    }
   },
   getBook: async (id) => {
     const response = await apiClient.get(`/api/v1/books/${id}`);
@@ -112,18 +139,32 @@ export const loansApi = {
     return response.data;
   },
   getOverdueLoans: async () => {
-    const response = await apiClient.get("/api/v1/loans/overdue");
-    return response.data;
+    try {
+      const response = await apiClient.get("/api/v1/loans/overdue");
+      return unwrapArray(response.data);
+    } catch {
+      return [];
+    }
   },
   getPatronLoans: async (patron_id) => {
-    const response = await apiClient.get(`/api/v1/patrons/${patron_id}/loans`);
-    return response.data;
+    try {
+      const response = await apiClient.get(
+        `/api/v1/patrons/${patron_id}/loans`,
+      );
+      return unwrapArray(response.data);
+    } catch {
+      return [];
+    }
   },
   getAllLoans: async (skip = 0, limit = 100) => {
-    const response = await apiClient.get("/api/v1/loans", {
-      params: { skip, limit },
-    });
-    return response.data;
+    try {
+      const response = await apiClient.get("/api/v1/loans", {
+        params: { skip, limit },
+      });
+      return unwrapArray(response.data);
+    } catch {
+      return [];
+    }
   },
 };
 

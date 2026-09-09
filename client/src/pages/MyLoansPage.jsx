@@ -21,15 +21,19 @@ export const MyLoansPage = () => {
   const [activeTab, setActiveTab] = useState("active"); // 'active' | 'all' | 'overdue'
 
   const fetchLoans = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const data = await loansApi.getPatronLoans(user.id);
-      setLoans(data);
-    } catch (err) {
-      console.error("Error fetching patron loans:", err);
+      const safeLoans = Array.isArray(data) ? data : [];
+      setLoans(safeLoans);
+    } catch {
       setError("Failed to retrieve your loan records. Please try again later.");
+      setLoans([]);
     } finally {
       setLoading(false);
     }
@@ -38,6 +42,8 @@ export const MyLoansPage = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchLoans();
+    } else {
+      setLoading(false);
     }
   }, [isAuthenticated, fetchLoans]);
 
@@ -64,18 +70,22 @@ export const MyLoansPage = () => {
     );
   }
 
+  const safeLoansList = Array.isArray(loans) ? loans : [];
+
   // Calculate metrics
-  const activeLoans = loans.filter((l) => l.status === "active");
+  const activeLoans = safeLoansList.filter((l) => l.status === "active");
   const overdueLoans = activeLoans.filter(
-    (l) => new Date(l.due_date) < new Date(),
+    (l) => l.due_date && new Date(l.due_date) < new Date(),
   );
-  const returnedLoans = loans.filter((l) => l.status === "returned");
+  const returnedLoans = safeLoansList.filter((l) => l.status === "returned");
 
   // Filtered loans based on tab
-  const displayedLoans = loans.filter((l) => {
+  const displayedLoans = safeLoansList.filter((l) => {
     if (activeTab === "active") return l.status === "active";
     if (activeTab === "overdue")
-      return l.status === "active" && new Date(l.due_date) < new Date();
+      return (
+        l.status === "active" && l.due_date && new Date(l.due_date) < new Date()
+      );
     return true; // 'all'
   });
 
@@ -246,7 +256,7 @@ export const MyLoansPage = () => {
               : "border-transparent text-gray-500 hover:text-[#111c2d]"
           }`}
         >
-          All Loan Records ({loans.length})
+          All Loan Records ({safeLoansList.length})
         </button>
       </div>
 

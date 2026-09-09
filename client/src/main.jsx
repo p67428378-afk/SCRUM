@@ -13,8 +13,8 @@ class ErrorBoundary extends React.Component {
     return { hasError: true };
   }
 
-  componentDidCatch(error, errorInfo) {
-    console.error("Uncaught React error:", error, errorInfo);
+  componentDidCatch() {
+    // Rely on React error boundary for fallback reporting without console pollution
   }
 
   render() {
@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
             Something went wrong.
           </h2>
           <p className="text-sm text-gray-600 mt-2">
-            Please refresh the page or check the developer console.
+            Please refresh the page or check connection status.
           </p>
           <button
             onClick={() => window.location.reload()}

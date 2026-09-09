@@ -15,7 +15,10 @@ export const BookCard = ({ book, onCheckoutSuccess, onSelectBook }) => {
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
-  const isAvailable = (book.available_copies ?? 0) > 0;
+  if (!book) return null;
+
+  const availableCopies = book.available_copies ?? 0;
+  const isAvailable = availableCopies > 0;
 
   const handleCheckout = async (e) => {
     e.stopPropagation();
@@ -24,6 +27,11 @@ export const BookCard = ({ book, onCheckoutSuccess, onSelectBook }) => {
 
     if (!isAuthenticated) {
       setError("Please sign in to checkout books.");
+      return;
+    }
+
+    if (!user?.id) {
+      setError("User profile information missing. Please re-login.");
       return;
     }
 
@@ -64,17 +72,17 @@ export const BookCard = ({ book, onCheckoutSuccess, onSelectBook }) => {
   return (
     <div
       onClick={() => onSelectBook && onSelectBook(book)}
-      className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group"
+      className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group cursor-pointer"
     >
       <div className="p-5">
         {/* Top bar: Genre & Availability Badge */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <span
             className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getGenreColor(
-              book.genre,
+              book.genre || "General",
             )}`}
           >
-            {book.genre}
+            {book.genre || "General"}
           </span>
           <span
             className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-md ${
@@ -83,7 +91,7 @@ export const BookCard = ({ book, onCheckoutSuccess, onSelectBook }) => {
                 : "bg-rose-50 text-[#ba1a1a] border border-rose-200"
             }`}
           >
-            {isAvailable ? `${book.available_copies} Available` : "Checked Out"}
+            {isAvailable ? `${availableCopies} Available` : "Checked Out"}
           </span>
         </div>
 
@@ -95,12 +103,12 @@ export const BookCard = ({ book, onCheckoutSuccess, onSelectBook }) => {
           <div className="flex-1 min-w-0">
             <h3
               className="font-serif text-lg font-semibold text-[#111c2d] leading-snug line-clamp-2 group-hover:text-[#122338] transition"
-              title={book.title}
+              title={book.title || "Untitled"}
             >
-              {book.title}
+              {book.title || "Untitled"}
             </h3>
             <p className="text-xs text-[#566070] mt-1 font-medium">
-              {book.author}
+              {book.author || "Unknown Author"}
             </p>
           </div>
         </div>
@@ -109,13 +117,13 @@ export const BookCard = ({ book, onCheckoutSuccess, onSelectBook }) => {
         <div className="mt-4 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 text-xs text-[#566070]">
           <div className="flex items-center space-x-1 font-mono">
             <Hash className="w-3.5 h-3.5 text-gray-400" />
-            <span className="truncate" title={book.isbn}>
-              {book.isbn}
+            <span className="truncate" title={book.isbn || "—"}>
+              {book.isbn || "—"}
             </span>
           </div>
           <div className="text-right">
             Total Copies:{" "}
-            <strong className="text-[#111c2d]">{book.total_copies}</strong>
+            <strong className="text-[#111c2d]">{book.total_copies ?? 1}</strong>
           </div>
         </div>
 

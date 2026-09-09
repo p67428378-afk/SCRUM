@@ -7,68 +7,91 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem("user");
-      return saved ? JSON.parse(saved) : null;
+      if (!saved || saved === "undefined" || saved === "null") return null;
+      return JSON.parse(saved);
     } catch {
       return null;
     }
   });
-  const [token, setToken] = useState(
-    () => localStorage.getItem("token") || null,
-  );
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(() => {
+    try {
+      const saved = localStorage.getItem("token");
+      if (!saved || saved === "undefined" || saved === "null") return null;
+      return saved;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     const initAuth = async () => {
       if (token) {
         try {
           const freshUser = await authApi.getMe();
-          setUser(freshUser);
-          localStorage.setItem("user", JSON.stringify(freshUser));
+          if (isMounted && freshUser) {
+            setUser(freshUser);
+            localStorage.setItem("user", JSON.stringify(freshUser));
+          }
         } catch {
-          // Token invalid or expired
-          logout();
+          if (isMounted) {
+            logout();
+          }
         }
       }
-      setLoading(false);
     };
 
     initAuth();
+    return () => {
+      isMounted = false;
+    };
   }, [token]);
 
   const login = async (credentials) => {
     const data = await authApi.login(credentials);
-    setToken(data.access_token);
-    setUser(data.user);
-    localStorage.setItem("token", data.access_token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    return data.user;
+    const userObj = data.user || data;
+    const tokenStr = data.access_token || data.token;
+    setToken(tokenStr);
+    setUser(userObj);
+    if (tokenStr) localStorage.setItem("token", tokenStr);
+    if (userObj) localStorage.setItem("user", JSON.stringify(userObj));
+    return userObj;
   };
 
   const register = async (userData) => {
     const data = await authApi.register(userData);
-    setToken(data.access_token);
-    setUser(data.user);
-    localStorage.setItem("token", data.access_token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    return data.user;
+    const userObj = data.user || data;
+    const tokenStr = data.access_token || data.token;
+    setToken(tokenStr);
+    setUser(userObj);
+    if (tokenStr) localStorage.setItem("token", tokenStr);
+    if (userObj) localStorage.setItem("user", JSON.stringify(userObj));
+    return userObj;
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    try {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } catch {
+      // ignore
+    }
   };
 
   const refreshProfile = async () => {
     if (token) {
       try {
         const freshUser = await authApi.getMe();
-        setUser(freshUser);
-        localStorage.setItem("user", JSON.stringify(freshUser));
-        return freshUser;
-      } catch (err) {
-        console.error("Failed to refresh user profile", err);
+        if (freshUser) {
+          setUser(freshUser);
+          localStorage.setItem("user", JSON.stringify(freshUser));
+          return freshUser;
+        }
+      } catch {
+        // ignore
       }
     }
     return null;

@@ -19,6 +19,8 @@ export const LoansTable = ({
   const [errorMsg, setErrorMsg] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
+  const safeLoans = Array.isArray(loans) ? loans : [];
+
   const handleReturn = async (loanId) => {
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -68,7 +70,8 @@ export const LoansTable = ({
   };
 
   const getStatusBadge = (status, dueDate) => {
-    const isPastDue = status === "active" && new Date(dueDate) < new Date();
+    const isPastDue =
+      status === "active" && dueDate && new Date(dueDate) < new Date();
     const effectiveStatus = isPastDue ? "overdue" : status;
 
     switch (effectiveStatus) {
@@ -102,7 +105,7 @@ export const LoansTable = ({
     }
   };
 
-  if (loans.length === 0) {
+  if (safeLoans.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
         <BookCheck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -177,10 +180,12 @@ export const LoansTable = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            {loans.map((loan) => {
+            {safeLoans.map((loan) => {
               const isActive = loan.status === "active";
               const isOverdue =
-                isActive && new Date(loan.due_date) < new Date();
+                isActive &&
+                loan.due_date &&
+                new Date(loan.due_date) < new Date();
               const isBusy = processingId === loan.id;
 
               return (

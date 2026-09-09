@@ -46,12 +46,13 @@ export const CatalogPage = () => {
       if (isbnFilter.trim()) params.isbn = isbnFilter.trim();
 
       const data = await booksApi.getBooks(params);
-      setBooks(data);
-    } catch (err) {
-      console.error("Error fetching books:", err);
+      const safeBooks = Array.isArray(data) ? data : [];
+      setBooks(safeBooks);
+    } catch {
       setError(
         "Unable to load book catalog. Please check backend service connection.",
       );
+      setBooks([]);
     } finally {
       setLoading(false);
     }
@@ -82,6 +83,8 @@ export const CatalogPage = () => {
     "History",
     "Philosophy",
   ];
+
+  const bookList = Array.isArray(books) ? books : [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -120,7 +123,7 @@ export const CatalogPage = () => {
         }}
         genres={genresList}
         onReset={handleResetFilters}
-        totalResults={books.length}
+        totalResults={bookList.length}
       />
 
       {/* Error state */}
@@ -148,7 +151,7 @@ export const CatalogPage = () => {
             </div>
           ))}
         </div>
-      ) : books.length === 0 ? (
+      ) : bookList.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center my-8">
           <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="font-serif text-xl font-bold text-[#111c2d]">
@@ -167,7 +170,7 @@ export const CatalogPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {books.map((book) => (
+          {bookList.map((book) => (
             <BookCard
               key={book.id}
               book={book}
@@ -179,7 +182,7 @@ export const CatalogPage = () => {
       )}
 
       {/* Pagination Controls */}
-      {!loading && books.length > 0 && (
+      {!loading && bookList.length > 0 && (
         <div className="mt-10 flex items-center justify-between border-t border-gray-200 pt-6">
           <div className="text-xs text-[#566070]">
             Page <strong className="text-[#111c2d]">{page}</strong>
@@ -195,7 +198,7 @@ export const CatalogPage = () => {
             </button>
             <button
               onClick={() => setPage((prev) => prev + 1)}
-              disabled={books.length < limit}
+              disabled={bookList.length < limit}
               className="inline-flex items-center px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-[#111c2d] bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               Next

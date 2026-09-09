@@ -9,7 +9,6 @@ import {
   Layers,
   Clock,
   AlertTriangle,
-  Users,
   RefreshCw,
   Bell,
   CheckCircle2,
@@ -42,15 +41,18 @@ export const AdminPage = () => {
           authApi.getPatrons(0, 100),
         ]);
 
-      setBooks(fetchedBooks || []);
-      setLoans(fetchedLoans || []);
-      setOverdueLoans(fetchedOverdue || []);
-      setPatrons(fetchedPatrons || []);
-    } catch (err) {
-      console.error("Failed to load admin dashboard data:", err);
+      setBooks(Array.isArray(fetchedBooks) ? fetchedBooks : []);
+      setLoans(Array.isArray(fetchedLoans) ? fetchedLoans : []);
+      setOverdueLoans(Array.isArray(fetchedOverdue) ? fetchedOverdue : []);
+      setPatrons(Array.isArray(fetchedPatrons) ? fetchedPatrons : []);
+    } catch {
       setError(
         "Failed to load administrative records. Please ensure backend permissions are satisfied.",
       );
+      setBooks([]);
+      setLoans([]);
+      setOverdueLoans([]);
+      setPatrons([]);
     } finally {
       setLoading(false);
     }
@@ -59,6 +61,8 @@ export const AdminPage = () => {
   useEffect(() => {
     if (isAuthenticated && isAdmin) {
       fetchData();
+    } else {
+      setLoading(false);
     }
   }, [isAuthenticated, isAdmin, fetchData]);
 
@@ -107,14 +111,21 @@ export const AdminPage = () => {
     );
   }
 
+  const safeBooks = Array.isArray(books) ? books : [];
+  const safeLoans = Array.isArray(loans) ? loans : [];
+  const safeOverdueLoans = Array.isArray(overdueLoans) ? overdueLoans : [];
+  const safePatrons = Array.isArray(patrons) ? patrons : [];
+
   // Calculate metrics
-  const totalBooksCount = books.length;
-  const totalCopiesCount = books.reduce(
-    (acc, b) => acc + (b.total_copies || 0),
+  const totalBooksCount = safeBooks.length;
+  const totalCopiesCount = safeBooks.reduce(
+    (acc, b) => acc + (b?.total_copies || 0),
     0,
   );
-  const activeLoansCount = loans.filter((l) => l.status === "active").length;
-  const overdueLoansCount = overdueLoans.length;
+  const activeLoansCount = safeLoans.filter(
+    (l) => l?.status === "active",
+  ).length;
+  const overdueLoansCount = safeOverdueLoans.length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -262,7 +273,7 @@ export const AdminPage = () => {
               : "border-transparent text-gray-500 hover:text-[#111c2d]"
           }`}
         >
-          All Circulation Loans ({loans.length})
+          All Circulation Loans ({safeLoans.length})
         </button>
         <button
           onClick={() => setActiveTab("catalog")}
@@ -272,7 +283,7 @@ export const AdminPage = () => {
               : "border-transparent text-gray-500 hover:text-[#111c2d]"
           }`}
         >
-          Catalog Inventory ({books.length})
+          Catalog Inventory ({safeBooks.length})
         </button>
         <button
           onClick={() => setActiveTab("patrons")}
@@ -282,7 +293,7 @@ export const AdminPage = () => {
               : "border-transparent text-gray-500 hover:text-[#111c2d]"
           }`}
         >
-          Patron Directory ({patrons.length})
+          Patron Directory ({safePatrons.length})
         </button>
       </div>
 
@@ -312,11 +323,11 @@ export const AdminPage = () => {
                   </div>
                 </div>
                 <span className="text-xs font-semibold px-2.5 py-1 bg-rose-100 text-[#ba1a1a] rounded-full">
-                  {overdueLoans.length} Overdue
+                  {safeOverdueLoans.length} Overdue
                 </span>
               </div>
 
-              {overdueLoans.length === 0 ? (
+              {safeOverdueLoans.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
                   <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
                   <p className="text-sm font-medium text-gray-700">
@@ -338,16 +349,18 @@ export const AdminPage = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {overdueLoans.slice(0, 5).map((l) => (
+                      {safeOverdueLoans.slice(0, 5).map((l) => (
                         <tr key={l.id} className="hover:bg-rose-50/50">
                           <td className="py-3 font-semibold text-[#111c2d]">
-                            {l.book?.title}
+                            {l.book?.title || "Book Title"}
                           </td>
                           <td className="py-3 text-[#566070]">
                             {l.patron?.full_name || l.patron_id}
                           </td>
                           <td className="py-3 font-semibold text-[#ba1a1a]">
-                            {new Date(l.due_date).toLocaleDateString()}
+                            {l.due_date
+                              ? new Date(l.due_date).toLocaleDateString()
+                              : "—"}
                           </td>
                           <td className="py-3 text-right">
                             <button
@@ -378,7 +391,7 @@ export const AdminPage = () => {
                 Recent Circulation Transactions
               </h3>
               <LoansTable
-                loans={loans.slice(0, 5)}
+                loans={safeLoans.slice(0, 5)}
                 onActionSuccess={fetchData}
                 isAdminView={true}
               />
@@ -399,7 +412,7 @@ export const AdminPage = () => {
               duration.
             </p>
             <LoansTable
-              loans={overdueLoans}
+              loans={safeOverdueLoans}
               onActionSuccess={fetchData}
               isAdminView={true}
             />
@@ -418,7 +431,7 @@ export const AdminPage = () => {
               Complete audit history of active and completed book borrowings.
             </p>
             <LoansTable
-              loans={loans}
+              loans={safeLoans}
               onActionSuccess={fetchData}
               isAdminView={true}
             />
@@ -453,7 +466,7 @@ export const AdminPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {books.map((b) => (
+                {safeBooks.map((b) => (
                   <tr key={b.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-semibold text-[#111c2d]">
                       {b.title}
@@ -511,7 +524,7 @@ export const AdminPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {patrons.map((p) => (
+                {safePatrons.map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td
                       className="px-4 py-3 font-mono text-gray-500 text-[11px] truncate max-w-[120px]"
@@ -542,7 +555,9 @@ export const AdminPage = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-400">
-                      {new Date(p.created_at).toLocaleDateString()}
+                      {p.created_at
+                        ? new Date(p.created_at).toLocaleDateString()
+                        : "—"}
                     </td>
                   </tr>
                 ))}
