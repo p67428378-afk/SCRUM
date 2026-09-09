@@ -45,7 +45,33 @@ graph TD
 - server/tests/test_loans.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/App.test.jsx
+- client/src/components/AddBookForm.jsx
+- client/src/components/AddBookForm.test.jsx
+- client/src/components/AuthCard.jsx
+- client/src/components/AuthCard.test.jsx
+- client/src/components/BookCard.jsx
+- client/src/components/BookCard.test.jsx
+- client/src/components/LoansTable.jsx
+- client/src/components/LoansTable.test.jsx
+- client/src/components/Navbar.jsx
+- client/src/components/Navbar.test.jsx
+- client/src/components/SearchFilterBar.jsx
+- client/src/components/SearchFilterBar.test.jsx
+- client/src/context/AuthContext.jsx
+- client/src/main.jsx
+- client/src/pages/AdminPage.jsx
+- client/src/pages/CatalogPage.jsx
+- client/src/pages/LoginPage.jsx
+- client/src/pages/MyLoansPage.jsx
+- client/src/services/api.js
+- client/src/services/api.test.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - POST /api/v1/auth/register
