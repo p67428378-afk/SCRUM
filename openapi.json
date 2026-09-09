@@ -1,0 +1,1262 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tea Management System API",
+    "description": "API for managing tea inventory, customer orders, and brewing quality parameters.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/teas": {
+      "get": {
+        "tags": [
+          "teas"
+        ],
+        "summary": "List Teas",
+        "operationId": "list_teas_api_v1_teas_get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tea"
+                  },
+                  "title": "Response List Teas Api V1 Teas Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "teas"
+        ],
+        "summary": "Create Tea",
+        "operationId": "create_tea_api_v1_teas_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeaCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tea"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teas/{tea_id}": {
+      "get": {
+        "tags": [
+          "teas"
+        ],
+        "summary": "Get Tea",
+        "operationId": "get_tea_api_v1_teas__tea_id__get",
+        "parameters": [
+          {
+            "name": "tea_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tea Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tea"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/adjust": {
+      "post": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Adjust Inventory",
+        "operationId": "adjust_inventory_api_v1_inventory_adjust_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryAdjust"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryTransaction"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/alerts": {
+      "get": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "List Alerts",
+        "operationId": "list_alerts_api_v1_inventory_alerts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeaAlert"
+                  },
+                  "type": "array",
+                  "title": "Response List Alerts Api V1 Inventory Alerts Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "List Orders",
+        "operationId": "list_orders_api_v1_orders_get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "status_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status Filter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Order"
+                  },
+                  "title": "Response List Orders Api V1 Orders Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Create Order",
+        "operationId": "create_order_api_v1_orders_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "orders"
+        ],
+        "summary": "Get Order",
+        "operationId": "get_order_api_v1_orders__order_id__get",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipes": {
+      "get": {
+        "tags": [
+          "recipes"
+        ],
+        "summary": "List Recipes",
+        "operationId": "list_recipes_api_v1_recipes_get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "tea_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tea Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Recipe"
+                  },
+                  "title": "Response List Recipes Api V1 Recipes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "recipes"
+        ],
+        "summary": "Create Recipe",
+        "operationId": "create_recipe_api_v1_recipes_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipeCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Recipe"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recipes/{recipe_id}": {
+      "get": {
+        "tags": [
+          "recipes"
+        ],
+        "summary": "Get Recipe",
+        "operationId": "get_recipe_api_v1_recipes__recipe_id__get",
+        "parameters": [
+          {
+            "name": "recipe_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Recipe Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Recipe"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quality-logs": {
+      "get": {
+        "tags": [
+          "quality-logs"
+        ],
+        "summary": "List Quality Logs",
+        "operationId": "list_quality_logs_api_v1_quality_logs_get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "recipe_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Recipe Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QualityLog"
+                  },
+                  "title": "Response List Quality Logs Api V1 Quality Logs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "quality-logs"
+        ],
+        "summary": "Create Quality Log",
+        "operationId": "create_quality_log_api_v1_quality_logs_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualityLogCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityLog"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InventoryAdjust": {
+        "properties": {
+          "tea_id": {
+            "type": "string",
+            "title": "Tea Id"
+          },
+          "change_grams": {
+            "type": "number",
+            "title": "Change Grams"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "description": "RESTOCK, AUDIT, SPOILAGE, ORDER_DEDUCTION"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tea_id",
+          "change_grams",
+          "reason"
+        ],
+        "title": "InventoryAdjust"
+      },
+      "InventoryTransaction": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tea_id": {
+            "type": "string",
+            "title": "Tea Id"
+          },
+          "change_grams": {
+            "type": "number",
+            "title": "Change Grams"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tea_id",
+          "change_grams",
+          "reason",
+          "created_at"
+        ],
+        "title": "InventoryTransaction"
+      },
+      "Order": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "order_number": {
+            "type": "string",
+            "title": "Order Number"
+          },
+          "total_amount": {
+            "type": "number",
+            "title": "Total Amount"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_number",
+          "total_amount",
+          "status",
+          "items",
+          "created_at"
+        ],
+        "title": "Order"
+      },
+      "OrderCreate": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemCreate"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "OrderCreate"
+      },
+      "OrderItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tea_id": {
+            "type": "string",
+            "title": "Tea Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "sweetness_level": {
+            "type": "string",
+            "title": "Sweetness Level"
+          },
+          "temperature": {
+            "type": "string",
+            "title": "Temperature"
+          },
+          "milk_option": {
+            "type": "string",
+            "title": "Milk Option"
+          },
+          "add_ons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Add Ons"
+          },
+          "item_price": {
+            "type": "number",
+            "title": "Item Price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tea_id",
+          "quantity",
+          "sweetness_level",
+          "temperature",
+          "milk_option",
+          "add_ons",
+          "item_price"
+        ],
+        "title": "OrderItem"
+      },
+      "OrderItemCreate": {
+        "properties": {
+          "tea_id": {
+            "type": "string",
+            "title": "Tea Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Quantity"
+          },
+          "sweetness_level": {
+            "type": "string",
+            "title": "Sweetness Level",
+            "description": "0%, 25%, 50%, 75%, 100%"
+          },
+          "temperature": {
+            "type": "string",
+            "title": "Temperature",
+            "description": "Hot, Warm, Iced"
+          },
+          "milk_option": {
+            "type": "string",
+            "title": "Milk Option",
+            "description": "Whole, Oat, Almond, None"
+          },
+          "add_ons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Add Ons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tea_id",
+          "quantity",
+          "sweetness_level",
+          "temperature",
+          "milk_option"
+        ],
+        "title": "OrderItemCreate"
+      },
+      "QualityLog": {
+        "properties": {
+          "recipe_id": {
+            "type": "string",
+            "title": "Recipe Id"
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Rating"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "brewed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Brewed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipe_id",
+          "rating",
+          "id",
+          "brewed_at"
+        ],
+        "title": "QualityLog"
+      },
+      "QualityLogCreate": {
+        "properties": {
+          "recipe_id": {
+            "type": "string",
+            "title": "Recipe Id"
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Rating"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipe_id",
+          "rating"
+        ],
+        "title": "QualityLogCreate"
+      },
+      "Recipe": {
+        "properties": {
+          "tea_id": {
+            "type": "string",
+            "title": "Tea Id"
+          },
+          "steep_temperature_c": {
+            "type": "number",
+            "title": "Steep Temperature C"
+          },
+          "steep_time_seconds": {
+            "type": "integer",
+            "title": "Steep Time Seconds"
+          },
+          "leaf_water_ratio_g_per_ml": {
+            "type": "string",
+            "title": "Leaf Water Ratio G Per Ml"
+          },
+          "instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructions"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tea_id",
+          "steep_temperature_c",
+          "steep_time_seconds",
+          "leaf_water_ratio_g_per_ml",
+          "id",
+          "created_at"
+        ],
+        "title": "Recipe"
+      },
+      "RecipeCreate": {
+        "properties": {
+          "tea_id": {
+            "type": "string",
+            "title": "Tea Id"
+          },
+          "steep_temperature_c": {
+            "type": "number",
+            "title": "Steep Temperature C"
+          },
+          "steep_time_seconds": {
+            "type": "integer",
+            "title": "Steep Time Seconds"
+          },
+          "leaf_water_ratio_g_per_ml": {
+            "type": "string",
+            "title": "Leaf Water Ratio G Per Ml"
+          },
+          "instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tea_id",
+          "steep_temperature_c",
+          "steep_time_seconds",
+          "leaf_water_ratio_g_per_ml"
+        ],
+        "title": "RecipeCreate"
+      },
+      "Tea": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "current_stock_grams": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Current Stock Grams"
+          },
+          "min_threshold_grams": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Min Threshold Grams",
+            "default": 500.0
+          },
+          "unit_price": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Unit Price"
+          },
+          "supplier_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Name"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "current_stock_grams",
+          "unit_price",
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Tea"
+      },
+      "TeaAlert": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "current_stock_grams": {
+            "type": "number",
+            "title": "Current Stock Grams"
+          },
+          "min_threshold_grams": {
+            "type": "number",
+            "title": "Min Threshold Grams"
+          },
+          "unit_price": {
+            "type": "number",
+            "title": "Unit Price"
+          },
+          "supplier_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "current_stock_grams",
+          "min_threshold_grams",
+          "unit_price"
+        ],
+        "title": "TeaAlert"
+      },
+      "TeaCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "current_stock_grams": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Current Stock Grams"
+          },
+          "min_threshold_grams": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Min Threshold Grams",
+            "default": 500.0
+          },
+          "unit_price": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Unit Price"
+          },
+          "supplier_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "current_stock_grams",
+          "unit_price"
+        ],
+        "title": "TeaCreate"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
