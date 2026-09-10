@@ -38,7 +38,6 @@ class TransferService:
                 status="ACTIVE",
             )
             db.add(account)
-            db.flush()
         return account
 
     @classmethod

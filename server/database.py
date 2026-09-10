@@ -15,7 +15,9 @@ if DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
 
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
+)
 
 Base = declarative_base()
 
@@ -79,9 +81,7 @@ def seed_data(db: Session) -> None:
     receiver_user = db.query(User).filter(User.email == "receiver@example.com").first()
     if not receiver_user:
         receiver_user = User(
-            id=uuid.UUID(
-                "b1ffcd00-1d1c-5fg9-cc7e-7cc0ce491b22".replace("g", "a")
-            ),  # ensure valid hex uuid: b1ffcd00-1d1c-5fa9-cc7e-7cc0ce491b22
+            id=uuid.UUID("b1ffcd00-1d1c-5fa9-cc7e-7cc0ce491b22"),
             email="receiver@example.com",
             hashed_password=get_password_hash("testpassword"),
             full_name="Jane Receiver",

@@ -7,12 +7,14 @@ from server.models.account import Account
 
 
 def test_health_check(client: TestClient):
+    # Health check endpoint verification
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
 
 
 def test_create_valid_transfer_success(client: TestClient, db_session: Session):
+    # AC: FastAPI Transfer Endpoint & Payload Contract: POST /api/v1/transfers accepting sender_id, receiver_id, amount
     sender_id = uuid.uuid4()
     receiver_id = uuid.uuid4()
 
@@ -63,6 +65,7 @@ def test_create_valid_transfer_success(client: TestClient, db_session: Session):
 
 
 def test_fraud_threshold_exceeded_blocked(client: TestClient, db_session: Session):
+    # AC: Synchronous Fraud Threshold Enforcement: Block transfers > $10,000 with 'Blocked: Fraud threshold exceeded'
     sender_id = uuid.uuid4()
     receiver_id = uuid.uuid4()
 
@@ -95,6 +98,7 @@ def test_fraud_threshold_exceeded_blocked(client: TestClient, db_session: Sessio
 
 
 def test_fraud_threshold_exact_limit_allowed(client: TestClient, db_session: Session):
+    # AC: Synchronous Fraud Threshold Enforcement: Exactly $10,000.00 permitted
     sender_id = uuid.uuid4()
     receiver_id = uuid.uuid4()
 
@@ -123,7 +127,8 @@ def test_fraud_threshold_exact_limit_allowed(client: TestClient, db_session: Ses
     assert data["status"] == "COMPLETED"
 
 
-def test_insufficient_funds_rejected(client: TestClient, db_session: Session):
+def test_tc08_insufficient_funds_rejected(client: TestClient, db_session: Session):
+    # AC: Account Balance Verification & Insufficient Funds Handling: Reject transfers exceeding balance with 'Insufficient funds'
     sender_id = uuid.uuid4()
     receiver_id = uuid.uuid4()
 
@@ -150,12 +155,13 @@ def test_insufficient_funds_rejected(client: TestClient, db_session: Session):
     data = response.json()
     assert data["detail"] == "Insufficient funds"
 
-    # Verify balance untouched
+    # Verify balance untouched and refresh cleanly succeeds without InvalidRequestError
     db_session.refresh(sender_acc)
     assert sender_acc.balance == Decimal("200.00")
 
 
 def test_exact_balance_transfer_succeeds(client: TestClient, db_session: Session):
+    # AC: Account Balance Verification & Insufficient Funds Handling: Exact balance transfer leaves zero balance
     sender_id = uuid.uuid4()
     receiver_id = uuid.uuid4()
 
@@ -189,6 +195,7 @@ def test_exact_balance_transfer_succeeds(client: TestClient, db_session: Session
 
 
 def test_invalid_uuid_format_422(client: TestClient):
+    # AC: FastAPI Transfer Endpoint & Payload Contract: Return 422 for invalid UUID formats
     payload = {
         "sender_id": "invalid-uuid-string",
         "receiver_id": "b1ffcd00-1d1c-5fa9-cc7e-7cc0ce491b22",
@@ -199,6 +206,7 @@ def test_invalid_uuid_format_422(client: TestClient):
 
 
 def test_negative_amount_422(client: TestClient):
+    # AC: FastAPI Transfer Endpoint & Payload Contract: Return 422 for negative amount
     sender_id = uuid.uuid4()
     receiver_id = uuid.uuid4()
 
@@ -212,6 +220,7 @@ def test_negative_amount_422(client: TestClient):
 
 
 def test_zero_amount_422(client: TestClient):
+    # AC: FastAPI Transfer Endpoint & Payload Contract: Return 422 for zero amount
     sender_id = uuid.uuid4()
     receiver_id = uuid.uuid4()
 
@@ -225,6 +234,7 @@ def test_zero_amount_422(client: TestClient):
 
 
 def test_missing_fields_422(client: TestClient):
+    # AC: FastAPI Transfer Endpoint & Payload Contract: Return 422 for missing fields
     payload = {
         "sender_id": str(uuid.uuid4()),
         "amount": 100.00,
@@ -234,6 +244,7 @@ def test_missing_fields_422(client: TestClient):
 
 
 def test_list_and_get_transfers(client: TestClient, db_session: Session):
+    # AC: Database Persistence & list endpoints
     sender_id = uuid.uuid4()
     receiver_id = uuid.uuid4()
 
