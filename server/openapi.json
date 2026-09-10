@@ -1,17 +1,17 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "P2P Money Transfer API",
-    "description": "Secure Peer-to-Peer money transfer module with synchronous fraud detection",
+    "title": "Secure P2P Money Transfer API",
+    "description": "FastAPI backend providing real-time P2P transfers with synchronous fraud and balance checks.",
     "version": "1.0.0"
   },
   "paths": {
     "/api/v1/transfers": {
       "post": {
         "tags": [
-          "transfers"
+          "Transfers"
         ],
-        "summary": "Submit P2P fund transfer",
+        "summary": "Create Transfer",
         "operationId": "create_transfer_api_v1_transfers_post",
         "requestBody": {
           "required": true,
@@ -34,24 +34,27 @@
               }
             }
           },
-          "422": {
-            "description": "Validation Error",
+          "400": {
+            "description": "Validation or Fraud rule violation",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/HTTPError"
                 }
               }
             }
+          },
+          "422": {
+            "description": "Invalid input format"
           }
         }
       },
       "get": {
         "tags": [
-          "transfers"
+          "Transfers"
         ],
-        "summary": "List recent transfers",
-        "operationId": "get_transfers_api_v1_transfers_get",
+        "summary": "List Transfers",
+        "operationId": "list_transfers_api_v1_transfers_get",
         "parameters": [
           {
             "name": "skip",
@@ -84,7 +87,7 @@
                   "items": {
                     "$ref": "#/components/schemas/TransferResponse"
                   },
-                  "title": "Response Get Transfers Api V1 Transfers Get"
+                  "title": "Response List Transfers Api V1 Transfers Get"
                 }
               }
             }
@@ -105,9 +108,9 @@
     "/api/v1/transfers/{transfer_id}": {
       "get": {
         "tags": [
-          "transfers"
+          "Transfers"
         ],
-        "summary": "Get transfer by ID",
+        "summary": "Get Transfer",
         "operationId": "get_transfer_api_v1_transfers__transfer_id__get",
         "parameters": [
           {
@@ -144,12 +147,37 @@
         }
       }
     },
+    "/api/v1/accounts": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "List Accounts",
+        "operationId": "list_accounts_api_v1_accounts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AccountResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Accounts Api V1 Accounts Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/accounts/{account_id}": {
       "get": {
         "tags": [
-          "transfers"
+          "Accounts"
         ],
-        "summary": "Get account by ID",
+        "summary": "Get Account",
         "operationId": "get_account_api_v1_accounts__account_id__get",
         "parameters": [
           {
@@ -186,25 +214,19 @@
         }
       }
     },
-    "/api/v1/accounts": {
+    "/api/v1/health": {
       "get": {
         "tags": [
-          "transfers"
+          "Health"
         ],
-        "summary": "List all accounts",
-        "operationId": "get_all_accounts_api_v1_accounts_get",
+        "summary": "Health Check",
+        "operationId": "health_check_api_v1_health_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AccountResponse"
-                  },
-                  "type": "array",
-                  "title": "Response Get All Accounts Api V1 Accounts Get"
-                }
+                "schema": {}
               }
             }
           }
@@ -214,7 +236,7 @@
     "/health": {
       "get": {
         "tags": [
-          "system"
+          "Health"
         ],
         "summary": "Health Check",
         "operationId": "health_check_health_get",
@@ -243,10 +265,6 @@
             "type": "string",
             "title": "Account Number"
           },
-          "balance": {
-            "type": "number",
-            "title": "Balance"
-          },
           "owner_name": {
             "type": "string",
             "title": "Owner Name"
@@ -254,6 +272,10 @@
           "email": {
             "type": "string",
             "title": "Email"
+          },
+          "balance": {
+            "type": "number",
+            "title": "Balance"
           },
           "created_at": {
             "type": "string",
@@ -270,13 +292,26 @@
         "required": [
           "id",
           "account_number",
-          "balance",
           "owner_name",
           "email",
+          "balance",
           "created_at",
           "updated_at"
         ],
         "title": "AccountResponse"
+      },
+      "HTTPError": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "HTTPError"
       },
       "HTTPValidationError": {
         "properties": {
@@ -295,13 +330,15 @@
         "properties": {
           "sender_id": {
             "type": "string",
+            "format": "uuid",
             "title": "Sender Id",
-            "description": "UUID v4 of the sender account"
+            "description": "UUID of the sender account"
           },
           "receiver_id": {
             "type": "string",
+            "format": "uuid",
             "title": "Receiver Id",
-            "description": "UUID v4 of the receiver account"
+            "description": "UUID of the receiver account"
           },
           "amount": {
             "type": "number",
@@ -338,7 +375,13 @@
           },
           "status": {
             "type": "string",
-            "title": "Status"
+            "enum": [
+              "COMPLETED",
+              "BLOCKED",
+              "FAILED"
+            ],
+            "title": "Status",
+            "default": "COMPLETED"
           },
           "created_at": {
             "type": "string",
@@ -357,7 +400,6 @@
           "sender_id",
           "receiver_id",
           "amount",
-          "status",
           "created_at",
           "updated_at"
         ],

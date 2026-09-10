@@ -2,42 +2,47 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from server.database import init_db
-from server.api.v1.transfers import router as v1_transfers_router
+from server.api.v1 import api_v1_router
+from server.database import init_db, seed_data, SessionLocal
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables and seed data idempotently on startup
+    # Initialize DB schema and seed demo accounts
     init_db()
+    db = SessionLocal()
+    try:
+        seed_data(db)
+    finally:
+        db.close()
     yield
 
 
 app = FastAPI(
-    title="P2P Money Transfer API",
-    description="Secure Peer-to-Peer money transfer module with synchronous fraud detection",
+    title="Secure P2P Money Transfer API",
+    description="FastAPI backend providing real-time P2P transfers with synchronous fraud and balance checks.",
     version="1.0.0",
     lifespan=lifespan,
 )
 
 # CORS Configuration
 ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000"
+    "ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000"
 ).split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in ALLOWED_ORIGINS if origin.strip()],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount API Routers
-app.include_router(v1_transfers_router, prefix="/api/v1")
+# Include API Routers
+app.include_router(api_v1_router)
 
 
-@app.get("/health", tags=["system"])
+@app.get("/health", tags=["Health"])
+@app.get("/api/v1/health", tags=["Health"])
 def health_check():
-    return {"status": "ok", "service": "p2p-transfers-api"}
+    return {"status": "ok", "service": "p2p-transfer-api"}

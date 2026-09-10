@@ -33,6 +33,7 @@ graph TD
 - server/alembic/versions/__init__.py
 - server/api/__init__.py
 - server/api/v1/__init__.py
+- server/api/v1/accounts.py
 - server/api/v1/transfers.py
 - server/database.py
 - server/main.py
@@ -40,6 +41,7 @@ graph TD
 - server/models/account.py
 - server/models/transfer.py
 - server/schemas/__init__.py
+- server/schemas/account.py
 - server/schemas/transfer.py
 - server/services/__init__.py
 - server/services/fraud_service.py
@@ -49,7 +51,19 @@ graph TD
 - server/tests/test_transfers.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/components/RecentTransfersTable.jsx
+- client/src/components/TransferForm.jsx
+- client/src/components/TransferPortal.jsx
+- client/src/components/TransferPortal.test.jsx
+- client/src/components/TransferReceiptModal.jsx
+- client/src/components/ValidationErrorAlert.jsx
+- client/src/main.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - POST /api/v1/transfers
