@@ -1,0 +1,1271 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DG Cluster Assortment Advisor API",
+    "description": "Decision-support API for Dollar General Small Town Value Cluster Snacks assortment optimization",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/metrics/kpi": {
+      "get": {
+        "tags": [
+          "metrics"
+        ],
+        "summary": "Get Kpi Metrics",
+        "operationId": "get_kpi_metrics_api_v1_metrics_kpi_get",
+        "parameters": [
+          {
+            "name": "cluster_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Small Town Value Cluster",
+              "title": "Cluster Name"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Snacks",
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KPIMetricsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/skus": {
+      "get": {
+        "tags": [
+          "skus"
+        ],
+        "summary": "Get Skus",
+        "operationId": "get_skus_api_v1_skus_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "cluster_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cluster Id"
+            }
+          },
+          {
+            "name": "is_private_brand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Private Brand"
+            }
+          },
+          {
+            "name": "status_badge",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status Badge"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SKUResponse"
+                  },
+                  "title": "Response Get Skus Api V1 Skus Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "skus"
+        ],
+        "summary": "Create Sku",
+        "operationId": "create_sku_api_v1_skus_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SKUCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SKUResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/skus/{sku_id}": {
+      "get": {
+        "tags": [
+          "skus"
+        ],
+        "summary": "Get Sku By Id",
+        "operationId": "get_sku_by_id_api_v1_skus__sku_id__get",
+        "parameters": [
+          {
+            "name": "sku_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SKUResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "skus"
+        ],
+        "summary": "Update Sku",
+        "operationId": "update_sku_api_v1_skus__sku_id__patch",
+        "parameters": [
+          {
+            "name": "sku_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SKUUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SKUResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "skus"
+        ],
+        "summary": "Delete Sku",
+        "operationId": "delete_sku_api_v1_skus__sku_id__delete",
+        "parameters": [
+          {
+            "name": "sku_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sku Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios": {
+      "get": {
+        "tags": [
+          "scenarios",
+          "guardrails"
+        ],
+        "summary": "List Scenarios",
+        "operationId": "list_scenarios_api_v1_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioConfigResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Scenarios Api V1 Scenarios Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/evaluate": {
+      "post": {
+        "tags": [
+          "scenarios",
+          "guardrails"
+        ],
+        "summary": "Evaluate Scenario",
+        "operationId": "evaluate_scenario_api_v1_scenarios_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioEvaluateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEvaluateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/guardrails/check": {
+      "post": {
+        "tags": [
+          "scenarios",
+          "guardrails"
+        ],
+        "summary": "Check Guardrails",
+        "operationId": "check_guardrails_api_v1_guardrails_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardrailCheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardrailCheckResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions": {
+      "get": {
+        "tags": [
+          "submissions"
+        ],
+        "summary": "Get Submissions",
+        "operationId": "get_submissions_api_v1_submissions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SubmissionResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Submissions Api V1 Submissions Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "submissions"
+        ],
+        "summary": "Submit Assortment Plan",
+        "operationId": "submit_assortment_plan_api_v1_submissions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{audit_code}": {
+      "get": {
+        "tags": [
+          "submissions"
+        ],
+        "summary": "Get Submission By Code",
+        "operationId": "get_submission_by_code_api_v1_submissions__audit_code__get",
+        "parameters": [
+          {
+            "name": "audit_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Audit Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionsSummary": {
+        "properties": {
+          "grow": {
+            "type": "integer",
+            "title": "Grow",
+            "default": 0
+          },
+          "maintain": {
+            "type": "integer",
+            "title": "Maintain",
+            "default": 0
+          },
+          "swap": {
+            "type": "integer",
+            "title": "Swap",
+            "default": 0
+          },
+          "reduce": {
+            "type": "integer",
+            "title": "Reduce",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ActionsSummary"
+      },
+      "GuardrailCheckRequest": {
+        "properties": {
+          "scenario_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Type",
+            "default": "Balanced"
+          },
+          "projected_pb_share_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Projected Pb Share Pct"
+          },
+          "projected_capacity_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Projected Capacity Pct"
+          },
+          "in_stock_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Stock Rate"
+          }
+        },
+        "type": "object",
+        "title": "GuardrailCheckRequest"
+      },
+      "GuardrailCheckResponse": {
+        "properties": {
+          "overall_status": {
+            "type": "string",
+            "title": "Overall Status"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailItem"
+            },
+            "type": "array",
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "overall_status",
+          "checks"
+        ],
+        "title": "GuardrailCheckResponse"
+      },
+      "GuardrailItem": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "actual_value": {
+            "type": "string",
+            "title": "Actual Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule",
+          "status",
+          "actual_value"
+        ],
+        "title": "GuardrailItem"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KPIMetricsResponse": {
+        "properties": {
+          "cluster_name": {
+            "type": "string",
+            "title": "Cluster Name",
+            "default": "Small Town Value Cluster"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": "Snacks"
+          },
+          "sales_per_linear_ft": {
+            "type": "number",
+            "title": "Sales Per Linear Ft"
+          },
+          "private_brand_percentage": {
+            "type": "number",
+            "title": "Private Brand Percentage"
+          },
+          "in_stock_rate": {
+            "type": "number",
+            "title": "In Stock Rate"
+          },
+          "shelf_capacity_utilization": {
+            "type": "number",
+            "title": "Shelf Capacity Utilization"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales_per_linear_ft",
+          "private_brand_percentage",
+          "in_stock_rate",
+          "shelf_capacity_utilization"
+        ],
+        "title": "KPIMetricsResponse"
+      },
+      "RecommendedActions": {
+        "properties": {
+          "GROW": {
+            "type": "integer",
+            "title": "Grow",
+            "default": 0
+          },
+          "MAINTAIN": {
+            "type": "integer",
+            "title": "Maintain",
+            "default": 0
+          },
+          "SWAP": {
+            "type": "integer",
+            "title": "Swap",
+            "default": 0
+          },
+          "REDUCE": {
+            "type": "integer",
+            "title": "Reduce",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "RecommendedActions"
+      },
+      "SKUCreate": {
+        "properties": {
+          "sku_code": {
+            "type": "string",
+            "title": "Sku Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": "Snacks"
+          },
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id",
+            "default": "Small Town Value Cluster"
+          },
+          "is_private_brand": {
+            "type": "boolean",
+            "title": "Is Private Brand",
+            "default": false
+          },
+          "weekly_units_sold": {
+            "type": "number",
+            "title": "Weekly Units Sold",
+            "default": 0.0
+          },
+          "sales_per_linear_ft": {
+            "type": "number",
+            "title": "Sales Per Linear Ft",
+            "default": 0.0
+          },
+          "margin_percentage": {
+            "type": "number",
+            "title": "Margin Percentage",
+            "default": 0.0
+          },
+          "linear_ft_allocated": {
+            "type": "number",
+            "title": "Linear Ft Allocated",
+            "default": 1.0
+          },
+          "status_badge": {
+            "type": "string",
+            "title": "Status Badge",
+            "default": "MAINTAIN"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku_code",
+          "product_name"
+        ],
+        "title": "SKUCreate"
+      },
+      "SKUResponse": {
+        "properties": {
+          "sku_code": {
+            "type": "string",
+            "title": "Sku Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": "Snacks"
+          },
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id",
+            "default": "Small Town Value Cluster"
+          },
+          "is_private_brand": {
+            "type": "boolean",
+            "title": "Is Private Brand",
+            "default": false
+          },
+          "weekly_units_sold": {
+            "type": "number",
+            "title": "Weekly Units Sold",
+            "default": 0.0
+          },
+          "sales_per_linear_ft": {
+            "type": "number",
+            "title": "Sales Per Linear Ft",
+            "default": 0.0
+          },
+          "margin_percentage": {
+            "type": "number",
+            "title": "Margin Percentage",
+            "default": 0.0
+          },
+          "linear_ft_allocated": {
+            "type": "number",
+            "title": "Linear Ft Allocated",
+            "default": 1.0
+          },
+          "status_badge": {
+            "type": "string",
+            "title": "Status Badge",
+            "default": "MAINTAIN"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku_code",
+          "product_name",
+          "id"
+        ],
+        "title": "SKUResponse"
+      },
+      "SKUUpdate": {
+        "properties": {
+          "product_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Name"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "cluster_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Id"
+          },
+          "is_private_brand": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Private Brand"
+          },
+          "weekly_units_sold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weekly Units Sold"
+          },
+          "sales_per_linear_ft": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sales Per Linear Ft"
+          },
+          "margin_percentage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Percentage"
+          },
+          "linear_ft_allocated": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linear Ft Allocated"
+          },
+          "status_badge": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Badge"
+          }
+        },
+        "type": "object",
+        "title": "SKUUpdate"
+      },
+      "ScenarioConfigResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "projected_sales_lift_pct": {
+            "type": "number",
+            "title": "Projected Sales Lift Pct"
+          },
+          "projected_pb_share_pct": {
+            "type": "number",
+            "title": "Projected Pb Share Pct"
+          },
+          "projected_capacity_pct": {
+            "type": "number",
+            "title": "Projected Capacity Pct"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default"
+          },
+          "recommended_actions": {
+            "$ref": "#/components/schemas/RecommendedActions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "scenario_type",
+          "projected_sales_lift_pct",
+          "projected_pb_share_pct",
+          "projected_capacity_pct",
+          "is_default",
+          "recommended_actions"
+        ],
+        "title": "ScenarioConfigResponse"
+      },
+      "ScenarioEvaluateRequest": {
+        "properties": {
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type"
+          },
+          "cluster_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Name",
+            "default": "Small Town Value Cluster"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_type"
+        ],
+        "title": "ScenarioEvaluateRequest"
+      },
+      "ScenarioEvaluateResponse": {
+        "properties": {
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type"
+          },
+          "projected_sales_lift_pct": {
+            "type": "number",
+            "title": "Projected Sales Lift Pct"
+          },
+          "projected_pb_share_pct": {
+            "type": "number",
+            "title": "Projected Pb Share Pct"
+          },
+          "projected_capacity_pct": {
+            "type": "number",
+            "title": "Projected Capacity Pct"
+          },
+          "recommended_actions": {
+            "$ref": "#/components/schemas/RecommendedActions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_type",
+          "projected_sales_lift_pct",
+          "projected_pb_share_pct",
+          "projected_capacity_pct",
+          "recommended_actions"
+        ],
+        "title": "ScenarioEvaluateResponse"
+      },
+      "SubmissionCreateRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "category_mgr_01"
+          },
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type",
+            "default": "Balanced"
+          },
+          "cluster_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Name",
+            "default": "Small Town Value Cluster"
+          },
+          "actions_summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActionsSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "SubmissionCreateRequest"
+      },
+      "SubmissionResponse": {
+        "properties": {
+          "audit_code": {
+            "type": "string",
+            "title": "Audit Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Assortment changes submitted successfully."
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type"
+          },
+          "total_sku_actions": {
+            "type": "integer",
+            "title": "Total Sku Actions"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audit_code",
+          "user_id",
+          "scenario_type",
+          "total_sku_actions",
+          "submitted_at"
+        ],
+        "title": "SubmissionResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
