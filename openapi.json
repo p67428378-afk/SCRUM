@@ -1,0 +1,1711 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Garbage Management System",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Get Me",
+        "operationId": "get_me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/pickups": {
+      "post": {
+        "tags": [
+          "Pickups"
+        ],
+        "summary": "Create Pickup Request",
+        "operationId": "create_pickup_request_api_v1_pickups_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickupRequestCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickupRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Pickups"
+        ],
+        "summary": "List Pickup Requests",
+        "operationId": "list_pickup_requests_api_v1_pickups_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PickupRequestResponse"
+                  },
+                  "title": "Response List Pickup Requests Api V1 Pickups Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pickups/{pickup_id}": {
+      "get": {
+        "tags": [
+          "Pickups"
+        ],
+        "summary": "Get Pickup Request",
+        "operationId": "get_pickup_request_api_v1_pickups__pickup_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pickup_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Pickup Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickupRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bins": {
+      "get": {
+        "tags": [
+          "Bins"
+        ],
+        "summary": "List Bins",
+        "operationId": "list_bins_api_v1_bins_get",
+        "parameters": [
+          {
+            "name": "zone",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Zone"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WasteBinResponse"
+                  },
+                  "title": "Response List Bins Api V1 Bins Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Bins"
+        ],
+        "summary": "Create Bin",
+        "operationId": "create_bin_api_v1_bins_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WasteBinCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WasteBinResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bins/{bin_id}": {
+      "get": {
+        "tags": [
+          "Bins"
+        ],
+        "summary": "Get Bin",
+        "operationId": "get_bin_api_v1_bins__bin_id__get",
+        "parameters": [
+          {
+            "name": "bin_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Bin Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WasteBinResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Bins"
+        ],
+        "summary": "Update Bin",
+        "operationId": "update_bin_api_v1_bins__bin_id__patch",
+        "parameters": [
+          {
+            "name": "bin_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Bin Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WasteBinUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WasteBinResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bins/{bin_id}/telemetry": {
+      "post": {
+        "tags": [
+          "Bins"
+        ],
+        "summary": "Update Telemetry",
+        "operationId": "update_telemetry_api_v1_bins__bin_id__telemetry_post",
+        "parameters": [
+          {
+            "name": "bin_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Bin Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TelemetryUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WasteBinResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routes": {
+      "get": {
+        "tags": [
+          "Routes"
+        ],
+        "summary": "List Routes",
+        "operationId": "list_routes_api_v1_routes_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "driver_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Driver Id"
+            }
+          },
+          {
+            "name": "zone",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Zone"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CollectionRouteResponse"
+                  },
+                  "title": "Response List Routes Api V1 Routes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Routes"
+        ],
+        "summary": "Create Route",
+        "operationId": "create_route_api_v1_routes_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectionRouteCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionRouteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routes/{route_id}": {
+      "get": {
+        "tags": [
+          "Routes"
+        ],
+        "summary": "Get Route",
+        "operationId": "get_route_api_v1_routes__route_id__get",
+        "parameters": [
+          {
+            "name": "route_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Route Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionRouteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routes/tasks/{task_id}": {
+      "patch": {
+        "tags": [
+          "Routes"
+        ],
+        "summary": "Update Task Status",
+        "operationId": "update_task_status_api_v1_routes_tasks__task_id__patch",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteTaskUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteTaskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/summary": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Get Analytics Summary",
+        "operationId": "get_analytics_summary_api_v1_analytics_summary_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "zone",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Zone"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/heatmaps": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Get Heatmaps",
+        "operationId": "get_heatmaps_api_v1_analytics_heatmaps_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HeatmapData"
+                  },
+                  "type": "array",
+                  "title": "Response Get Heatmaps Api V1 Analytics Heatmaps Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalyticsSummary": {
+        "properties": {
+          "total_tonnage": {
+            "type": "number",
+            "title": "Total Tonnage"
+          },
+          "route_completion_pct": {
+            "type": "number",
+            "title": "Route Completion Pct"
+          },
+          "sla_compliance_pct": {
+            "type": "number",
+            "title": "Sla Compliance Pct"
+          },
+          "active_overflow_alerts": {
+            "type": "integer",
+            "title": "Active Overflow Alerts"
+          },
+          "tonnage_by_category": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Tonnage By Category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_tonnage",
+          "route_completion_pct",
+          "sla_compliance_pct",
+          "active_overflow_alerts",
+          "tonnage_by_category"
+        ],
+        "title": "AnalyticsSummary"
+      },
+      "CollectionRouteCreate": {
+        "properties": {
+          "driver_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver Id"
+          },
+          "route_name": {
+            "type": "string",
+            "title": "Route Name"
+          },
+          "zone_code": {
+            "type": "string",
+            "title": "Zone Code"
+          },
+          "scheduled_date": {
+            "type": "string",
+            "title": "Scheduled Date"
+          },
+          "bin_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bin Ids",
+            "default": []
+          },
+          "pickup_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Ids",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "route_name",
+          "zone_code",
+          "scheduled_date"
+        ],
+        "title": "CollectionRouteCreate"
+      },
+      "CollectionRouteResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "driver_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Driver Id"
+          },
+          "route_name": {
+            "type": "string",
+            "title": "Route Name"
+          },
+          "zone_code": {
+            "type": "string",
+            "title": "Zone Code"
+          },
+          "scheduled_date": {
+            "type": "string",
+            "title": "Scheduled Date"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/RouteTaskResponse"
+            },
+            "type": "array",
+            "title": "Tasks",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "route_name",
+          "zone_code",
+          "scheduled_date",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CollectionRouteResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HeatmapData": {
+        "properties": {
+          "zone_code": {
+            "type": "string",
+            "title": "Zone Code"
+          },
+          "total_bins": {
+            "type": "integer",
+            "title": "Total Bins"
+          },
+          "avg_fill_level": {
+            "type": "number",
+            "title": "Avg Fill Level"
+          },
+          "overflowing_bins": {
+            "type": "integer",
+            "title": "Overflowing Bins"
+          }
+        },
+        "type": "object",
+        "required": [
+          "zone_code",
+          "total_bins",
+          "avg_fill_level",
+          "overflowing_bins"
+        ],
+        "title": "HeatmapData"
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "PickupRequestCreate": {
+        "properties": {
+          "waste_type": {
+            "type": "string",
+            "title": "Waste Type"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "scheduled_date": {
+            "type": "string",
+            "title": "Scheduled Date"
+          },
+          "time_slot": {
+            "type": "string",
+            "title": "Time Slot"
+          },
+          "special_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Special Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "waste_type",
+          "address",
+          "scheduled_date",
+          "time_slot"
+        ],
+        "title": "PickupRequestCreate"
+      },
+      "PickupRequestResponse": {
+        "properties": {
+          "waste_type": {
+            "type": "string",
+            "title": "Waste Type"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "scheduled_date": {
+            "type": "string",
+            "title": "Scheduled Date"
+          },
+          "time_slot": {
+            "type": "string",
+            "title": "Time Slot"
+          },
+          "special_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Special Notes"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "tracking_code": {
+            "type": "string",
+            "title": "Tracking Code"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "waste_type",
+          "address",
+          "scheduled_date",
+          "time_slot",
+          "id",
+          "user_id",
+          "tracking_code",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PickupRequestResponse"
+      },
+      "RouteTaskResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "route_id": {
+            "type": "string",
+            "title": "Route Id"
+          },
+          "bin_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bin Id"
+          },
+          "pickup_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pickup Id"
+          },
+          "sequence_number": {
+            "type": "integer",
+            "title": "Sequence Number"
+          },
+          "task_status": {
+            "type": "string",
+            "title": "Task Status"
+          },
+          "collected_weight_kg": {
+            "type": "number",
+            "title": "Collected Weight Kg"
+          },
+          "skip_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skip Reason"
+          },
+          "evidence_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Url"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "bin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WasteBinResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "route_id",
+          "sequence_number",
+          "task_status",
+          "collected_weight_kg",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RouteTaskResponse"
+      },
+      "RouteTaskUpdate": {
+        "properties": {
+          "task_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Status"
+          },
+          "collected_weight_kg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collected Weight Kg"
+          },
+          "skip_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skip Reason"
+          },
+          "evidence_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Url"
+          }
+        },
+        "type": "object",
+        "title": "RouteTaskUpdate"
+      },
+      "TelemetryUpdate": {
+        "properties": {
+          "fill_level_pct": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Fill Level Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fill_level_pct"
+        ],
+        "title": "TelemetryUpdate"
+      },
+      "Token": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type",
+          "user"
+        ],
+        "title": "Token"
+      },
+      "UserCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "default": "Resident"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserCreate"
+      },
+      "UserResponse": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "default": "Resident"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "id",
+          "is_active",
+          "created_at"
+        ],
+        "title": "UserResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WasteBinCreate": {
+        "properties": {
+          "serial_number": {
+            "type": "string",
+            "title": "Serial Number"
+          },
+          "location_address": {
+            "type": "string",
+            "title": "Location Address"
+          },
+          "zone_code": {
+            "type": "string",
+            "title": "Zone Code"
+          },
+          "waste_type": {
+            "type": "string",
+            "title": "Waste Type"
+          },
+          "fill_level_pct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fill Level Pct",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "serial_number",
+          "location_address",
+          "zone_code",
+          "waste_type"
+        ],
+        "title": "WasteBinCreate"
+      },
+      "WasteBinResponse": {
+        "properties": {
+          "serial_number": {
+            "type": "string",
+            "title": "Serial Number"
+          },
+          "location_address": {
+            "type": "string",
+            "title": "Location Address"
+          },
+          "zone_code": {
+            "type": "string",
+            "title": "Zone Code"
+          },
+          "waste_type": {
+            "type": "string",
+            "title": "Waste Type"
+          },
+          "fill_level_pct": {
+            "type": "integer",
+            "title": "Fill Level Pct"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "serial_number",
+          "location_address",
+          "zone_code",
+          "waste_type",
+          "fill_level_pct",
+          "id",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "WasteBinResponse"
+      },
+      "WasteBinUpdate": {
+        "properties": {
+          "location_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Address"
+          },
+          "zone_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone Code"
+          },
+          "waste_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Waste Type"
+          },
+          "fill_level_pct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fill Level Pct"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "title": "WasteBinUpdate"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/login"
+          }
+        }
+      }
+    }
+  }
+}
