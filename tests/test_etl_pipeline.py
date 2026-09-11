@@ -1,68 +1,109 @@
+"""Integration tests for ETL Pipeline and API endpoints."""
 from datetime import date, datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from server.database import Base, get_db
-from server.etl_pipeline import run_pipeline
+from server.database import get_db
+from server.models import Base, RawSalesOrderDB
+from server.etl_pipeline import ETLPipeline
 from server.loader import BigQueryLoader
 from server.main import app
-from server.models import RawSalesOrder
 
 
 @pytest.fixture
-def mock_db_session():
-    engine = create_engine("sqlite:///:memory:")
+def db_session():
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     Base.metadata.create_all(engine)
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = TestingSessionLocal()
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
-    # Seed records: 2 valid, 1 invalid amount, 1 invalid email
-    sample_orders = [
-        RawSalesOrder(order_id="rec-1", customer_email="valid1@corp.com", amount=120.50, order_date=date(2025, 2, 1), created_at=datetime(2025, 2, 1, 10, 0, 0)),
-        RawSalesOrder(order_id="rec-2", customer_email="valid2@corp.com", amount=340.00, order_date=date(2025, 2, 1), created_at=datetime(2025, 2, 1, 11, 0, 0)),
-        RawSalesOrder(order_id="rec-3", customer_email="valid3@corp.com", amount=None, order_date=date(2025, 2, 1), created_at=datetime(2025, 2, 1, 12, 0, 0)),
-        RawSalesOrder(order_id="rec-4", customer_email="bad_email_at_nowhere", amount=50.00, order_date=date(2025, 2, 1), created_at=datetime(2025, 2, 1, 13, 0, 0)),
-    ]
-    session.add_all(sample_orders)
+    # Seed mix of valid and invalid data
+    session.add_all([
+        # Valid
+        RawSalesOrderDB(
+            order_id="11111111-1111-1111-1111-111111111111",
+            customer_email="valid1@example.com",
+            amount=150.0,
+            order_date=date(2025, 3, 1),
+            created_at=datetime(2025, 3, 1, 10, 0, 0),
+        ),
+        # Missing amount
+        RawSalesOrderDB(
+            order_id="22222222-2222-2222-2222-222222222222",
+            customer_email="valid2@example.com",
+            amount=None,
+            order_date=date(2025, 3, 1),
+            created_at=datetime(2025, 3, 1, 11, 0, 0),
+        ),
+        # Invalid email
+        RawSalesOrderDB(
+            order_id="33333333-3333-3333-3333-333333333333",
+            customer_email="invalid-email-address",
+            amount=250.0,
+            order_date=date(2025, 3, 2),
+            created_at=datetime(2025, 3, 2, 12, 0, 0),
+        ),
+    ])
     session.commit()
 
     yield session
     session.close()
 
 
-def test_full_pipeline_run(mock_db_session):
-    loader = BigQueryLoader(project_id="test-proj", dataset_id="test_ds", table_name="fct_sales_orders")
-    metrics = run_pipeline(dry_run=True, db_session=mock_db_session, loader=loader)
+def test_etl_pipeline_run(db_session):
+    mock_loader = MagicMock(spec=BigQueryLoader)
+    mock_loader.load_orders.return_value = 1
 
-    assert metrics["status"] == "SUCCESS"
-    assert metrics["records_extracted"] == 4
-    assert metrics["records_loaded"] == 2
-    assert metrics["records_filtered"] == 2
-    assert metrics["filter_breakdown"]["missing_or_invalid_amount"] == 1
-    assert metrics["filter_breakdown"]["invalid_email_rfc5322"] == 1
-    assert "execution_id" in metrics
+    pipeline = ETLPipeline(db_session=db_session, loader=mock_loader)
+    result = pipeline.run()
+
+    assert result.status == "SUCCESS"
+    assert result.records_extracted == 3
+    assert result.records_loaded == 1
+    assert result.records_filtered == 2
+    assert result.filter_breakdown.missing_or_invalid_amount == 1
+    assert result.filter_breakdown.invalid_email_rfc5322 == 1
 
 
 def test_api_health():
     client = TestClient(app)
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+    assert response.json() == {"status": "healthy"}
 
 
-def test_api_status_endpoint():
+def test_api_v1_health():
     client = TestClient(app)
-    response = client.get("/api/v1/etl/status")
+    response = client.get("/api/v1/health")
     assert response.status_code == 200
+    assert response.json() == {"status": "healthy"}
 
 
-def test_api_run_etl_endpoint():
+def test_api_etl_run(db_session):
+    def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
     client = TestClient(app)
-    response = client.post("/api/v1/etl/run", json={"dry_run": True})
-    assert response.status_code == 200
-    data = response.json()
-    assert "execution_id" in data
-    assert "status" in data
+
+    with patch.object(BigQueryLoader, "load_orders", return_value=1):
+        response = client.post("/api/v1/etl/run")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["status"] == "SUCCESS"
+        assert data["records_extracted"] == 3
+        assert data["records_loaded"] == 1
+        assert data["records_filtered"] == 2
+        assert data["filter_breakdown"]["missing_or_invalid_amount"] == 1
+        assert data["filter_breakdown"]["invalid_email_rfc5322"] == 1
+
+    app.dependency_overrides.clear()

@@ -1,1 +1,1 @@
-"""Test suite for PostgreSQL to BigQuery Sales Orders ETL pipeline."""
+"""Test suite for ETL pipeline."""

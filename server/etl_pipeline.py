@@ -1,105 +1,89 @@
-import argparse
-import logging
-import sys
-import uuid
+"""Main ETL Pipeline Orchestrator."""
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+import logging
+import uuid
+from typing import Optional
 from sqlalchemy.orm import Session
-
+from server.database import SessionLocal
 from server.extractor import PostgreSQLExtractor
 from server.loader import BigQueryLoader
 from server.models import ETLMetricsResponse, FilterBreakdown
 from server.validator import DataValidator
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
-)
-logger = logging.getLogger("etl_pipeline")
+logger = logging.getLogger(__name__)
 
 
-def run_pipeline(
-    limit: Optional[int] = None,
-    dry_run: bool = False,
-    db_session: Optional[Session] = None,
-    loader: Optional[BigQueryLoader] = None,
-) -> Dict[str, Any]:
-    """Execute the end-to-end ETL pipeline:
-    1. Extract from PostgreSQL raw_sales_orders
-    2. Validate and filter records (amount & RFC 5322 email rules)
-    3. Load valid records into BigQuery fct_sales_orders
-    4. Return execution metrics and audit statistics
-    """
-    execution_id = str(uuid.uuid4())
-    start_time = datetime.now(timezone.utc).isoformat()
-    logger.info(">>> Starting ETL Pipeline Execution [%s] at %s", execution_id, start_time)
+class ETLPipeline:
+    """ETL Pipeline orchestrating Extract -> Transform/Filter -> Load."""
 
-    try:
-        # Step 1: Extraction
-        extractor = PostgreSQLExtractor(db_session=db_session)
-        raw_records = extractor.extract_all(limit=limit)
-        records_extracted = len(raw_records)
+    def __init__(
+        self,
+        db_session: Optional[Session] = None,
+        loader: Optional[BigQueryLoader] = None,
+    ):
+        self._owns_db = db_session is None
+        self.db = db_session if db_session is not None else SessionLocal()
+        self.extractor = PostgreSQLExtractor(self.db)
+        self.validator = DataValidator()
+        self.loader = loader or BigQueryLoader()
 
-        # Step 2: Validation & Filtering
-        valid_records, breakdown, rejected_info = DataValidator.process_batch(raw_records)
-        records_filtered = sum(breakdown.values())
+    def run(self, limit: Optional[int] = None) -> ETLMetricsResponse:
+        """Execute the complete ETL pipeline."""
+        execution_id = str(uuid.uuid4())
+        start_time = datetime.now(timezone.utc).isoformat()
+        logger.info(f"Starting ETL run: execution_id={execution_id}")
 
-        logger.info(
-            "Validation complete: %d extracted, %d valid, %d filtered (missing/invalid amount: %d, invalid email: %d)",
-            records_extracted,
-            len(valid_records),
-            records_filtered,
-            breakdown.get("missing_or_invalid_amount", 0),
-            breakdown.get("invalid_email_rfc5322", 0)
-        )
+        try:
+            # 1. Extract
+            raw_records = self.extractor.extract_raw_orders(limit=limit)
+            total_extracted = len(raw_records)
 
-        # Step 3: Loading into BigQuery
-        bq_loader = loader or BigQueryLoader()
-        records_loaded = bq_loader.load_records(valid_records, dry_run=dry_run)
+            # 2. Transform & Filter
+            valid_records, breakdown = self.validator.validate_records(raw_records)
+            total_filtered = (
+                breakdown.missing_or_invalid_amount + breakdown.invalid_email_rfc5322
+            )
 
-        # Step 4: Assemble Metrics Response
-        status = "SUCCESS"
-        metrics = {
-            "execution_id": execution_id,
-            "timestamp": start_time,
-            "records_extracted": records_extracted,
-            "records_loaded": records_loaded,
-            "records_filtered": records_filtered,
-            "filter_breakdown": breakdown,
-            "status": status
-        }
-        logger.info(">>> Finished ETL Pipeline Execution [%s] with status=%s", execution_id, status)
-        return metrics
+            # 3. Load
+            total_loaded = self.loader.load_orders(valid_records)
 
-    except Exception as exc:
-        logger.error("ETL Pipeline Execution [%s] failed: %s", execution_id, exc, exc_info=True)
-        return {
-            "execution_id": execution_id,
-            "timestamp": start_time,
-            "records_extracted": 0,
-            "records_loaded": 0,
-            "records_filtered": 0,
-            "filter_breakdown": {
-                "missing_or_invalid_amount": 0,
-                "invalid_email_rfc5322": 0
-            },
-            "status": "FAILED",
-            "error": str(exc)
-        }
+            logger.info(
+                f"ETL run finished successfully: extracted={total_extracted}, "
+                f"filtered={total_filtered}, loaded={total_loaded}"
+            )
+
+            return ETLMetricsResponse(
+                execution_id=execution_id,
+                timestamp=start_time,
+                records_extracted=total_extracted,
+                records_loaded=total_loaded,
+                records_filtered=total_filtered,
+                filter_breakdown=breakdown,
+                status="SUCCESS",
+            )
+        except Exception as e:
+            logger.error(f"ETL pipeline execution failed: {str(e)}")
+            return ETLMetricsResponse(
+                execution_id=execution_id,
+                timestamp=start_time,
+                records_extracted=0,
+                records_loaded=0,
+                records_filtered=0,
+                filter_breakdown=FilterBreakdown(),
+                status=f"FAILED: {str(e)}",
+            )
+        finally:
+            if self._owns_db and hasattr(self.db, "close"):
+                self.db.close()
 
 
-def main():
-    """CLI entrypoint for executing the ETL pipeline."""
-    parser = argparse.ArgumentParser(description="PostgreSQL to BigQuery Sales Orders ETL Runner")
-    parser.add_argument("--limit", type=int, default=None, help="Limit number of extracted records")
-    parser.add_argument("--dry-run", action="store_true", help="Simulate BigQuery load without inserting")
-    args = parser.parse_args()
-
-    metrics = run_pipeline(limit=args.limit, dry_run=args.dry_run)
-    print(metrics)
-    if metrics.get("status") != "SUCCESS":
-        sys.exit(1)
+def run_etl():
+    """CLI runner function."""
+    pipeline = ETLPipeline()
+    result = pipeline.run()
+    print(result.model_dump_json(indent=2))
+    return result
 
 
 if __name__ == "__main__":
-    main()
+    run_etl()

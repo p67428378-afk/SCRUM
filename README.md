@@ -1,73 +1,88 @@
-# PostgreSQL to BigQuery Sales Orders ETL Pipeline (SCRUM-278)
+# SCRUM-278: PostgreSQL to BigQuery Sales ETL Pipeline
 
-## 1. Overview
-This project provides a serverless batch ETL pipeline implemented in **Python 3.11** that extracts sales orders from the PostgreSQL `raw_sales_orders` table, validates and filters out corrupted records, and loads cleaned records into Google BigQuery's `fct_sales_orders` table partitioned by `order_date` (DAY granularity).
+Automated batch ETL pipeline to extract raw sales order records from PostgreSQL (`raw_sales_orders`), filter out invalid records (missing/non-numeric amount or non-RFC 5322 emails), and load cleaned records into BigQuery fact table (`fct_sales_orders`) partitioned daily by `order_date`.
 
-## 2. Architecture & Pipeline Stages
-1. **Extraction**: Connects to PostgreSQL (`DATABASE_URL`) via SQLAlchemy and extracts raw records from `raw_sales_orders`.
-2. **Validation & Filtering**:
-   - **Amount Validation**: Rejects records with `NULL`, missing, or non-numeric `amount`.
-   - **Email Validation**: Rejects records with `customer_email` failing RFC 5322 regex specification (`^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`).
-3. **Ingestion**: Streams / batch loads valid records into BigQuery `fct_sales_orders` with DAY partitioning on `order_date` and clustering on `customer_email`.
-4. **Metrics & Audit**: Collects execution statistics including total extracted, loaded, and filtered counts by reason code.
+---
 
-## 3. Repository Structure
+## 1. Architecture & Features
+- **Extraction:** Reads from PostgreSQL `raw_sales_orders` table via SQLAlchemy.
+- **Validation / Transformation:**
+  - **Amount Filter:** Rejects records where `amount` is NULL, missing, or non-numeric.
+  - **Email Filter:** Rejects records where `customer_email` fails RFC 5322 regex validation (`^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`).
+- **Loading:** Loads clean records into Google BigQuery `analytics.fct_sales_orders` with DAY partitioning on `order_date`.
+- **API & Trigger:** FastAPI endpoint `POST /api/v1/etl/run` and CLI entrypoint `python -m server.etl_pipeline`.
+- **OpenAPI:** Complete OpenAPI specification exported at `openapi.json`.
+
+---
+
+## 2. Directory Structure
 ```
+├── openapi.json                  # OpenAPI 3.1 specification for API endpoints
 ├── server/
 │   ├── __init__.py
-│   ├── database.py              # PostgreSQL database engine and session management
-│   ├── models.py                # SQLAlchemy ORM and Pydantic schemas
-│   ├── extractor.py             # PostgreSQL data extraction engine
-│   ├── validator.py             # RFC 5322 email and amount validation rules
-│   ├── loader.py                # BigQuery partitioned ingestion engine
-│   ├── etl_pipeline.py          # Core ETL workflow and CLI runner
-│   ├── main.py                  # FastAPI server with Auto-Boot startup hook
+│   ├── database.py               # Database connection and session management
+│   ├── models.py                 # SQLAlchemy and Pydantic models
+│   ├── extractor.py              # PostgreSQL extraction module
+│   ├── validator.py              # Filtering rules and data validator
+│   ├── loader.py                 # BigQuery ingestion module
+│   ├── etl_pipeline.py           # Pipeline runner & orchestrator
+│   ├── main.py                   # FastAPI service & trigger endpoints
 │   └── requirements.txt
-├── dags/
-│   ├── __init__.py
-│   └── postgres_to_bigquery_sales_dag.py # Airflow / Cloud Composer DAG definition
 ├── schemas/
-│   └── fct_sales_orders_schema.json     # BigQuery JSON schema definition
+│   └── fct_sales_orders_schema.json
 ├── sql/
 │   └── ddl/
-│       └── fct_sales_orders.sql         # BigQuery partitioned DDL
+│       └── fct_sales_orders.sql  # BigQuery DDL table definition
 ├── tests/
 │   ├── __init__.py
-│   ├── test_validator.py        # Validation unit tests
-│   ├── test_extractor.py        # Extraction unit tests
-│   ├── test_loader.py           # Loader & BigQuery mock tests
-│   └── test_etl_pipeline.py     # End-to-end integration and API tests
-├── Dockerfile                   # Cloud Run container definition (Port 8080)
-├── requirements.txt             # Python dependencies
-├── .env.example                 # Sample environment configuration
+│   ├── test_validator.py         # Validation rules unit tests
+│   ├── test_extractor.py         # Extractor unit tests
+│   ├── test_loader.py            # BigQuery loader unit tests
+│   └── test_etl_pipeline.py      # End-to-end integration & API tests
+├── .env.example
+├── requirements.txt
 └── README.md
 ```
 
-## 4. Local Development & Setup
+---
 
-### Environment Setup
+## 3. Local Development & Setup
+
+### Prerequisites
+- Python 3.11+
+- PostgreSQL or SQLite
+
+### Installation
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+```
+
+### Environment Configuration
+Copy `.env.example` to `.env` and set your credentials:
+```bash
 cp .env.example .env
 ```
 
-### Running Tests
-Execute the comprehensive pytest validation suite:
+### Running the API Server
 ```bash
-pytest -v
+uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### Running ETL Locally via CLI
+### Triggering ETL via API
 ```bash
-python -m server.etl_pipeline --dry-run
+curl -X POST http://localhost:8000/api/v1/etl/run
 ```
 
-### Running Serverless Container / API Server
+### Triggering ETL via CLI
 ```bash
-uvicorn server.main:app --host 0.0.0.0 --port 8080
+python -m server.etl_pipeline
 ```
-- Health Check: `GET http://localhost:8080/health`
-- Trigger ETL Run: `POST http://localhost:8080/api/v1/etl/run`
-- Check Status: `GET http://localhost:8080/api/v1/etl/status`
+
+---
+
+## 4. Running Tests
+```bash
+pytest tests/ -v
+```
