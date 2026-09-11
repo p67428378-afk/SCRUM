@@ -1,1 +1,1 @@
-"""Test suite for ETL pipeline."""
+"""Tests package initialization."""

@@ -1,58 +1,32 @@
-# SCRUM-278: PostgreSQL to BigQuery Sales ETL Pipeline
+# Sales Order ETL Pipeline (SCRUM-278)
 
-Automated batch ETL pipeline to extract raw sales order records from PostgreSQL (`raw_sales_orders`), filter out invalid records (missing/non-numeric amount or non-RFC 5322 emails), and load cleaned records into BigQuery fact table (`fct_sales_orders`) partitioned daily by `order_date`.
-
----
-
-## 1. Architecture & Features
-- **Extraction:** Reads from PostgreSQL `raw_sales_orders` table via SQLAlchemy.
-- **Validation / Transformation:**
-  - **Amount Filter:** Rejects records where `amount` is NULL, missing, or non-numeric.
-  - **Email Filter:** Rejects records where `customer_email` fails RFC 5322 regex validation (`^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`).
-- **Loading:** Loads clean records into Google BigQuery `analytics.fct_sales_orders` with DAY partitioning on `order_date`.
-- **API & Trigger:** FastAPI endpoint `POST /api/v1/etl/run` and CLI entrypoint `python -m server.etl_pipeline`.
-- **OpenAPI:** Complete OpenAPI specification exported at `openapi.json`.
+An enterprise-grade ETL pipeline service that extracts sales order data from PostgreSQL `raw_sales_orders`, validates records against data quality constraints (RFC 5322 email syntax and amount integrity), and loads cleaned records into Google BigQuery `fct_sales_orders` partitioned by order date.
 
 ---
 
-## 2. Directory Structure
-```
-├── openapi.json                  # OpenAPI 3.1 specification for API endpoints
-├── server/
-│   ├── __init__.py
-│   ├── database.py               # Database connection and session management
-│   ├── models.py                 # SQLAlchemy and Pydantic models
-│   ├── extractor.py              # PostgreSQL extraction module
-│   ├── validator.py              # Filtering rules and data validator
-│   ├── loader.py                 # BigQuery ingestion module
-│   ├── etl_pipeline.py           # Pipeline runner & orchestrator
-│   ├── main.py                   # FastAPI service & trigger endpoints
-│   └── requirements.txt
-├── schemas/
-│   └── fct_sales_orders_schema.json
-├── sql/
-│   └── ddl/
-│       └── fct_sales_orders.sql  # BigQuery DDL table definition
-├── tests/
-│   ├── __init__.py
-│   ├── test_validator.py         # Validation rules unit tests
-│   ├── test_extractor.py         # Extractor unit tests
-│   ├── test_loader.py            # BigQuery loader unit tests
-│   └── test_etl_pipeline.py      # End-to-end integration & API tests
-├── .env.example
-├── requirements.txt
-└── README.md
-```
+## 1. Overview & Architecture
+
+- **Source**: PostgreSQL table `raw_sales_orders` (`order_id`, `customer_email`, `amount`, `order_date`, `created_at`).
+- **Validation Engine**:
+  - Rejects records where `amount` is NULL, missing, or non-numeric.
+  - Rejects records where `customer_email` does not conform to RFC 5322 standard.
+- **Destination**: Google BigQuery table `fct_sales_orders` partitioned by `DAY` on `order_date`.
+- **API Entrypoint**: FastAPI service running on port `8000`.
 
 ---
 
-## 3. Local Development & Setup
+## 2. API Endpoints
 
-### Prerequisites
-- Python 3.11+
-- PostgreSQL or SQLite
+- `GET /health` or `GET /api/v1/health` - Health check status.
+- `POST /api/v1/etl/run` - Trigger ETL pipeline execution and retrieve execution audit metrics.
+- `GET /docs` - Interactive OpenAPI Swagger UI documentation.
+- `GET /openapi.json` - OpenAPI JSON specification.
 
-### Installation
+---
+
+## 3. Local Development Setup
+
+### Install Dependencies
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -60,29 +34,25 @@ pip install -r requirements.txt
 ```
 
 ### Environment Configuration
-Copy `.env.example` to `.env` and set your credentials:
+Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
 
-### Running the API Server
+### Run Tests
 ```bash
+pytest tests/ -v
+```
+
+### Start API Server
+```bash
+python -m server.main
+# Or run with uvicorn:
 uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### Triggering ETL via API
-```bash
-curl -X POST http://localhost:8000/api/v1/etl/run
-```
-
-### Triggering ETL via CLI
-```bash
-python -m server.etl_pipeline
 ```
 
 ---
 
-## 4. Running Tests
-```bash
-pytest tests/ -v
-```
+## 4. BigQuery Partitioning & DDL
+
+The target table is partitioned by `order_date` (`DAY` granularity). Schema definition is available in `schemas/fct_sales_orders_schema.json` and SQL DDL in `sql/ddl/fct_sales_orders.sql`.

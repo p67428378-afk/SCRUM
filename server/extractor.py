@@ -1,28 +1,47 @@
-"""Data Extraction Module from PostgreSQL raw_sales_orders."""
+"""PostgreSQL data extractor module."""
 import logging
-from typing import List, Optional
+from datetime import date
+from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
-from server.models import RawSalesOrder, RawSalesOrderDB
+from server.models import RawSalesOrderDB
 
 logger = logging.getLogger(__name__)
 
 
-class PostgreSQLExtractor:
-    """Extracts raw sales orders from database."""
+def extract_sales_orders(
+    db: Session,
+    batch_size: Optional[int] = None,
+    date_filter: Optional[date] = None
+) -> List[Dict[str, Any]]:
+    """
+    Extracts raw sales orders from the database.
 
-    def __init__(self, db_session: Session):
-        self.db = db_session
+    Args:
+        db: SQLAlchemy database session.
+        batch_size: Optional limit on the number of records to retrieve.
+        date_filter: Optional specific date filter on order_date.
 
-    def extract_raw_orders(self, limit: Optional[int] = None) -> List[RawSalesOrder]:
-        """Extract all raw orders from the raw_sales_orders table."""
-        try:
-            query = self.db.query(RawSalesOrderDB)
-            if limit:
-                query = query.limit(limit)
-            db_records = query.all()
-            records = [RawSalesOrder.model_validate(r) for r in db_records]
-            logger.info(f"Successfully extracted {len(records)} raw sales orders.")
-            return records
-        except Exception as e:
-            logger.error(f"Error during raw sales orders extraction: {str(e)}")
-            raise
+    Returns:
+        List of dictionaries containing extracted raw sales order fields.
+    """
+    query = db.query(RawSalesOrderDB)
+    if date_filter:
+        query = query.filter(RawSalesOrderDB.order_date == date_filter)
+
+    if batch_size and batch_size > 0:
+        query = query.limit(batch_size)
+
+    results = query.all()
+    logger.info(f"Extracted {len(results)} records from raw_sales_orders.")
+
+    extracted_data = []
+    for row in results:
+        extracted_data.append({
+            "order_id": row.order_id,
+            "customer_email": row.customer_email,
+            "amount": row.amount,
+            "order_date": row.order_date,
+            "created_at": row.created_at
+        })
+
+    return extracted_data

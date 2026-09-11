@@ -1,1 +1,1 @@
-"""ETL Server Package."""
+"""Server package initialization."""

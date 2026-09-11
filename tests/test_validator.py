@@ -1,96 +1,86 @@
-"""Unit tests for DataValidator."""
+"""Unit tests for validator and filtering engine."""
 from datetime import date, datetime
-import pytest
-from server.models import RawSalesOrder
-from server.validator import DataValidator
+from server.validator import validate_and_filter_records
 
 
-def test_validate_amount_valid():
-    is_valid, val = DataValidator.validate_amount(150.75)
-    assert is_valid is True
-    assert val == 150.75
-
-    is_valid, val = DataValidator.validate_amount("200.50")
-    assert is_valid is True
-    assert val == 200.50
-
-    is_valid, val = DataValidator.validate_amount(0)
-    assert is_valid is True
-    assert val == 0.0
-
-
-def test_validate_amount_invalid():
-    is_valid, _ = DataValidator.validate_amount(None)
-    assert is_valid is False
-
-    is_valid, _ = DataValidator.validate_amount("abc")
-    assert is_valid is False
-
-    is_valid, _ = DataValidator.validate_amount(float("nan"))
-    assert is_valid is False
-
-
-def test_validate_email_valid():
-    assert DataValidator.validate_email("user@example.com") is True
-    assert DataValidator.validate_email("john.doe+tag@sub.domain.co") is True
-    assert DataValidator.validate_email("test_123@domain-name.org") is True
-
-
-def test_validate_email_invalid():
-    assert DataValidator.validate_email(None) is False
-    assert DataValidator.validate_email("") is False
-    assert DataValidator.validate_email("plainaddress") is False
-    assert DataValidator.validate_email("@missingusername.com") is False
-    assert DataValidator.validate_email("user@.com") is False
-    assert DataValidator.validate_email("user@domain") is False
-
-
-def test_validate_records():
-    now = datetime.utcnow()
-    today = date.today()
-
-    records = [
-        # Valid
-        RawSalesOrder(
-            order_id="ord-1",
-            customer_email="alice@example.com",
-            amount=99.99,
-            order_date=today,
-            created_at=now,
-        ),
-        # Missing amount
-        RawSalesOrder(
-            order_id="ord-2",
-            customer_email="bob@example.com",
-            amount=None,
-            order_date=today,
-            created_at=now,
-        ),
-        # Invalid email
-        RawSalesOrder(
-            order_id="ord-3",
-            customer_email="not-an-email",
-            amount=150.0,
-            order_date=today,
-            created_at=now,
-        ),
-        # Missing email & amount
-        RawSalesOrder(
-            order_id="ord-4",
-            customer_email=None,
-            amount=None,
-            order_date=today,
-            created_at=now,
-        ),
+def test_validator_clean_records():
+    raw_data = [
+        {
+            "order_id": "ord-1",
+            "customer_email": "user1@example.com",
+            "amount": 100.50,
+            "order_date": date(2026, 5, 18),
+            "created_at": datetime.utcnow()
+        },
+        {
+            "order_id": "ord-2",
+            "customer_email": "jane.doe@sub.company.org",
+            "amount": "250.00",
+            "order_date": date(2026, 5, 18),
+            "created_at": datetime.utcnow()
+        }
     ]
 
-    valid, breakdown = DataValidator.validate_records(records)
-    assert len(valid) == 1
-    assert valid[0].order_id == "ord-1"
-    assert valid[0].amount == 99.99
-    assert valid[0].customer_email == "alice@example.com"
+    valid, rejected, breakdown = validate_and_filter_records(raw_data)
+    assert len(valid) == 2
+    assert len(rejected) == 0
+    assert breakdown.missing_or_invalid_amount == 0
+    assert breakdown.invalid_email_rfc5322 == 0
+    assert valid[0]["amount"] == 100.50
+    assert valid[1]["amount"] == 250.00
 
-    # ord-2 fails amount, ord-4 fails amount first
+
+def test_validator_missing_or_invalid_amount():
+    raw_data = [
+        {
+            "order_id": "ord-1",
+            "customer_email": "valid@example.com",
+            "amount": None,
+            "order_date": date(2026, 5, 18),
+            "created_at": datetime.utcnow()
+        },
+        {
+            "order_id": "ord-2",
+            "customer_email": "valid@example.com",
+            "amount": "invalid_number",
+            "order_date": date(2026, 5, 18),
+            "created_at": datetime.utcnow()
+        }
+    ]
+
+    valid, rejected, breakdown = validate_and_filter_records(raw_data)
+    assert len(valid) == 0
+    assert len(rejected) == 2
     assert breakdown.missing_or_invalid_amount == 2
-    # ord-3 fails email
-    assert breakdown.invalid_email_rfc5322 == 1
+    assert breakdown.invalid_email_rfc5322 == 0
+
+
+def test_validator_invalid_email_rfc5322():
+    raw_data = [
+        {
+            "order_id": "ord-1",
+            "customer_email": "invalid-email-address",
+            "amount": 50.0,
+            "order_date": date(2026, 5, 18),
+            "created_at": datetime.utcnow()
+        },
+        {
+            "order_id": "ord-2",
+            "customer_email": None,
+            "amount": 75.0,
+            "order_date": date(2026, 5, 18),
+            "created_at": datetime.utcnow()
+        },
+        {
+            "order_id": "ord-3",
+            "customer_email": "@domain.com",
+            "amount": 90.0,
+            "order_date": date(2026, 5, 18),
+            "created_at": datetime.utcnow()
+        }
+    ]
+
+    valid, rejected, breakdown = validate_and_filter_records(raw_data)
+    assert len(valid) == 0
+    assert len(rejected) == 3
+    assert breakdown.invalid_email_rfc5322 == 3

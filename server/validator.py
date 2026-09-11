@@ -1,67 +1,88 @@
-"""Data Validation & Filtering Engine."""
+"""Data validation and filtering engine for sales orders."""
 import re
-import math
-from typing import Any, List, Tuple
-from server.models import FctSalesOrder, FilterBreakdown, RawSalesOrder
+from typing import Any, Dict, List, Tuple
+from server.models import FilterBreakdown, FctSalesOrder
 
-RFC_5322_EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+# RFC 5322 email regex pattern
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 
-class DataValidator:
-    """Validates and filters raw sales order records."""
+def validate_and_filter_records(
+    raw_records: List[Dict[str, Any]]
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], FilterBreakdown]:
+    """
+    Validates raw sales order records and applies filtering rules.
 
-    @staticmethod
-    def validate_amount(amount: Any) -> Tuple[bool, float]:
-        """Validate if amount is present and a valid numeric value."""
-        if amount is None:
-            return False, 0.0
+    Rules:
+    1. Amount Validation: Rejects records where amount is NULL, missing, or non-numeric.
+    2. Email Validation: Rejects records where customer_email is NULL or invalid per RFC 5322.
+
+    Returns:
+        valid_records: List of cleaned valid record dicts.
+        rejected_records: List of rejected records with reason code.
+        breakdown: Count breakdown of rejections.
+    """
+    valid_records: List[Dict[str, Any]] = []
+    rejected_records: List[Dict[str, Any]] = []
+    breakdown = FilterBreakdown(missing_or_invalid_amount=0, invalid_email_rfc5322=0)
+
+    for record in raw_records:
+        order_id = record.get("order_id")
+        raw_amount = record.get("amount")
+        raw_email = record.get("customer_email")
+        order_date = record.get("order_date")
+        created_at = record.get("created_at")
+
+        # Check 1: Amount validation
+        if raw_amount is None:
+            breakdown.missing_or_invalid_amount += 1
+            rejected_records.append({
+                "record": record,
+                "reason": "missing_or_invalid_amount",
+                "detail": "Amount is None/missing"
+            })
+            continue
+
         try:
-            val = float(amount)
-            if math.isnan(val) or math.isinf(val):
-                return False, 0.0
-            return True, val
+            amount_float = float(raw_amount)
+            import math
+            if math.isnan(amount_float) or math.isinf(amount_float):
+                raise ValueError("Amount is NaN or Inf")
         except (ValueError, TypeError):
-            return False, 0.0
+            breakdown.missing_or_invalid_amount += 1
+            rejected_records.append({
+                "record": record,
+                "reason": "missing_or_invalid_amount",
+                "detail": f"Cannot convert amount '{raw_amount}' to float"
+            })
+            continue
 
-    @staticmethod
-    def validate_email(email: Any) -> bool:
-        """Validate customer email against RFC 5322 syntax regex."""
-        if not email or not isinstance(email, str):
-            return False
-        return bool(RFC_5322_EMAIL_REGEX.match(email.strip()))
+        # Check 2: Email validation (RFC 5322)
+        if not raw_email or not isinstance(raw_email, str) or not EMAIL_REGEX.match(raw_email.strip()):
+            breakdown.invalid_email_rfc5322 += 1
+            rejected_records.append({
+                "record": record,
+                "reason": "invalid_email_rfc5322",
+                "detail": f"Invalid email format: '{raw_email}'"
+            })
+            continue
 
-    @classmethod
-    def validate_records(
-        cls, raw_records: List[RawSalesOrder]
-    ) -> Tuple[List[FctSalesOrder], FilterBreakdown]:
-        """
-        Filters raw records into valid target records and counts rejections.
-        Rule 1: Rejects missing or non-numeric amount.
-        Rule 2: Rejects invalid RFC 5322 email.
-        """
-        valid_records: List[FctSalesOrder] = []
-        breakdown = FilterBreakdown(missing_or_invalid_amount=0, invalid_email_rfc5322=0)
+        # Check order_date and created_at presence
+        if not order_date:
+            breakdown.missing_or_invalid_amount += 1
+            rejected_records.append({
+                "record": record,
+                "reason": "missing_order_date",
+                "detail": "Order date is missing"
+            })
+            continue
 
-        for record in raw_records:
-            # Rule 1: Amount Validation
-            is_valid_amount, numeric_amount = cls.validate_amount(record.amount)
-            if not is_valid_amount:
-                breakdown.missing_or_invalid_amount += 1
-                continue
+        valid_records.append({
+            "order_id": str(order_id),
+            "customer_email": raw_email.strip(),
+            "amount": float(amount_float),
+            "order_date": order_date,
+            "created_at": created_at
+        })
 
-            # Rule 2: Email Validation
-            if not cls.validate_email(record.customer_email):
-                breakdown.invalid_email_rfc5322 += 1
-                continue
-
-            # Both passed: Construct valid FctSalesOrder
-            valid_order = FctSalesOrder(
-                order_id=record.order_id,
-                customer_email=record.customer_email.strip(),
-                amount=numeric_amount,
-                order_date=record.order_date,
-                created_at=record.created_at,
-            )
-            valid_records.append(valid_order)
-
-        return valid_records, breakdown
+    return valid_records, rejected_records, breakdown

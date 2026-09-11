@@ -6,4 +6,4 @@ CREATE TABLE IF NOT EXISTS `{project}.{dataset}.fct_sales_orders` (
   `created_at` TIMESTAMP NOT NULL
 )
 PARTITION BY DATE(`order_date`)
-CLUSTER BY `customer_email`;
+CLUSTER BY `order_id`;
